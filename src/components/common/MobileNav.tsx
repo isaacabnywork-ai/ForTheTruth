@@ -8,6 +8,7 @@ import { SearchBar } from "./SearchBar";
 import { useCartStore } from "@/store/cartStore";
 import type { WCCategory } from "@/types/product";
 import { CHURCH_LINKS, COLLECTIONS, NAV_LINKS } from "@/utils/constants";
+import { triggerHaptic } from "@/utils/haptics";
 
 /**
  * Mobile/tablet navigation: a floating "dynamic island" bottom bar
@@ -46,8 +47,9 @@ export function MobileNav({ categories }: { categories: WCCategory[] }) {
         {/* 1. Home */}
         <Link
           href="/"
+          onClick={() => triggerHaptic("tap")}
           aria-current={isHome ? "page" : undefined}
-          className={`relative flex flex-1 flex-col items-center justify-center py-1 transition-all duration-200 ${
+          className={`relative flex flex-1 flex-col items-center justify-center py-1 transition-all duration-200 active:scale-95 ${
             isHome ? "text-gold-dark font-bold" : "text-charcoal/60 hover:text-charcoal"
           }`}
         >
@@ -68,8 +70,9 @@ export function MobileNav({ categories }: { categories: WCCategory[] }) {
         {/* 2. Shop */}
         <Link
           href="/products"
+          onClick={() => triggerHaptic("tap")}
           aria-current={isShop ? "page" : undefined}
-          className={`relative flex flex-1 flex-col items-center justify-center py-1 transition-all duration-200 ${
+          className={`relative flex flex-1 flex-col items-center justify-center py-1 transition-all duration-200 active:scale-95 ${
             isShop ? "text-gold-dark font-bold" : "text-charcoal/60 hover:text-charcoal"
           }`}
         >
@@ -90,6 +93,7 @@ export function MobileNav({ categories }: { categories: WCCategory[] }) {
         {/* 3. Center Highlighted Search Action Button */}
         <Link
           href="/products/search"
+          onClick={() => triggerHaptic("tap")}
           aria-current={isSearch ? "page" : undefined}
           className="group relative flex flex-1 flex-col items-center justify-center py-0 transition-all duration-200 active:scale-95"
         >
@@ -107,8 +111,9 @@ export function MobileNav({ categories }: { categories: WCCategory[] }) {
         {/* 4. Cart */}
         <Link
           href="/cart"
+          onClick={() => triggerHaptic("tap")}
           aria-current={isCart ? "page" : undefined}
-          className={`relative flex flex-1 flex-col items-center justify-center py-1 transition-all duration-200 ${
+          className={`relative flex flex-1 flex-col items-center justify-center py-1 transition-all duration-200 active:scale-95 ${
             isCart ? "text-gold-dark font-bold" : "text-charcoal/60 hover:text-charcoal"
           }`}
         >
@@ -135,7 +140,10 @@ export function MobileNav({ categories }: { categories: WCCategory[] }) {
 
         {/* 5. Menu Button */}
         <button
-          onClick={() => setDrawerOpen(true)}
+          onClick={() => {
+            triggerHaptic("tap");
+            setDrawerOpen(true);
+          }}
           aria-expanded={drawerOpen}
           className="group relative flex flex-1 flex-col items-center justify-center py-1 text-charcoal/60 hover:text-charcoal transition-all duration-200 active:scale-95"
         >

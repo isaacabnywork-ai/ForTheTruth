@@ -9,6 +9,7 @@ import { formatPrice } from "@/utils/currency";
 import { getAuthor, type Product, type ProductReview } from "@/types/product";
 import { RatingStars } from "./RatingStars";
 import { ReviewForm } from "./ReviewForm";
+import { triggerHaptic } from "@/utils/haptics";
 
 interface ProductDetailProps {
   product: Product;
@@ -41,6 +42,7 @@ export function ProductDetail({ product, reviews = [] }: ProductDetailProps) {
       : 0;
 
   const handleAddToCart = () => {
+    triggerHaptic("success");
     addToCart(
       {
         productId: product.id,
@@ -54,7 +56,7 @@ export function ProductDetail({ product, reviews = [] }: ProductDetailProps) {
   };
 
   return (
-    <div className="mx-auto max-w-6xl px-4 pt-8 pb-12 sm:pt-10 md:pt-12 lg:px-8 lg:py-12">
+    <div className="mx-auto max-w-6xl px-4 pt-8 pb-28 sm:pt-10 md:pt-12 lg:px-8 lg:py-12">
       {/* Breadcrumb Navigation (Desktop Only) */}
       <nav aria-label="Breadcrumb" className="mb-6 hidden items-center gap-2 text-xs text-charcoal/60 lg:flex">
         <Link href="/" className="hover:text-gold-dark">Home</Link>
@@ -215,14 +217,17 @@ export function ProductDetail({ product, reviews = [] }: ProductDetailProps) {
               </div>
 
               {/* Add to Cart Button */}
-              <button onClick={handleAddToCart} className="btn-gold flex-1 !py-3.5 shadow-gold hover:scale-[1.01] active:scale-[0.99] font-extrabold tracking-wide">
+              <button onClick={handleAddToCart} className="btn-gold flex-1 !py-3.5 shadow-gold hover:scale-[1.01] active:scale-95 font-extrabold tracking-wide transition-transform">
                 {inStock ? "Add to Cart" : "Pre-order Now"}
               </button>
 
               {/* Wishlist Button */}
               <button
-                onClick={() => toggleWishlist(product.id)}
-                className={`rounded-full border p-3.5 transition-smooth ${
+                onClick={() => {
+                  triggerHaptic("tap");
+                  toggleWishlist(product.id);
+                }}
+                className={`rounded-full border p-3.5 transition-all duration-200 active:scale-95 ${
                   wishlisted
                     ? "border-gold bg-gold text-white shadow-gold"
                     : "border-sand bg-white text-charcoal/70 hover:border-gold hover:text-gold-dark"
@@ -345,6 +350,24 @@ export function ProductDetail({ product, reviews = [] }: ProductDetailProps) {
             </div>
           )}
         </div>
+      </div>
+
+      {/* Mobile Sticky Quick Action Footer (Native App Experience) */}
+      <div className="fixed bottom-[68px] left-1/2 -translate-x-1/2 z-40 flex w-[92vw] max-w-[440px] items-center justify-between gap-3 rounded-2xl border border-sand/80 bg-white/95 px-4 py-2.5 shadow-xl backdrop-blur-md transition-all duration-300 lg:hidden">
+        <div className="flex flex-col">
+          <span className="text-[11px] font-semibold uppercase text-charcoal/60 truncate max-w-[150px] sm:max-w-[220px]">
+            {product.name}
+          </span>
+          <span className="font-display text-lg font-black text-charcoal">
+            {formatPrice(product.price)}
+          </span>
+        </div>
+        <button
+          onClick={handleAddToCart}
+          className="btn-gold !px-6 !py-2.5 !text-xs font-black tracking-wide shadow-md active:scale-95 shrink-0 transition-transform"
+        >
+          {inStock ? "Add to Cart" : "Pre-order"}
+        </button>
       </div>
     </div>
   );

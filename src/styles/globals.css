@@ -13,9 +13,25 @@
 @layer base {
   html {
     scroll-behavior: smooth;
+    overscroll-behavior-y: none;
+    -webkit-tap-highlight-color: transparent;
   }
   body {
     @apply bg-offwhite text-charcoal font-sans antialiased transition-colors duration-300;
+    overscroll-behavior-y: none;
+    -webkit-touch-callout: none;
+  }
+  /* Native App UI touch constraints: disable text highlighting, callout popups, and dragging on interactive app controls */
+  button, a, nav, header, footer, [role="button"], [role="tab"], .btn-cta, .btn-gold, .btn-outline, .btn-navy, img, svg {
+    user-select: none;
+    -webkit-user-select: none;
+    -webkit-touch-callout: none;
+    -webkit-user-drag: none;
+  }
+  /* Keep standard text selection enabled in inputs and form fields */
+  input, textarea, select, [contenteditable="true"] {
+    user-select: text;
+    -webkit-user-select: text;
   }
   h1, h2, h3, h4 {
     @apply font-display text-charcoal;

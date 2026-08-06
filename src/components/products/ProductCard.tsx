@@ -9,6 +9,7 @@ import { formatPrice } from "@/utils/currency";
 import { getAuthor, type Product } from "@/types/product";
 import { RatingStars } from "./RatingStars";
 import { motion } from "framer-motion";
+import { triggerHaptic } from "@/utils/haptics";
 
 const FREE_SHIPPING_THRESHOLD = 499;
 
@@ -45,6 +46,7 @@ export function ProductCard({
 
   function handleAdd(e: React.MouseEvent) {
     e.preventDefault();
+    triggerHaptic("success");
     addToCart({
       productId: product.id,
       slug: product.slug,
@@ -106,11 +108,12 @@ export function ProductCard({
         <button
           onClick={(e) => {
             e.preventDefault();
+            triggerHaptic("tap");
             toggleWishlist(product.id);
           }}
           aria-label={wishlisted ? "Remove from wishlist" : "Add to wishlist"}
           aria-pressed={wishlisted}
-          className={`absolute right-3 top-3 rounded-full p-2 shadow-md backdrop-blur transition-all duration-300 ${
+          className={`absolute right-3 top-3 rounded-full p-2 shadow-md backdrop-blur transition-all duration-300 active:scale-90 ${
             wishlisted
               ? "bg-gold text-white"
               : "bg-white/90 text-charcoal/60 opacity-0 hover:bg-gold hover:text-white focus:opacity-100 group-hover:opacity-100"
