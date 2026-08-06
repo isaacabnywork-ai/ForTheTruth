@@ -33,7 +33,7 @@ export function MobileNav({ categories }: { categories: WCCategory[] }) {
 
   if (pathname?.startsWith("/admin")) return null;
 
-  const items = [
+  const leftItems = [
     {
       label: "Home",
       href: "/",
@@ -46,6 +46,9 @@ export function MobileNav({ categories }: { categories: WCCategory[] }) {
         <path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1 0-5H20" />
       ),
     },
+  ];
+
+  const rightItems = [
     {
       label: "Wishlist",
       href: "/account/wishlist",
@@ -70,75 +73,115 @@ export function MobileNav({ categories }: { categories: WCCategory[] }) {
 
   return (
     <>
-      {/* Floating Bottom Nav Bar */}
+      {/* Sleek Slim Dynamic Island Bottom Nav Bar */}
       <nav
         aria-label="Mobile bottom navigation"
-        className="fixed bottom-4 left-1/2 z-50 flex -translate-x-1/2 items-center gap-1 rounded-full border border-sand bg-white/95 px-4 py-2 shadow-panel backdrop-blur-md lg:hidden"
+        className="fixed bottom-3 left-1/2 z-50 flex -translate-x-1/2 items-center gap-0.5 sm:gap-1.5 rounded-full border border-sand/80 bg-white/95 px-2.5 py-1 shadow-[0_8px_30px_rgb(0,0,0,0.14)] backdrop-blur-md transition-all duration-300 max-w-[92vw] lg:hidden"
       >
-        <div className="mx-auto flex max-w-lg items-stretch justify-between gap-0.5 px-2 py-1.5">
-          {items.map((item) => {
-            const isActive =
-              item.href === "/"
-                ? pathname === "/"
-                : pathname.startsWith(item.href);
-            return (
-              <Link
-                key={item.href}
-                href={item.href}
-                aria-current={isActive ? "page" : undefined}
-                className={`relative flex flex-1 flex-col items-center gap-1 rounded-2xl px-1 py-2 transition-all duration-300 ${
-                  isActive ? "text-gold-dark" : "text-charcoal/50 active:bg-cream"
+        {leftItems.map((item) => {
+          const isActive =
+            item.href === "/"
+              ? pathname === "/"
+              : pathname.startsWith(item.href);
+          return (
+            <Link
+              key={item.href}
+              href={item.href}
+              aria-current={isActive ? "page" : undefined}
+              className={`relative flex min-w-[50px] flex-col items-center justify-center py-0.5 transition-all duration-200 ${
+                isActive ? "text-gold-dark font-bold" : "text-charcoal/60 hover:text-charcoal"
+              }`}
+            >
+              <span
+                className={`relative flex h-6 w-10 items-center justify-center rounded-full transition-all duration-200 ${
+                  isActive ? "bg-gold/15" : ""
                 }`}
               >
-                {/* active pill behind the icon */}
-                <span
-                  className={`relative flex h-8 w-14 items-center justify-center rounded-full transition-all duration-300 ${
-                    isActive ? "bg-gold/20" : ""
-                  }`}
+                <svg
+                  width="18"
+                  height="18"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth={isActive ? 2.2 : 1.7}
+                  aria-hidden="true"
                 >
-                  <svg
-                    width="21"
-                    height="21"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth={isActive ? 2.2 : 1.7}
-                    aria-hidden="true"
-                  >
-                    {item.icon}
-                  </svg>
-                  {"badge" in item && (item.badge ?? 0) > 0 && (
-                    <span className="absolute right-1.5 top-0 flex h-[16px] min-w-[16px] items-center justify-center rounded-full bg-cta px-1 text-[9px] font-bold text-white ring-2 ring-white">
-                      {item.badge}
-                    </span>
-                  )}
-                </span>
-                <span
-                  className={`text-[10px] font-bold uppercase tracking-wider ${
-                    isActive ? "text-gold-dark" : "text-charcoal/45"
-                  }`}
-                >
-                  {item.label}
-                </span>
-              </Link>
-            );
-          })}
+                  {item.icon}
+                </svg>
+              </span>
+              <span className="mt-0.5 text-[9px] font-bold tracking-tight uppercase">
+                {item.label}
+              </span>
+            </Link>
+          );
+        })}
 
-          <button
-            onClick={() => setDrawerOpen(true)}
-            aria-expanded={drawerOpen}
-            className="flex flex-1 flex-col items-center gap-1 rounded-2xl px-1 py-2 text-charcoal/50 transition-all duration-300 active:bg-cream"
-          >
-            <span className="flex h-8 w-14 items-center justify-center">
-              <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" aria-hidden="true">
-                <path d="M3 12h18M3 6h18M3 18h18" />
-              </svg>
-            </span>
-            <span className="text-[10px] font-bold uppercase tracking-wider text-charcoal/45">
-              Menu
-            </span>
-          </button>
-        </div>
+        {/* Center Highlighted Menu Action Button */}
+        <button
+          onClick={() => setDrawerOpen(true)}
+          aria-expanded={drawerOpen}
+          className="group relative mx-1 flex flex-col items-center justify-center py-0 transition-all duration-200 active:scale-95"
+        >
+          <span className="flex h-9 w-12 items-center justify-center rounded-2xl bg-gradient-to-r from-gold-dark via-gold to-[#DABB6B] text-white shadow-md shadow-gold/35 transition-transform duration-200 group-hover:scale-105">
+            <svg
+              width="19"
+              height="19"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2.3"
+              aria-hidden="true"
+            >
+              <path d="M3 12h18M3 6h18M3 18h18" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
+          </span>
+          <span className="mt-0.5 text-[9px] font-extrabold tracking-tight uppercase text-gold-dark">
+            Menu
+          </span>
+        </button>
+
+        {rightItems.map((item) => {
+          const isActive =
+            item.href === "/"
+              ? pathname === "/"
+              : pathname.startsWith(item.href);
+          return (
+            <Link
+              key={item.href}
+              href={item.href}
+              aria-current={isActive ? "page" : undefined}
+              className={`relative flex min-w-[50px] flex-col items-center justify-center py-0.5 transition-all duration-200 ${
+                isActive ? "text-gold-dark font-bold" : "text-charcoal/60 hover:text-charcoal"
+              }`}
+            >
+              <span
+                className={`relative flex h-6 w-10 items-center justify-center rounded-full transition-all duration-200 ${
+                  isActive ? "bg-gold/15" : ""
+                }`}
+              >
+                <svg
+                  width="18"
+                  height="18"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth={isActive ? 2.2 : 1.7}
+                  aria-hidden="true"
+                >
+                  {item.icon}
+                </svg>
+                {item.badge > 0 && (
+                  <span className="absolute -top-1 right-0 flex h-3.5 min-w-[14px] items-center justify-center rounded-full bg-cta px-1 text-[8px] font-bold text-white shadow-sm ring-1 ring-white">
+                    {item.badge}
+                  </span>
+                )}
+              </span>
+              <span className="mt-0.5 text-[9px] font-bold tracking-tight uppercase">
+                {item.label}
+              </span>
+            </Link>
+          );
+        })}
       </nav>
 
       {/* ===== Sidebar drawer ===== */}
