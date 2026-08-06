@@ -76,7 +76,7 @@ export function MobileNav({ categories }: { categories: WCCategory[] }) {
       {/* Sleek Slim Dynamic Island Bottom Nav Bar */}
       <nav
         aria-label="Mobile bottom navigation"
-        className="fixed bottom-3 left-1/2 z-50 flex -translate-x-1/2 items-center gap-0.5 sm:gap-1.5 rounded-full border border-sand/80 bg-white/95 px-2.5 py-1 shadow-[0_8px_30px_rgb(0,0,0,0.14)] backdrop-blur-md transition-all duration-300 max-w-[92vw] lg:hidden"
+        className="fixed bottom-3 left-1/2 z-50 flex w-[92vw] max-w-[440px] -translate-x-1/2 items-center justify-between rounded-full border border-sand/80 bg-white/95 px-3 py-1.5 shadow-[0_8px_30px_rgb(0,0,0,0.15)] backdrop-blur-md transition-all duration-300 lg:hidden"
       >
         {leftItems.map((item) => {
           const isActive =
@@ -88,18 +88,18 @@ export function MobileNav({ categories }: { categories: WCCategory[] }) {
               key={item.href}
               href={item.href}
               aria-current={isActive ? "page" : undefined}
-              className={`relative flex min-w-[50px] flex-col items-center justify-center py-0.5 transition-all duration-200 ${
+              className={`relative flex flex-1 flex-col items-center justify-center py-1 transition-all duration-200 ${
                 isActive ? "text-gold-dark font-bold" : "text-charcoal/60 hover:text-charcoal"
               }`}
             >
               <span
-                className={`relative flex h-6 w-10 items-center justify-center rounded-full transition-all duration-200 ${
+                className={`relative flex h-[28px] w-12 items-center justify-center rounded-full transition-all duration-200 ${
                   isActive ? "bg-gold/15" : ""
                 }`}
               >
                 <svg
-                  width="18"
-                  height="18"
+                  width="19"
+                  height="19"
                   viewBox="0 0 24 24"
                   fill="none"
                   stroke="currentColor"
@@ -109,7 +109,7 @@ export function MobileNav({ categories }: { categories: WCCategory[] }) {
                   {item.icon}
                 </svg>
               </span>
-              <span className="mt-0.5 text-[9px] font-bold tracking-tight uppercase">
+              <span className="mt-0.5 text-[10px] font-bold tracking-tight uppercase">
                 {item.label}
               </span>
             </Link>
@@ -120,12 +120,12 @@ export function MobileNav({ categories }: { categories: WCCategory[] }) {
         <button
           onClick={() => setDrawerOpen(true)}
           aria-expanded={drawerOpen}
-          className="group relative mx-1 flex flex-col items-center justify-center py-0 transition-all duration-200 active:scale-95"
+          className="group relative flex flex-1 flex-col items-center justify-center py-0 transition-all duration-200 active:scale-95"
         >
-          <span className="flex h-9 w-12 items-center justify-center rounded-2xl bg-gradient-to-r from-gold-dark via-gold to-[#DABB6B] text-white shadow-md shadow-gold/35 transition-transform duration-200 group-hover:scale-105">
+          <span className="flex h-10 w-14 items-center justify-center rounded-2xl bg-gradient-to-r from-gold-dark via-gold to-[#DABB6B] text-white shadow-md shadow-gold/35 transition-transform duration-200 group-hover:scale-105">
             <svg
-              width="19"
-              height="19"
+              width="21"
+              height="21"
               viewBox="0 0 24 24"
               fill="none"
               stroke="currentColor"
@@ -135,7 +135,7 @@ export function MobileNav({ categories }: { categories: WCCategory[] }) {
               <path d="M3 12h18M3 6h18M3 18h18" strokeLinecap="round" strokeLinejoin="round" />
             </svg>
           </span>
-          <span className="mt-0.5 text-[9px] font-extrabold tracking-tight uppercase text-gold-dark">
+          <span className="mt-0.5 text-[10px] font-extrabold tracking-tight uppercase text-gold-dark">
             Menu
           </span>
         </button>
@@ -150,18 +150,18 @@ export function MobileNav({ categories }: { categories: WCCategory[] }) {
               key={item.href}
               href={item.href}
               aria-current={isActive ? "page" : undefined}
-              className={`relative flex min-w-[50px] flex-col items-center justify-center py-0.5 transition-all duration-200 ${
+              className={`relative flex flex-1 flex-col items-center justify-center py-1 transition-all duration-200 ${
                 isActive ? "text-gold-dark font-bold" : "text-charcoal/60 hover:text-charcoal"
               }`}
             >
               <span
-                className={`relative flex h-6 w-10 items-center justify-center rounded-full transition-all duration-200 ${
+                className={`relative flex h-[28px] w-12 items-center justify-center rounded-full transition-all duration-200 ${
                   isActive ? "bg-gold/15" : ""
                 }`}
               >
                 <svg
-                  width="18"
-                  height="18"
+                  width="19"
+                  height="19"
                   viewBox="0 0 24 24"
                   fill="none"
                   stroke="currentColor"
@@ -171,12 +171,12 @@ export function MobileNav({ categories }: { categories: WCCategory[] }) {
                   {item.icon}
                 </svg>
                 {item.badge > 0 && (
-                  <span className="absolute -top-1 right-0 flex h-3.5 min-w-[14px] items-center justify-center rounded-full bg-cta px-1 text-[8px] font-bold text-white shadow-sm ring-1 ring-white">
+                  <span className="absolute -top-1.5 right-0.5 flex h-[15px] min-w-[15px] items-center justify-center rounded-full bg-cta px-1 text-[9px] font-bold text-white shadow-sm ring-1 ring-white">
                     {item.badge}
                   </span>
                 )}
               </span>
-              <span className="mt-0.5 text-[9px] font-bold tracking-tight uppercase">
+              <span className="mt-0.5 text-[10px] font-bold tracking-tight uppercase">
                 {item.label}
               </span>
             </Link>

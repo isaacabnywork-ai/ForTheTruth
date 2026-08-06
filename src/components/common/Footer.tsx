@@ -111,7 +111,7 @@ export function Footer() {
       </div>
 
       <div className="border-t border-white/10">
-        <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-3 px-4 py-5 text-xs text-white/40 lg:px-8">
+        <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-3 px-4 pt-5 pb-28 text-xs text-white/40 lg:px-8 lg:py-5">
           <p>© {new Date().getFullYear()} {SITE_NAME}. All rights reserved.</p>
           <p className="flex flex-wrap items-center gap-2">
             {["UPI", "Visa", "Mastercard", "RuPay", "Netbanking"].map((m) => (
