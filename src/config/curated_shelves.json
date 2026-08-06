@@ -1,0 +1,44 @@
+{
+  "heroIds": [
+    46223
+  ],
+  "heroBadge": "Independent Christian Bookstore",
+  "heroTitle": "Happy reading, friend",
+  "heroSubtitle": "600+ handpicked titles on Bible study, devotion, prayer, and Christian living. Sound doctrine, honest prices, delivered across India.",
+  "spineIds": [
+    53124,
+    44893,
+    44901,
+    39029,
+    39036,
+    44796,
+    44799,
+    44803,
+    44806
+  ],
+  "spineBadge": "Browse the shelf",
+  "spineTitle": "Explore this month's essentials",
+  "spineSubtitle": "Tap any spine to pull the book off the shelf and see its cover, author, and price — just like browsing in store.",
+  "featuredPickId": 44812,
+  "featuredBadge": "Editor's choice",
+  "featuredTitle": "This Month's Essential Read",
+  "featuredSubtitle": "One title we think belongs on every shelf this month — and why.",
+  "newArrivalsIds": [
+    34934,
+    51971,
+    51817,
+    50091,
+    50086,
+    50082
+  ],
+  "newArrivalsTitle": "New Arrivals",
+  "bestsellersIds": [
+    47592,
+    9046,
+    46237,
+    48904,
+    46243,
+    46241
+  ],
+  "bestsellersTitle": "Bestsellers"
+}

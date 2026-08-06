@@ -1,0 +1,101 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --color-gold: #C89B3C;
+  --color-navy: #16324F;
+  --color-cta: #2F5D50;
+  --color-offwhite: #FAF8F2;
+  --color-charcoal: #2C2C2C;
+}
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+  }
+  body {
+    @apply bg-offwhite text-charcoal font-sans antialiased transition-colors duration-300;
+  }
+  h1, h2, h3, h4 {
+    @apply font-display text-charcoal;
+  }
+  ::selection {
+    background: rgba(200, 155, 60, 0.30);
+  }
+}
+
+@layer components {
+  .overline-label {
+    @apply text-xs font-semibold uppercase tracking-[0.28em] text-gold-dark;
+  }
+
+  /* Section heading block — overline + big display title */
+  .section-title {
+    @apply font-display text-display-sm font-black text-charcoal md:text-display-md;
+  }
+
+  /* Primary CTA — high-contrast accent green */
+  .btn-cta {
+    @apply inline-flex items-center justify-center gap-2 rounded-full bg-cta px-8 py-3.5 text-sm font-bold uppercase tracking-wider text-white shadow-cta transition-all duration-300 hover:-translate-y-0.5 hover:bg-cta-light;
+  }
+
+  /* Shiny gold button — brand/secondary actions */
+  .btn-gold {
+    @apply relative inline-flex items-center justify-center gap-2 overflow-hidden rounded-full bg-gold-gradient px-8 py-3.5 text-sm font-bold uppercase tracking-wider text-white shadow-gold transition-all duration-300 hover:-translate-y-0.5 hover:shadow-book;
+    text-shadow: 0 1px 2px rgba(22, 50, 79, 0.25);
+  }
+  .btn-gold::after {
+    content: "";
+    @apply pointer-events-none absolute inset-0 bg-gold-sheen animate-sheen;
+    background-size: 200% 100%;
+  }
+
+  .btn-outline {
+    @apply inline-flex items-center justify-center gap-2 rounded-full border-2 border-gold px-8 py-3.5 text-sm font-semibold uppercase tracking-wider text-gold-deep transition-all duration-300 hover:bg-gold hover:text-white;
+  }
+
+  .btn-navy {
+    @apply inline-flex items-center justify-center gap-2 rounded-full bg-navy px-8 py-3.5 text-sm font-bold uppercase tracking-wider text-white transition-all duration-300 hover:-translate-y-0.5 hover:bg-navy-light;
+  }
+
+  .nav-link {
+    @apply relative text-sm font-semibold tracking-wide text-charcoal/75 transition-colors duration-200 hover:text-gold-dark;
+  }
+  .nav-link::after {
+    content: "";
+    @apply absolute -bottom-1 left-0 h-0.5 w-0 rounded bg-gold transition-all duration-300;
+  }
+  .nav-link:hover::after {
+    @apply w-full;
+  }
+
+  /* Badge on book covers */
+  .badge {
+    @apply rounded-full px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider shadow-sm;
+  }
+}
+
+@layer utilities {
+  .transition-smooth {
+    transition: all 0.25s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+  .text-gradient-gold {
+    background: linear-gradient(120deg, #A67C1E 20%, #DABB6B 50%, #A67C1E 80%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
+  .skeleton {
+    background: linear-gradient(90deg, #E6DFD1 25%, #F2EDE2 50%, #E6DFD1 75%);
+    background-size: 200% 100%;
+    @apply animate-shimmer;
+  }
+}
