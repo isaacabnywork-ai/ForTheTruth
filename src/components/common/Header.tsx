@@ -9,6 +9,8 @@ import { MegaMenu } from "./MegaMenu";
 import { ChurchMegaMenu } from "./ChurchMegaMenu";
 import { useCartStore } from "@/store/cartStore";
 import { useWishlistStore } from "@/store/wishlistStore";
+import { useAuthStore } from "@/store/authStore";
+import { useAuth } from "@/hooks/useAuth";
 import type { WCCategory } from "@/types/product";
 import { ANNOUNCEMENT, NAV_LINKS, SITE_NAME } from "@/utils/constants";
 
@@ -18,9 +20,16 @@ export function Header({ categories }: { categories: WCCategory[] }) {
   const [mounted, setMounted] = useState(false);
   const cartCount = useCartStore((s) => s.getCount());
   const wishlistCount = useWishlistStore((s) => s.productIds.length);
+  const { user } = useAuthStore();
   const closeTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
+  useAuth();
+
   useEffect(() => setMounted(true), []);
+
+  const userName = mounted && user
+    ? (user.firstName || user.displayName || (user.email ? user.email.split("@")[0] : "Account"))
+    : "Account";
 
   const openMenuSafe = useCallback((menu: "books" | "church") => {
     if (closeTimer.current) {
@@ -159,13 +168,16 @@ export function Header({ categories }: { categories: WCCategory[] }) {
 
             <Link
               href="/account/dashboard"
-              className="rounded-full p-2 text-charcoal/70 transition-smooth hover:bg-cream hover:text-gold-dark sm:p-2.5"
+              className="flex items-center gap-1.5 rounded-full px-2.5 py-1.5 text-charcoal/80 transition-smooth hover:bg-cream hover:text-gold-dark sm:px-3 sm:py-2"
               aria-label="Account"
             >
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true">
+              <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" className="shrink-0" aria-hidden="true">
                 <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2" />
                 <circle cx="12" cy="7" r="4" />
               </svg>
+              <span className="text-xs sm:text-sm font-bold tracking-tight truncate max-w-[90px] sm:max-w-[140px]">
+                {userName}
+              </span>
             </Link>
 
             <Link
