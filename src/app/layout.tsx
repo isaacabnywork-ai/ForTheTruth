@@ -5,6 +5,7 @@ import { Footer } from "@/components/common/Footer";
 import { MobileNav } from "@/components/common/MobileNav";
 import { DesktopSidebar } from "@/components/common/DesktopSidebar";
 import { CartNotification } from "@/components/common/CartNotification";
+import { InstallAppModal } from "@/components/common/InstallAppModal";
 import { Providers } from "./providers";
 import { isWooConfigured } from "@/config/env";
 import { getCategories } from "@/services/woocommerce";
@@ -29,12 +30,27 @@ const cormorant = Cormorant_Garamond({
 export const metadata: Metadata = {
   title: { default: SITE_NAME, template: `%s | ${SITE_NAME}` },
   description: SITE_DESCRIPTION,
+  applicationName: SITE_NAME,
+  appleWebApp: {
+    capable: true,
+    title: SITE_NAME,
+    statusBarStyle: "default",
+  },
+  formatDetection: {
+    telephone: true,
+  },
+  icons: {
+    icon: "/logo.png",
+    shortcut: "/logo.png",
+    apple: "/logo.png",
+  },
 };
 
 export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
   maximumScale: 5,
+  themeColor: "#FAF6F0",
 };
 
 export const revalidate = 3600;
@@ -81,6 +97,7 @@ export default async function RootLayout({
 
           <MobileNav categories={categories} />
           <CartNotification />
+          <InstallAppModal />
         </Providers>
       </body>
     </html>

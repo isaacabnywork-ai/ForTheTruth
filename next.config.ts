@@ -6,6 +6,8 @@ const wpHost = process.env.NEXT_PUBLIC_WORDPRESS_URL
 
 const nextConfig: NextConfig = {
   output: process.env.DOCKER_BUILD === "1" ? "standalone" : undefined,
+  compress: true,
+  poweredByHeader: false,
   images: {
     remotePatterns: [
       { protocol: "https", hostname: wpHost },
@@ -13,6 +15,7 @@ const nextConfig: NextConfig = {
       { protocol: "https", hostname: "images.unsplash.com" },
     ],
     formats: ["image/avif", "image/webp"],
+    minimumCacheTTL: 86400,
   },
   headers: async () => [
     {
@@ -21,6 +24,15 @@ const nextConfig: NextConfig = {
         { key: "X-Frame-Options", value: "DENY" },
         { key: "X-Content-Type-Options", value: "nosniff" },
         { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
+      ],
+    },
+    {
+      source: "/:all*(svg|jpg|jpeg|png|gif|ico|webp|avif|woff2|woff)",
+      headers: [
+        {
+          key: "Cache-Control",
+          value: "public, max-age=31536000, immutable",
+        },
       ],
     },
   ],
