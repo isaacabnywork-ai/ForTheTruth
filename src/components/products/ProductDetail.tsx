@@ -96,6 +96,7 @@ export function ProductDetail({ product, reviews = [] }: ProductDetailProps) {
                 alt={currentImage.alt || product.name}
                 fill
                 priority
+                fetchPriority="high"
                 sizes="(max-width: 768px) 100vw, 350px"
                 className="object-cover"
               />

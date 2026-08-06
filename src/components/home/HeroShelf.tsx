@@ -1,7 +1,6 @@
 "use client";
 
 import Image from "next/image";
-import { motion } from "framer-motion";
 import Link from "next/link";
 import { RatingStars } from "@/components/products/RatingStars";
 import { formatPrice } from "@/utils/currency";
@@ -42,10 +41,7 @@ export function HeroShelf({
         <div className="pointer-events-none absolute inset-0 bg-cream-mesh opacity-80" />
         <div className="pointer-events-none absolute inset-0 bg-paper-texture opacity-50" />
 
-        <motion.div 
-          initial={{ opacity: 0, y: 30 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
+        <div 
           className="relative grid items-center gap-8 sm:gap-10 px-5 sm:px-8 py-8 sm:py-12 md:px-12 md:grid-cols-2 lg:grid-cols-[1.05fr_auto_0.95fr] lg:gap-8 lg:px-14 lg:py-16"
         >
           {/* ---------- LEFT: Headline & Actions (spans full width on phone & tablet top row) ---------- */}
@@ -157,7 +153,7 @@ export function HeroShelf({
               </Link>
             </div>
           )}
-        </motion.div>
+        </div>
       </div>
     </section>
   );
@@ -190,8 +186,9 @@ function FloatingBook({ product }: { product: Product }) {
                 src={product.images[0].src}
                 alt={product.images[0].alt || product.name}
                 fill
-                sizes="300px"
+                sizes="(max-width: 768px) 220px, 275px"
                 priority
+                fetchPriority="high"
                 className="object-cover"
               />
             ) : (

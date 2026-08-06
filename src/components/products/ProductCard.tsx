@@ -8,7 +8,6 @@ import { useWishlistStore } from "@/store/wishlistStore";
 import { formatPrice } from "@/utils/currency";
 import { getAuthor, type Product } from "@/types/product";
 import { RatingStars } from "./RatingStars";
-import { motion } from "framer-motion";
 import { triggerHaptic } from "@/utils/haptics";
 
 const FREE_SHIPPING_THRESHOLD = 499;
@@ -59,13 +58,7 @@ export function ProductCard({
   }
 
   return (
-    <motion.article
-      initial={{ opacity: 0, y: 20 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true, margin: "-50px" }}
-      transition={{ duration: 0.5, ease: "easeOut" }}
-      className="group relative flex flex-col"
-    >
+    <article className="group relative flex flex-col transition-all duration-300">
       <div className="relative overflow-hidden rounded-xl bg-gradient-to-br from-sand/60 to-cream shadow-card transition-all duration-500 group-hover:-translate-y-1.5 group-hover:shadow-card-hover">
         <Link href={`/products/${product.slug}`} className="relative block aspect-[2/3]">
           {image ? (
@@ -181,6 +174,6 @@ export function ProductCard({
           )}
         </div>
       </div>
-    </motion.article>
+    </article>
   );
 }
