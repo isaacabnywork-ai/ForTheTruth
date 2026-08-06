@@ -152,15 +152,14 @@ export function Header({ categories }: { categories: WCCategory[] }) {
           <div className="flex items-center gap-1.5 sm:gap-2.5">
             <Link
               href="/account/wishlist"
-              className="group flex items-center gap-1.5 rounded-full border border-sand/80 bg-[#FDFBF7] px-2.5 py-1.5 text-charcoal/85 shadow-sm transition-all duration-200 hover:border-gold/60 hover:bg-cream hover:text-gold-dark active:scale-95 sm:px-3.5 sm:py-1.5"
+              className="relative rounded-full p-2 text-charcoal/70 transition-smooth hover:bg-cream hover:text-gold-dark sm:p-2.5"
               aria-label={`Wishlist${mounted ? `, ${wishlistCount} items` : ""}`}
             >
-              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.1" className="shrink-0 text-gold-dark transition-transform duration-200 group-hover:scale-110" aria-hidden="true">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true">
                 <path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z" />
               </svg>
-              <span className="text-[11px] sm:text-xs font-extrabold tracking-tight">Wishlist</span>
               {mounted && wishlistCount > 0 && (
-                <span className="flex h-[18px] min-w-[18px] items-center justify-center rounded-full bg-cta px-1 text-[10px] font-bold text-white shadow-xs">
+                <span className="absolute -right-0.5 -top-0.5 flex h-[18px] min-w-[18px] items-center justify-center rounded-full bg-cta px-1 text-[10px] font-bold text-white shadow-sm ring-1 ring-white">
                   {wishlistCount}
                 </span>
               )}
