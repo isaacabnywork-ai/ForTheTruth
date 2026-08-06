@@ -6,7 +6,6 @@ import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import { SearchBar } from "./SearchBar";
 import { useCartStore } from "@/store/cartStore";
-import { useWishlistStore } from "@/store/wishlistStore";
 import type { WCCategory } from "@/types/product";
 import { CHURCH_LINKS, COLLECTIONS, NAV_LINKS } from "@/utils/constants";
 
@@ -19,7 +18,6 @@ export function MobileNav({ categories }: { categories: WCCategory[] }) {
   const [mounted, setMounted] = useState(false);
   const pathname = usePathname();
   const cartCount = useCartStore((s) => s.getCount());
-  const wishlistCount = useWishlistStore((s) => s.productIds.length);
 
   useEffect(() => setMounted(true), []);
   useEffect(() => setDrawerOpen(false), [pathname]);
@@ -33,43 +31,10 @@ export function MobileNav({ categories }: { categories: WCCategory[] }) {
 
   if (pathname?.startsWith("/admin")) return null;
 
-  const leftItems = [
-    {
-      label: "Home",
-      href: "/",
-      icon: <path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />,
-    },
-    {
-      label: "Shop",
-      href: "/products",
-      icon: (
-        <path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1 0-5H20" />
-      ),
-    },
-  ];
-
-  const rightItems = [
-    {
-      label: "Wishlist",
-      href: "/account/wishlist",
-      badge: mounted ? wishlistCount : 0,
-      icon: (
-        <path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z" />
-      ),
-    },
-    {
-      label: "Cart",
-      href: "/cart",
-      badge: mounted ? cartCount : 0,
-      icon: (
-        <>
-          <circle cx="9" cy="21" r="1" />
-          <circle cx="20" cy="21" r="1" />
-          <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6" />
-        </>
-      ),
-    },
-  ];
+  const isHome = pathname === "/";
+  const isShop = pathname.startsWith("/products") && !pathname.startsWith("/products/search");
+  const isSearch = pathname.startsWith("/products/search");
+  const isCart = pathname.startsWith("/cart");
 
   return (
     <>
@@ -78,110 +43,111 @@ export function MobileNav({ categories }: { categories: WCCategory[] }) {
         aria-label="Mobile bottom navigation"
         className="fixed bottom-3 left-1/2 z-50 flex w-[92vw] max-w-[440px] -translate-x-1/2 items-center justify-between rounded-full border border-sand/80 bg-white/95 px-3 py-1.5 shadow-[0_8px_30px_rgb(0,0,0,0.15)] backdrop-blur-md transition-all duration-300 lg:hidden"
       >
-        {leftItems.map((item) => {
-          const isActive =
-            item.href === "/"
-              ? pathname === "/"
-              : pathname.startsWith(item.href);
-          return (
-            <Link
-              key={item.href}
-              href={item.href}
-              aria-current={isActive ? "page" : undefined}
-              className={`relative flex flex-1 flex-col items-center justify-center py-1 transition-all duration-200 ${
-                isActive ? "text-gold-dark font-bold" : "text-charcoal/60 hover:text-charcoal"
-              }`}
-            >
-              <span
-                className={`relative flex h-[28px] w-12 items-center justify-center rounded-full transition-all duration-200 ${
-                  isActive ? "bg-gold/15" : ""
-                }`}
-              >
-                <svg
-                  width="19"
-                  height="19"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth={isActive ? 2.2 : 1.7}
-                  aria-hidden="true"
-                >
-                  {item.icon}
-                </svg>
-              </span>
-              <span className="mt-0.5 text-[10px] font-bold tracking-tight uppercase">
-                {item.label}
-              </span>
-            </Link>
-          );
-        })}
+        {/* 1. Home */}
+        <Link
+          href="/"
+          aria-current={isHome ? "page" : undefined}
+          className={`relative flex flex-1 flex-col items-center justify-center py-1 transition-all duration-200 ${
+            isHome ? "text-gold-dark font-bold" : "text-charcoal/60 hover:text-charcoal"
+          }`}
+        >
+          <span
+            className={`relative flex h-[28px] w-12 items-center justify-center rounded-full transition-all duration-200 ${
+              isHome ? "bg-gold/15" : ""
+            }`}
+          >
+            <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={isHome ? 2.2 : 1.7} aria-hidden="true">
+              <path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
+            </svg>
+          </span>
+          <span className="mt-0.5 text-[10px] font-bold tracking-tight uppercase">
+            Home
+          </span>
+        </Link>
 
-        {/* Center Highlighted Menu Action Button */}
-        <button
-          onClick={() => setDrawerOpen(true)}
-          aria-expanded={drawerOpen}
+        {/* 2. Shop */}
+        <Link
+          href="/products"
+          aria-current={isShop ? "page" : undefined}
+          className={`relative flex flex-1 flex-col items-center justify-center py-1 transition-all duration-200 ${
+            isShop ? "text-gold-dark font-bold" : "text-charcoal/60 hover:text-charcoal"
+          }`}
+        >
+          <span
+            className={`relative flex h-[28px] w-12 items-center justify-center rounded-full transition-all duration-200 ${
+              isShop ? "bg-gold/15" : ""
+            }`}
+          >
+            <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={isShop ? 2.2 : 1.7} aria-hidden="true">
+              <path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1 0-5H20" />
+            </svg>
+          </span>
+          <span className="mt-0.5 text-[10px] font-bold tracking-tight uppercase">
+            Shop
+          </span>
+        </Link>
+
+        {/* 3. Center Highlighted Search Action Button */}
+        <Link
+          href="/products/search"
+          aria-current={isSearch ? "page" : undefined}
           className="group relative flex flex-1 flex-col items-center justify-center py-0 transition-all duration-200 active:scale-95"
         >
           <span className="flex h-10 w-14 items-center justify-center rounded-2xl bg-gradient-to-r from-gold-dark via-gold to-[#DABB6B] text-white shadow-md shadow-gold/35 transition-transform duration-200 group-hover:scale-105">
-            <svg
-              width="21"
-              height="21"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2.3"
-              aria-hidden="true"
-            >
-              <path d="M3 12h18M3 6h18M3 18h18" strokeLinecap="round" strokeLinejoin="round" />
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" aria-hidden="true">
+              <circle cx="11" cy="11" r="8" />
+              <path d="m21 21-4.35-4.35" strokeLinecap="round" strokeLinejoin="round" />
             </svg>
           </span>
           <span className="mt-0.5 text-[10px] font-extrabold tracking-tight uppercase text-gold-dark">
+            Search
+          </span>
+        </Link>
+
+        {/* 4. Cart */}
+        <Link
+          href="/cart"
+          aria-current={isCart ? "page" : undefined}
+          className={`relative flex flex-1 flex-col items-center justify-center py-1 transition-all duration-200 ${
+            isCart ? "text-gold-dark font-bold" : "text-charcoal/60 hover:text-charcoal"
+          }`}
+        >
+          <span
+            className={`relative flex h-[28px] w-12 items-center justify-center rounded-full transition-all duration-200 ${
+              isCart ? "bg-gold/15" : ""
+            }`}
+          >
+            <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={isCart ? 2.2 : 1.7} aria-hidden="true">
+              <circle cx="9" cy="21" r="1" />
+              <circle cx="20" cy="21" r="1" />
+              <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6" />
+            </svg>
+            {mounted && cartCount > 0 && (
+              <span className="absolute -top-1.5 right-0.5 flex h-[15px] min-w-[15px] items-center justify-center rounded-full bg-cta px-1 text-[9px] font-bold text-white shadow-sm ring-1 ring-white">
+                {cartCount}
+              </span>
+            )}
+          </span>
+          <span className="mt-0.5 text-[10px] font-bold tracking-tight uppercase">
+            Cart
+          </span>
+        </Link>
+
+        {/* 5. Menu Button */}
+        <button
+          onClick={() => setDrawerOpen(true)}
+          aria-expanded={drawerOpen}
+          className="group relative flex flex-1 flex-col items-center justify-center py-1 text-charcoal/60 hover:text-charcoal transition-all duration-200 active:scale-95"
+        >
+          <span className="relative flex h-[28px] w-12 items-center justify-center rounded-full transition-all duration-200">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" aria-hidden="true">
+              <path d="M3 12h18M3 6h18M3 18h18" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
+          </span>
+          <span className="mt-0.5 text-[10px] font-bold tracking-tight uppercase">
             Menu
           </span>
         </button>
-
-        {rightItems.map((item) => {
-          const isActive =
-            item.href === "/"
-              ? pathname === "/"
-              : pathname.startsWith(item.href);
-          return (
-            <Link
-              key={item.href}
-              href={item.href}
-              aria-current={isActive ? "page" : undefined}
-              className={`relative flex flex-1 flex-col items-center justify-center py-1 transition-all duration-200 ${
-                isActive ? "text-gold-dark font-bold" : "text-charcoal/60 hover:text-charcoal"
-              }`}
-            >
-              <span
-                className={`relative flex h-[28px] w-12 items-center justify-center rounded-full transition-all duration-200 ${
-                  isActive ? "bg-gold/15" : ""
-                }`}
-              >
-                <svg
-                  width="19"
-                  height="19"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth={isActive ? 2.2 : 1.7}
-                  aria-hidden="true"
-                >
-                  {item.icon}
-                </svg>
-                {item.badge > 0 && (
-                  <span className="absolute -top-1.5 right-0.5 flex h-[15px] min-w-[15px] items-center justify-center rounded-full bg-cta px-1 text-[9px] font-bold text-white shadow-sm ring-1 ring-white">
-                    {item.badge}
-                  </span>
-                )}
-              </span>
-              <span className="mt-0.5 text-[10px] font-bold tracking-tight uppercase">
-                {item.label}
-              </span>
-            </Link>
-          );
-        })}
       </nav>
 
       {/* ===== Sidebar drawer ===== */}

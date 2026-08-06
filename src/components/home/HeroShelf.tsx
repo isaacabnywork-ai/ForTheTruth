@@ -3,7 +3,6 @@
 import Image from "next/image";
 import { motion } from "framer-motion";
 import Link from "next/link";
-import { SearchBar } from "@/components/common/SearchBar";
 import { RatingStars } from "@/components/products/RatingStars";
 import { formatPrice } from "@/utils/currency";
 import { READER_TRUST } from "@/utils/constants";
@@ -71,11 +70,7 @@ export function HeroShelf({
               {subtitle}
             </p>
 
-            <div className="mx-auto mt-6 max-w-sm lg:mx-0 w-full">
-              <SearchBar />
-            </div>
-
-            <div className="mt-6 flex flex-wrap items-center justify-center gap-3 lg:justify-start">
+            <div className="mt-8 flex flex-wrap items-center justify-center gap-3 lg:justify-start">
               <Link href="/products" className="btn-cta text-xs sm:text-sm px-6 py-3 sm:px-8 sm:py-3.5">
                 Start Browsing <span aria-hidden="true">↗</span>
               </Link>

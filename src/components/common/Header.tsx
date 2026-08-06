@@ -170,7 +170,7 @@ export function Header({ categories }: { categories: WCCategory[] }) {
 
             <Link
               href="/cart"
-              className="relative rounded-full p-2 text-charcoal/70 transition-smooth hover:bg-cream hover:text-gold-dark sm:p-2.5"
+              className="relative hidden lg:flex rounded-full p-2 text-charcoal/70 transition-smooth hover:bg-cream hover:text-gold-dark sm:p-2.5"
               aria-label={`Cart${mounted ? `, ${cartCount} items` : ""}`}
             >
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true">
