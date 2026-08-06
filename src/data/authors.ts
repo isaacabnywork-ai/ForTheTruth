@@ -43,5 +43,6 @@ export const AUTHORS: Author[] = [
 ];
 
 export function getAuthorBySlug(slug: string): Author | undefined {
-  return AUTHORS.find((a) => a.slug === slug);
+  const cleanSlug = decodeURIComponent(slug).toLowerCase().trim();
+  return AUTHORS.find((a) => a.slug.toLowerCase() === cleanSlug);
 }

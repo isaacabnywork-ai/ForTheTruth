@@ -150,11 +150,20 @@ export async function getProductsPaged(
 }
 
 export async function getProductBySlug(slug: string): Promise<Product | null> {
-  const results = await wcFetch<Product[]>("/products", {
-    searchParams: { slug, status: "publish" },
+  const cleanSlug = decodeURIComponent(slug).toLowerCase().trim();
+  let results = await wcFetch<Product[]>("/products", {
+    searchParams: { slug: cleanSlug, status: "publish" },
     revalidate: 600,
   });
-  return results[0] ?? null;
+  if (results.length > 0) return results[0];
+
+  // Fallback: If exact slug lookup returns empty (due to WordPress SEO plugins or encoding differences), search by title/keywords
+  const keyword = cleanSlug.replace(/-/g, " ");
+  results = await wcFetch<Product[]>("/products", {
+    searchParams: { search: keyword, status: "publish", per_page: 5 },
+    revalidate: 600,
+  });
+  return results.find((p) => decodeURIComponent(p.slug).toLowerCase() === cleanSlug) ?? results[0] ?? null;
 }
 
 export async function getProduct(id: number): Promise<Product> {
@@ -173,8 +182,9 @@ export async function getCategories(): Promise<WCCategory[]> {
 export async function getCategoryBySlug(
   slug: string
 ): Promise<WCCategory | null> {
+  const cleanSlug = decodeURIComponent(slug).toLowerCase().trim();
   const cats = await getCategories();
-  return cats.find((c) => c.slug === slug) ?? null;
+  return cats.find((c) => decodeURIComponent(c.slug).toLowerCase() === cleanSlug) ?? null;
 }
 
 // ---------- Reviews ----------
