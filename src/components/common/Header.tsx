@@ -62,9 +62,6 @@ export function Header({ categories }: { categories: WCCategory[] }) {
 
   if (pathname?.startsWith("/admin")) return null;
 
-  const badgeCls =
-    "absolute -right-0.5 -top-0.5 flex h-[18px] min-w-[18px] items-center justify-center rounded-full bg-gold-gradient px-1 text-[10px] font-bold text-white shadow-gold";
-
   const isSingleBookPage =
     pathname?.startsWith("/products/") && !pathname?.startsWith("/products/search");
 
@@ -152,45 +149,55 @@ export function Header({ categories }: { categories: WCCategory[] }) {
           </div>
 
           {/* Persistent Action Icons across Mobile, Tablet, and Desktop */}
-          <div className="flex items-center gap-1 sm:gap-2">
+          <div className="flex items-center gap-1.5 sm:gap-2.5">
             <Link
               href="/account/wishlist"
-              className="relative rounded-full p-2 text-charcoal/70 transition-smooth hover:bg-cream hover:text-gold-dark sm:p-2.5"
+              className="group flex items-center gap-1.5 rounded-full border border-sand/80 bg-[#FDFBF7] px-2.5 py-1.5 text-charcoal/85 shadow-sm transition-all duration-200 hover:border-gold/60 hover:bg-cream hover:text-gold-dark active:scale-95 sm:px-3.5 sm:py-1.5"
               aria-label={`Wishlist${mounted ? `, ${wishlistCount} items` : ""}`}
             >
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.1" className="shrink-0 text-gold-dark transition-transform duration-200 group-hover:scale-110" aria-hidden="true">
                 <path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z" />
               </svg>
+              <span className="text-[11px] sm:text-xs font-extrabold tracking-tight">Wishlist</span>
               {mounted && wishlistCount > 0 && (
-                <span className={badgeCls}>{wishlistCount}</span>
+                <span className="flex h-[18px] min-w-[18px] items-center justify-center rounded-full bg-cta px-1 text-[10px] font-bold text-white shadow-xs">
+                  {wishlistCount}
+                </span>
               )}
             </Link>
 
             <Link
               href="/account/dashboard"
-              className="flex items-center gap-1.5 rounded-full px-2.5 py-1.5 text-charcoal/80 transition-smooth hover:bg-cream hover:text-gold-dark sm:px-3 sm:py-2"
+              className="group flex items-center gap-1.5 rounded-full border border-sand/80 bg-white px-2.5 py-1.5 text-charcoal/85 shadow-sm transition-all duration-200 hover:border-gold/60 hover:bg-cream hover:text-gold-dark active:scale-95 sm:px-3.5 sm:py-1.5"
               aria-label="Account"
             >
-              <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" className="shrink-0" aria-hidden="true">
-                <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2" />
-                <circle cx="12" cy="7" r="4" />
-              </svg>
-              <span className="text-xs sm:text-sm font-bold tracking-tight truncate max-w-[90px] sm:max-w-[140px]">
+              <span className="flex h-5 w-5 items-center justify-center rounded-full bg-gold/15 text-gold-dark shrink-0 transition-transform duration-200 group-hover:scale-110">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" aria-hidden="true">
+                  <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2" />
+                  <circle cx="12" cy="7" r="4" />
+                </svg>
+              </span>
+              <span className="text-[11px] sm:text-xs font-extrabold tracking-tight truncate max-w-[75px] sm:max-w-[120px]">
                 {userName}
               </span>
             </Link>
 
             <Link
               href="/cart"
-              className="relative hidden lg:flex rounded-full p-2 text-charcoal/70 transition-smooth hover:bg-cream hover:text-gold-dark sm:p-2.5"
+              className="group hidden lg:flex items-center gap-1.5 rounded-full border border-sand/80 bg-white px-3.5 py-1.5 text-charcoal/85 shadow-sm transition-all duration-200 hover:border-gold/60 hover:bg-cream hover:text-gold-dark active:scale-95"
               aria-label={`Cart${mounted ? `, ${cartCount} items` : ""}`}
             >
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.1" className="shrink-0 text-gold-dark transition-transform duration-200 group-hover:scale-110" aria-hidden="true">
                 <circle cx="9" cy="21" r="1" />
                 <circle cx="20" cy="21" r="1" />
                 <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6" />
               </svg>
-              {mounted && cartCount > 0 && <span className={badgeCls}>{cartCount}</span>}
+              <span className="text-xs font-extrabold tracking-tight">Cart</span>
+              {mounted && cartCount > 0 && (
+                <span className="flex h-[18px] min-w-[18px] items-center justify-center rounded-full bg-cta px-1 text-[10px] font-bold text-white shadow-xs">
+                  {cartCount}
+                </span>
+              )}
             </Link>
           </div>
         </div>
