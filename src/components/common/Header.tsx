@@ -202,18 +202,6 @@ export function Header({ categories }: { categories: WCCategory[] }) {
             </Link>
 
             <Link
-              href="/account/dashboard"
-              className="rounded-full p-2.5 text-charcoal/75 transition-smooth hover:bg-cream hover:text-gold-dark"
-              aria-label="Account"
-              title={userName}
-            >
-              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true">
-                <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2" />
-                <circle cx="12" cy="7" r="4" />
-              </svg>
-            </Link>
-
-            <Link
               href="/cart"
               className="relative rounded-full p-2.5 text-charcoal/75 transition-smooth hover:bg-cream hover:text-gold-dark"
               aria-label={`Cart${mounted ? `, ${cartCount} items` : ""}`}
@@ -229,6 +217,18 @@ export function Header({ categories }: { categories: WCCategory[] }) {
                   {cartCount}
                 </span>
               )}
+            </Link>
+
+            <Link
+              href="/account/dashboard"
+              className="rounded-full p-2.5 text-charcoal/75 transition-smooth hover:bg-cream hover:text-gold-dark"
+              aria-label="Account"
+              title={userName}
+            >
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true">
+                <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2" />
+                <circle cx="12" cy="7" r="4" />
+              </svg>
             </Link>
           </div>
         </div>
