@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { Field } from "@/components/ui/Field";
 import { useAuth } from "@/hooks/useAuth";
+import { initiateGoogleOAuthPopup } from "@/utils/googleAuth";
 
 function passwordIssue(pw: string): string | null {
   if (pw.length < 8) return "At least 8 characters";
@@ -51,6 +52,36 @@ export default function RegisterPage() {
     else setError(result.error ?? "Registration failed");
   }
 
+  async function handleGoogleClick() {
+    setError("");
+    if (process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID) {
+      try {
+        setBusy(true);
+        const profile = await initiateGoogleOAuthPopup();
+        const res = await loginWithGoogle(profile.email, profile.firstName, profile.lastName, profile.avatarUrl);
+        setBusy(false);
+        if (res.ok) {
+          router.push("/account/dashboard");
+        } else {
+          setError(res.error ?? "Google Sign-In failed.");
+        }
+      } catch (err: unknown) {
+        setBusy(false);
+        const errMsg = err instanceof Error ? err.message : String(err);
+        if (errMsg.includes("closed") || errMsg.includes("cancel")) {
+          setError("Google Sign-In popup was canceled or closed.");
+        } else if (errMsg === "MISSING_CLIENT_ID") {
+          setGoogleModal(true);
+        } else {
+          console.warn("OAuth 2.0 popup encountered an issue, opening manual selector:", errMsg);
+          setGoogleModal(true);
+        }
+      }
+    } else {
+      setGoogleModal(true);
+    }
+  }
+
   async function handleGoogleSign(gmail: string, first?: string, last?: string) {
     if (!gmail || !gmail.includes("@")) {
       setError("Please provide a valid Gmail address");
@@ -79,7 +110,7 @@ export default function RegisterPage() {
         {/* Google / Gmail Instant Registration Button */}
         <button
           type="button"
-          onClick={() => setGoogleModal(true)}
+          onClick={handleGoogleClick}
           disabled={busy}
           className="flex w-full items-center justify-center gap-3 rounded-2xl border-2 border-slate-200 bg-white py-3.5 px-4 text-sm font-bold text-slate-800 shadow-sm transition-all hover:bg-slate-50 hover:border-slate-300 hover:shadow active:scale-[0.99] mb-6"
         >
