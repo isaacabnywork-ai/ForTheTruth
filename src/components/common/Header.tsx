@@ -56,8 +56,11 @@ export function Header({ categories }: { categories: WCCategory[] }) {
   const badgeCls =
     "absolute -right-0.5 -top-0.5 flex h-[18px] min-w-[18px] items-center justify-center rounded-full bg-gold-gradient px-1 text-[10px] font-bold text-white shadow-gold";
 
+  const isSingleBookPage =
+    pathname?.startsWith("/products/") && !pathname?.startsWith("/products/search");
+
   return (
-    <header className="sticky top-0 z-50 w-full">
+    <header className={`sticky top-0 z-50 w-full ${isSingleBookPage ? "hidden lg:block" : ""}`}>
       <div className="bg-gold-gradient py-1.5 px-2 text-center text-[11px] sm:text-xs font-bold tracking-wide text-white truncate [text-shadow:0_1px_2px_rgba(120,85,40,0.35)]">
         {ANNOUNCEMENT}
       </div>

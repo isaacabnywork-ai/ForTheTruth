@@ -54,9 +54,9 @@ export function ProductDetail({ product, reviews = [] }: ProductDetailProps) {
   };
 
   return (
-    <div className="mx-auto max-w-6xl px-4 py-8 md:py-12 lg:px-8">
-      {/* Breadcrumb Navigation */}
-      <nav aria-label="Breadcrumb" className="mb-6 flex items-center gap-2 text-xs text-charcoal/60">
+    <div className="mx-auto max-w-6xl px-4 pt-3 pb-10 sm:pt-6 md:pt-8 lg:px-8 lg:py-12">
+      {/* Breadcrumb Navigation (Desktop Only) */}
+      <nav aria-label="Breadcrumb" className="mb-6 hidden items-center gap-2 text-xs text-charcoal/60 lg:flex">
         <Link href="/" className="hover:text-gold-dark">Home</Link>
         <span>/</span>
         <Link href="/products" className="hover:text-gold-dark">Books</Link>
@@ -77,6 +77,17 @@ export function ProductDetail({ product, reviews = [] }: ProductDetailProps) {
         {/* Left: Image Gallery (Compact / Medium Cover Size) */}
         <div className="flex flex-col gap-4 md:col-span-5 lg:col-span-5 w-full max-w-[350px] mx-auto md:mx-0">
           <div className="relative aspect-[3/4] w-full overflow-hidden rounded-2xl border border-sand bg-cream/50 shadow-book-lg transition-transform duration-300 hover:scale-[1.01]">
+            {/* Native App-Style Mobile/Tablet Back Button */}
+            <button
+              onClick={() => window.history.back()}
+              aria-label="Go back"
+              className="absolute left-3.5 top-3.5 z-20 flex h-9 w-9 items-center justify-center rounded-full bg-white/90 text-charcoal shadow-md backdrop-blur-md transition-transform active:scale-95 lg:hidden"
+            >
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" aria-hidden="true">
+                <path d="M15 18l-6-6 6-6" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
+            </button>
+
             {currentImage.src ? (
               <Image
                 src={currentImage.src}
@@ -95,7 +106,7 @@ export function ProductDetail({ product, reviews = [] }: ProductDetailProps) {
             <div className="absolute inset-y-0 left-0 w-[8px] bg-gradient-to-r from-black/30 to-transparent" />
             
             {discount > 0 && (
-              <span className="absolute left-4 top-4 rounded-full bg-gold-gradient px-3 py-1 text-xs font-bold text-white shadow-gold">
+              <span className="absolute right-3.5 top-3.5 z-20 rounded-full bg-gold-gradient px-3 py-1 text-xs font-bold text-white shadow-gold lg:left-4 lg:right-auto lg:top-4">
                 −{discount}%
               </span>
             )}
