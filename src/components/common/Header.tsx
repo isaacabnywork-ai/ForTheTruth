@@ -86,7 +86,7 @@ export function Header({ categories }: { categories: WCCategory[] }) {
           </Link>
 
           <nav className="hidden flex-1 items-center gap-7 lg:flex lg:ml-10 xl:ml-16">
-            {NAV_LINKS.map((link) => {
+            {NAV_LINKS.filter((link) => link.label !== "Authors").map((link) => {
               const menu = "menu" in link ? link.menu : null;
               if (!menu) {
                 return (
@@ -148,8 +148,8 @@ export function Header({ categories }: { categories: WCCategory[] }) {
             <SearchBar />
           </div>
 
-          {/* Persistent Action Icons across Mobile, Tablet, and Desktop */}
-          <div className="flex items-center gap-1.5 sm:gap-2.5">
+          {/* Mobile & Tablet Action Capsule Boxes */}
+          <div className="flex items-center gap-1.5 sm:gap-2.5 lg:hidden">
             <Link
               href="/account/wishlist"
               className="group flex items-center gap-1.5 rounded-full border border-sand/80 bg-[#FDFBF7] px-2.5 py-1.5 text-charcoal/85 shadow-sm transition-all duration-200 hover:border-gold/60 hover:bg-cream hover:text-gold-dark active:scale-95 sm:px-3.5 sm:py-1.5"
@@ -181,20 +181,51 @@ export function Header({ categories }: { categories: WCCategory[] }) {
                 {userName}
               </span>
             </Link>
+          </div>
+
+          {/* Desktop Clean Action Icons (no boxes, no titles) */}
+          <div className="hidden items-center gap-2 lg:flex xl:gap-3">
+            <Link
+              href="/account/wishlist"
+              className="relative rounded-full p-2.5 text-charcoal/75 transition-smooth hover:bg-cream hover:text-gold-dark"
+              aria-label={`Wishlist${mounted ? `, ${wishlistCount} items` : ""}`}
+              title="Wishlist"
+            >
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true">
+                <path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z" />
+              </svg>
+              {mounted && wishlistCount > 0 && (
+                <span className="absolute -right-0.5 -top-0.5 flex h-[18px] min-w-[18px] items-center justify-center rounded-full bg-cta px-1 text-[10px] font-bold text-white shadow-sm ring-1 ring-white">
+                  {wishlistCount}
+                </span>
+              )}
+            </Link>
+
+            <Link
+              href="/account/dashboard"
+              className="rounded-full p-2.5 text-charcoal/75 transition-smooth hover:bg-cream hover:text-gold-dark"
+              aria-label="Account"
+              title={userName}
+            >
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true">
+                <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2" />
+                <circle cx="12" cy="7" r="4" />
+              </svg>
+            </Link>
 
             <Link
               href="/cart"
-              className="group hidden lg:flex items-center gap-1.5 rounded-full border border-sand/80 bg-white px-3.5 py-1.5 text-charcoal/85 shadow-sm transition-all duration-200 hover:border-gold/60 hover:bg-cream hover:text-gold-dark active:scale-95"
+              className="relative rounded-full p-2.5 text-charcoal/75 transition-smooth hover:bg-cream hover:text-gold-dark"
               aria-label={`Cart${mounted ? `, ${cartCount} items` : ""}`}
+              title="Cart"
             >
-              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.1" className="shrink-0 text-gold-dark transition-transform duration-200 group-hover:scale-110" aria-hidden="true">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true">
                 <circle cx="9" cy="21" r="1" />
                 <circle cx="20" cy="21" r="1" />
                 <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6" />
               </svg>
-              <span className="text-xs font-extrabold tracking-tight">Cart</span>
               {mounted && cartCount > 0 && (
-                <span className="flex h-[18px] min-w-[18px] items-center justify-center rounded-full bg-cta px-1 text-[10px] font-bold text-white shadow-xs">
+                <span className="absolute -right-0.5 -top-0.5 flex h-[18px] min-w-[18px] items-center justify-center rounded-full bg-cta px-1 text-[10px] font-bold text-white shadow-sm ring-1 ring-white">
                   {cartCount}
                 </span>
               )}
