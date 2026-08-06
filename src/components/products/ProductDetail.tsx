@@ -54,7 +54,7 @@ export function ProductDetail({ product, reviews = [] }: ProductDetailProps) {
   };
 
   return (
-    <div className="mx-auto max-w-6xl px-4 pt-3 pb-10 sm:pt-6 md:pt-8 lg:px-8 lg:py-12">
+    <div className="mx-auto max-w-6xl px-4 pt-8 pb-12 sm:pt-10 md:pt-12 lg:px-8 lg:py-12">
       {/* Breadcrumb Navigation (Desktop Only) */}
       <nav aria-label="Breadcrumb" className="mb-6 hidden items-center gap-2 text-xs text-charcoal/60 lg:flex">
         <Link href="/" className="hover:text-gold-dark">Home</Link>
