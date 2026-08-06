@@ -60,12 +60,12 @@ export function Header({ categories }: { categories: WCCategory[] }) {
     pathname?.startsWith("/products/") && !pathname?.startsWith("/products/search");
 
   return (
-    <header className={`sticky top-0 z-50 w-full ${isSingleBookPage ? "hidden lg:block" : ""}`}>
+    <header className="sticky top-0 z-50 w-full">
       <div className="bg-gold-gradient py-1.5 px-2 text-center text-[11px] sm:text-xs font-bold tracking-wide text-white truncate [text-shadow:0_1px_2px_rgba(120,85,40,0.35)]">
         {ANNOUNCEMENT}
       </div>
 
-      <div className="border-b border-sand bg-white/95 shadow-[0_8px_30px_-12px_rgba(120,95,55,0.15)] backdrop-blur-md supports-[backdrop-filter]:bg-white/85 w-full max-w-full">
+      <div className={`border-b border-sand bg-white/95 shadow-[0_8px_30px_-12px_rgba(120,95,55,0.15)] backdrop-blur-md supports-[backdrop-filter]:bg-white/85 w-full max-w-full ${isSingleBookPage ? "hidden lg:block" : ""}`}>
         <div className="mx-auto flex max-w-7xl items-center justify-between gap-4 px-3 sm:px-6 py-3.5 lg:px-8">
           <Link href="/" className="flex items-center shrink-0 group" aria-label={SITE_NAME}>
             <div className="relative h-10 w-10 sm:h-12 sm:w-12 shrink-0 overflow-hidden transition-transform duration-300 group-hover:scale-105">
