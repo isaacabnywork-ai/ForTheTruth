@@ -8,6 +8,7 @@ export function NewsletterForm() {
   const [email, setEmail] = useState("");
   const [status, setStatus] = useState<"idle" | "loading" | "done" | "error">("idle");
   const [errorMsg, setErrorMsg] = useState("");
+  const [successMsg, setSuccessMsg] = useState("You\u2019re on the list!");
 
   if (status === "done") {
     return (
@@ -18,7 +19,7 @@ export function NewsletterForm() {
           </svg>
         </div>
         <p className="text-sm font-semibold text-gold-light">
-          You&apos;re on the list!
+          {successMsg}
         </p>
         <p className="mt-1 text-xs text-white/50">
           Watch your inbox for this week&apos;s picks.
@@ -40,11 +41,13 @@ export function NewsletterForm() {
         body: JSON.stringify({ email, audience }),
       });
 
+      const data = await res.json().catch(() => ({}));
+
       // If the endpoint doesn't exist yet (404) or succeeds, we mark as done
       if (res.ok || res.status === 404) {
+        if (data.message) setSuccessMsg(data.message);
         setStatus("done");
       } else {
-        const data = await res.json().catch(() => ({}));
         throw new Error(data.error || "Subscription failed. Please try again.");
       }
     } catch (err) {

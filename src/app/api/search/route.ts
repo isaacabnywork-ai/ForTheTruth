@@ -25,6 +25,8 @@ export async function GET(req: NextRequest) {
         name: p.name,
         slug: p.slug,
         price: p.price,
+        sale_price: p.sale_price,
+        on_sale: p.on_sale,
         image: p.images[0]?.src ?? null,
         author: getAuthor(p) ?? null,
         rating: p.average_rating,

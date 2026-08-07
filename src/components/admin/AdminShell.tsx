@@ -46,7 +46,7 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
   }
 
   return (
-    <div className="flex min-h-screen w-full flex-col bg-[#F8FAFC] font-sans text-charcoal antialiased lg:flex-row">
+    <div className="flex h-[100dvh] w-full flex-col overflow-hidden bg-[#F8FAFC] font-sans text-charcoal antialiased lg:flex-row">
       <AdminSidebar onLock={handleLock} />
       <div className="flex flex-1 flex-col overflow-y-auto">{children}</div>
     </div>

@@ -10,6 +10,7 @@ import { getAuthor, type Product, type ProductReview } from "@/types/product";
 import { RatingStars } from "./RatingStars";
 import { ReviewForm } from "./ReviewForm";
 import { triggerHaptic } from "@/utils/haptics";
+import { useWishlistSync } from "@/hooks/useWishlistSync";
 
 interface ProductDetailProps {
   product: Product;
@@ -21,6 +22,9 @@ export function ProductDetail({ product, reviews = [] }: ProductDetailProps) {
   const [qty, setQty] = useState(1);
   const [activeTab, setActiveTab] = useState<"description" | "details" | "reviews">("description");
   const [isDescExpanded, setIsDescExpanded] = useState(false);
+
+  // Sync wishlist with server for logged-in users (no-op for guests)
+  useWishlistSync();
 
   const addToCart = useCartStore((s) => s.addToCart);
   const toggleWishlist = useWishlistStore((s) => s.toggleWishlist);
@@ -326,27 +330,157 @@ export function ProductDetail({ product, reviews = [] }: ProductDetailProps) {
           )}
 
           {activeTab === "reviews" && (
-            <div className="space-y-6">
-              <ReviewForm productId={product.id} />
+            <div className="space-y-8">
               {reviews.length > 0 ? (
-                reviews.map((rev) => (
-                  <div key={rev.id} className="rounded-xl border border-sand bg-white p-5 shadow-sm">
-                    <div className="flex items-center justify-between">
-                      <p className="font-bold text-sm text-charcoal">{rev.reviewer}</p>
-                      <RatingStars rating={rev.rating} />
-                    </div>
-                    <p className="mt-2 text-xs text-charcoal/70 leading-relaxed">
-                      {rev.review.replace(/<[^>]*>?/gm, "")}
-                    </p>
-                    <p className="mt-2 text-[10px] text-charcoal/40">
-                      {new Date(rev.date_created).toLocaleDateString()}
+                <>
+                  {/* ── Summary Stats Bar ── */}
+                  {(() => {
+                    const avg =
+                      reviews.reduce((s, r) => s + r.rating, 0) / reviews.length;
+                    const dist = [5, 4, 3, 2, 1].map((star) => ({
+                      star,
+                      count: reviews.filter((r) => r.rating === star).length,
+                    }));
+                    return (
+                      <div className="flex flex-col gap-5 rounded-3xl border border-sand bg-white p-6 shadow-card sm:flex-row sm:items-center sm:gap-10">
+                        {/* Big average number */}
+                        <div className="flex shrink-0 flex-col items-center gap-1">
+                          <span className="font-display text-6xl font-black text-charcoal leading-none">
+                            {avg.toFixed(1)}
+                          </span>
+                          {/* filled stars row */}
+                          <div className="flex gap-0.5 mt-1">
+                            {[1, 2, 3, 4, 5].map((s) => (
+                              <svg key={s} width="18" height="18" viewBox="0 0 24 24"
+                                fill={s <= Math.round(avg) ? "#C89B3C" : "#E6DFD1"}>
+                                <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
+                              </svg>
+                            ))}
+                          </div>
+                          <span className="text-xs text-charcoal/50 font-medium">
+                            {reviews.length} {reviews.length === 1 ? "review" : "reviews"}
+                          </span>
+                        </div>
+
+                        {/* Star distribution bars */}
+                        <div className="flex flex-1 flex-col gap-2">
+                          {dist.map(({ star, count }) => {
+                            const pct =
+                              reviews.length > 0
+                                ? Math.round((count / reviews.length) * 100)
+                                : 0;
+                            return (
+                              <div key={star} className="flex items-center gap-3">
+                                <span className="w-4 shrink-0 text-right text-xs font-semibold text-charcoal/60">
+                                  {star}
+                                </span>
+                                <svg width="12" height="12" viewBox="0 0 24 24" fill="#C89B3C" className="shrink-0">
+                                  <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
+                                </svg>
+                                <div className="relative h-2 flex-1 overflow-hidden rounded-full bg-sand/60">
+                                  <div
+                                    className="absolute inset-y-0 left-0 rounded-full bg-gradient-to-r from-gold to-gold-dark transition-all duration-500"
+                                    style={{ width: `${pct}%` }}
+                                  />
+                                </div>
+                                <span className="w-8 shrink-0 text-xs text-charcoal/50">
+                                  {count}
+                                </span>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    );
+                  })()}
+
+                  {/* ── Individual Review Cards ── */}
+                  <div className="space-y-4">
+                    {reviews.map((rev) => {
+                      // Format date as "August 2026"
+                      const formattedDate = new Date(rev.date_created).toLocaleDateString(
+                        "en-US",
+                        { month: "long", year: "numeric" }
+                      );
+
+                      return (
+                        <div
+                          key={rev.id}
+                          className="rounded-2xl bg-white border border-sand shadow-card p-5 transition-smooth hover:shadow-md"
+                        >
+                          {/* Card Header */}
+                          <div className="flex items-start justify-between gap-3">
+                            <div className="flex items-center gap-3">
+                              {/* Avatar circle with initials */}
+                              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-navy/10 font-display text-sm font-bold text-navy">
+                                {rev.reviewer.charAt(0).toUpperCase()}
+                              </div>
+                              <div>
+                                <div className="flex items-center gap-2">
+                                  <span className="font-semibold text-charcoal text-sm">
+                                    {rev.reviewer}
+                                  </span>
+                                  {rev.verified && (
+                                    <span className="inline-flex items-center gap-1 rounded-full bg-gold/10 border border-gold/25 px-2 py-0.5 text-[10px] font-bold text-gold-deep">
+                                      <svg width="9" height="9" viewBox="0 0 24 24" fill="currentColor">
+                                        <path d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z" />
+                                      </svg>
+                                      Verified
+                                    </span>
+                                  )}
+                                </div>
+                                <span className="text-xs text-charcoal/50">{formattedDate}</span>
+                              </div>
+                            </div>
+
+                            {/* Star rating */}
+                            <div className="flex shrink-0 gap-0.5">
+                              {[1, 2, 3, 4, 5].map((s) => (
+                                <svg key={s} width="15" height="15" viewBox="0 0 24 24"
+                                  fill={s <= rev.rating ? "#C89B3C" : "#E6DFD1"}>
+                                  <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
+                                </svg>
+                              ))}
+                            </div>
+                          </div>
+
+                          {/* Review Text */}
+                          <p className="mt-3 text-sm text-charcoal/75 leading-relaxed">
+                            {rev.review.replace(/<[^>]*>?/gm, "")}
+                          </p>
+                        </div>
+                      );
+                    })}
+                  </div>
+
+                  {/* ── Share Your Thoughts ── */}
+                  <div className="rounded-3xl border border-sand/80 bg-cream/40 p-6">
+                    <h3 className="font-display text-xl font-bold text-charcoal mb-4">
+                      Share Your Thoughts
+                    </h3>
+                    <ReviewForm productId={product.id} />
+                  </div>
+                </>
+              ) : (
+                /* ── Empty State ── */
+                <div className="flex flex-col items-center gap-6 rounded-3xl border border-sand bg-white py-14 px-6 text-center shadow-card">
+                  <div className="flex h-20 w-20 items-center justify-center rounded-full bg-gold/10 border border-gold/20">
+                    <svg width="40" height="40" viewBox="0 0 24 24" fill="#C89B3C" opacity="0.8">
+                      <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
+                    </svg>
+                  </div>
+                  <div>
+                    <h3 className="font-display text-2xl font-bold text-charcoal">
+                      Be the first to review this book
+                    </h3>
+                    <p className="mt-2 text-sm text-charcoal/55 max-w-sm mx-auto leading-relaxed">
+                      Your review helps other readers discover great Christian literature. Share what moved you.
                     </p>
                   </div>
-                ))
-              ) : (
-                <p className="text-sm text-charcoal/50 italic">
-                  No reviews yet for this title. Be the first reader to share your thoughts!
-                </p>
+                  <div className="w-full max-w-lg">
+                    <ReviewForm productId={product.id} />
+                  </div>
+                </div>
               )}
             </div>
           )}
@@ -354,7 +488,7 @@ export function ProductDetail({ product, reviews = [] }: ProductDetailProps) {
       </div>
 
       {/* Mobile Sticky Quick Action Footer (Native App Experience) */}
-      <div className="fixed bottom-[68px] left-1/2 -translate-x-1/2 z-40 flex w-[92vw] max-w-[440px] items-center justify-between gap-3 rounded-2xl border border-sand/80 bg-white/95 px-4 py-2.5 shadow-xl backdrop-blur-md transition-all duration-300 lg:hidden">
+      <div className="fixed bottom-[92px] left-1/2 -translate-x-1/2 z-40 flex w-[92vw] max-w-[440px] items-center justify-between gap-3 rounded-2xl border border-sand/80 bg-white/95 px-4 py-2.5 shadow-xl backdrop-blur-md transition-all duration-300 lg:hidden">
         <div className="flex flex-col">
           <span className="text-[11px] font-semibold uppercase text-charcoal/60 truncate max-w-[150px] sm:max-w-[220px]">
             {product.name}

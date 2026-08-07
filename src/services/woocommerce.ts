@@ -298,3 +298,72 @@ export async function getOrdersByCustomer(
     revalidate: 0,
   });
 }
+
+// ---------- Analytics & Reports ----------
+
+export interface WCSalesReport {
+  total_sales: string;
+  net_sales: string;
+  average_sales: string;
+  total_orders: number;
+  total_items: number;
+  total_tax: string;
+  total_shipping: string;
+  total_refunds: number;
+  total_discount: string;
+  totals: Record<
+    string,
+    {
+      sales: string;
+      orders: number;
+      items: number;
+      tax: string;
+      shipping: string;
+      discount: string;
+      customers: number;
+    }
+  >;
+}
+
+export async function getSalesReports(
+  period: "week" | "month" | "year" | "last_month" = "month"
+): Promise<WCSalesReport[]> {
+  return wcFetch<WCSalesReport[]>("/reports/sales", {
+    searchParams: { period },
+    revalidate: 60, // 1 minute cache for admin dashboard
+  });
+}
+
+export interface WCTopSeller {
+  product_id: number;
+  name: string;
+  quantity: number;
+}
+
+export async function getTopSellersReport(): Promise<WCTopSeller[]> {
+  return wcFetch<WCTopSeller[]>("/reports/top_sellers", {
+    searchParams: { period: "year" },
+    revalidate: 3600,
+  });
+}
+
+// ---------- Extended Customers ----------
+
+export async function getAllCustomersPaged(
+  page: number = 1,
+  search?: string
+): Promise<{ customers: WCCustomer[]; total: number; totalPages: number }> {
+  const searchParams: Record<string, string | number> = { per_page: 20, page, role: "all" };
+  if (search) searchParams.search = search;
+
+  const res = await wcFetchRaw("/customers", {
+    searchParams,
+    revalidate: 60,
+  });
+  
+  return {
+    customers: (await res.json()) as WCCustomer[],
+    total: parseInt(res.headers.get("x-wp-total") ?? "0", 10),
+    totalPages: parseInt(res.headers.get("x-wp-totalpages") ?? "1", 10),
+  };
+}

@@ -15,6 +15,7 @@ const nextConfig: NextConfig = {
       { protocol: "https", hostname: "images.unsplash.com" },
       { protocol: "https", hostname: "**.googleusercontent.com" },
       { protocol: "https", hostname: "api.dicebear.com" },
+      { protocol: "https", hostname: "secure.gravatar.com" },
     ],
     formats: ["image/avif", "image/webp"],
     minimumCacheTTL: 86400,
