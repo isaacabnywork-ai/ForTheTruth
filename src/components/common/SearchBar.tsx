@@ -182,12 +182,12 @@ export function SearchBar() {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -8 }}
             transition={{ duration: 0.18, ease: "easeOut" }}
-            className="absolute left-0 top-[calc(100%+8px)] z-40 overflow-hidden rounded-2xl border border-sand bg-white shadow-2xl w-[calc(100vw-32px)] md:w-[700px] flex flex-col md:flex-row"
+            className="absolute left-0 right-0 md:left-auto md:right-0 top-[calc(100%+8px)] z-40 overflow-hidden rounded-2xl border border-sand bg-white shadow-2xl w-full md:w-[700px] flex flex-col md:flex-row-reverse"
             role="listbox"
             aria-label="Search suggestions"
           >
-            {/* Left Column: Results List */}
-            <div className="w-full md:w-[320px] shrink-0 border-r border-sand/60 bg-white">
+            {/* Results List (Right side on desktop, under the search input) */}
+            <div className="w-full md:w-[320px] shrink-0 border-b md:border-b-0 md:border-l border-sand/60 bg-white">
               {query.trim().length < 2 && recent.length > 0 && (
                 <div className="p-3">
                   <p className="px-3 pb-2 text-[10px] font-bold uppercase tracking-widest text-charcoal/35">
@@ -287,7 +287,7 @@ export function SearchBar() {
               )}
             </div>
 
-            {/* Right Column: Active Item Preview (Desktop Only) */}
+            {/* Preview Panel (Left side on desktop, expanding towards the center) */}
             {activeItem && (
               <div className="hidden md:flex flex-1 flex-col bg-white p-8 overflow-hidden relative">
                 {/* Background decorative image if available */}
