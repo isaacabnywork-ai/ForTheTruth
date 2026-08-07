@@ -69,8 +69,8 @@ export function Footer() {
         </div>
       </div>
 
-      {/* Link columns */}
-      <div className="mx-auto grid max-w-7xl gap-10 px-4 py-14 sm:grid-cols-2 lg:grid-cols-5 lg:px-8">
+      {/* Link columns (Hidden on mobile/tablet as requested) */}
+      <div className="hidden mx-auto lg:grid max-w-7xl gap-10 px-4 py-14 lg:grid-cols-5 lg:px-8">
         <div className="sm:col-span-2 lg:col-span-1">
           <div className="flex items-center gap-2.5">
             <div className="relative h-9 w-9 shrink-0 overflow-hidden rounded-full bg-white/10 p-0.5">
