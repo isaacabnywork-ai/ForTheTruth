@@ -63,9 +63,12 @@ export async function GET() {
     if (isSarah) {
       return NextResponse.json({ orders: [sampleOrders[1]] });
     }
+    if (isAlex) {
+      return NextResponse.json({ orders: sampleOrders });
+    }
 
-    // Default rich order history for any Google/Gmail profile
-    return NextResponse.json({ orders: sampleOrders });
+    // Default: no orders for standard users that don't have them in WooCommerce
+    return NextResponse.json({ orders: [] });
   } catch {
     return NextResponse.json({ error: "Failed to load orders" }, { status: 502 });
   }
