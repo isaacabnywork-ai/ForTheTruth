@@ -31,6 +31,8 @@ export async function GET(req: NextRequest) {
         author: getAuthor(p) ?? null,
         rating: p.average_rating,
         ratingCount: p.rating_count,
+        short_description: p.short_description,
+        stock_status: p.stock_status,
       })),
     });
   } catch {
