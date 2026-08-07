@@ -26,48 +26,6 @@ export async function GET() {
       });
     }
 
-    // Realistic sample orders so customers signing in with Google/Gmail experience rich order history tracking
-    const isAlex = user.email.toLowerCase().includes("alex") || user.email.toLowerCase().includes("admin");
-    const isSarah = user.email.toLowerCase().includes("sarah");
-    
-    const sampleOrders = [
-      {
-        id: 8429,
-        status: "completed",
-        total: "750",
-        currency: "INR",
-        date: "2026-07-20T14:30:00Z",
-        itemCount: 2,
-        titleHint: "Instruments in the Redeemer's Hands + 1 more",
-      },
-      {
-        id: 8102,
-        status: "processing",
-        total: "350",
-        currency: "INR",
-        date: "2026-07-25T10:15:00Z",
-        itemCount: 1,
-        titleHint: "Can I Know God's Will?",
-      },
-      {
-        id: 7891,
-        status: "completed",
-        total: "1250",
-        currency: "INR",
-        date: "2026-06-12T18:45:00Z",
-        itemCount: 3,
-        titleHint: "Into His Presence, Humble Calvinism & Exodus",
-      },
-    ];
-
-    if (isSarah) {
-      return NextResponse.json({ orders: [sampleOrders[1]] });
-    }
-    if (isAlex) {
-      return NextResponse.json({ orders: sampleOrders });
-    }
-
-    // Default: no orders for standard users that don't have them in WooCommerce
     return NextResponse.json({ orders: [] });
   } catch {
     return NextResponse.json({ error: "Failed to load orders" }, { status: 502 });

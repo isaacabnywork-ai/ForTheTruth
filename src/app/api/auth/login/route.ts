@@ -20,31 +20,6 @@ export async function POST(req: NextRequest) {
 
   const { email, password } = parsed.data;
 
-  // 1. Single Master Credentials for Admin ("only one credentials for the admin")
-  if (
-    (email === "admin" || email.toLowerCase() === "admin@forthetruth.in" || email.toLowerCase().startsWith("admin")) &&
-    (password === "admin123" || password === "1234" || password === "admin" || password === "forthetruth")
-  ) {
-    const adminUser = {
-      id: 9999,
-      email: "admin@forthetruth.in",
-      firstName: "Master",
-      lastName: "Admin",
-      displayName: "Master Admin",
-      avatarUrl: "https://api.dicebear.com/7.x/avataaars/svg?seed=Admin",
-      role: "admin",
-    };
-    const token = `admin:admin@forthetruth.in:Master:Admin:9999:admin`;
-    const res = NextResponse.json({ ok: true, user: adminUser });
-    res.cookies.set(SESSION_COOKIE, token, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "lax",
-      path: "/",
-      maxAge: 60 * 60 * 24 * 30,
-    });
-    return res;
-  }
 
   try {
     // Attempt standard WordPress JWT login
@@ -60,33 +35,6 @@ export async function POST(req: NextRequest) {
     });
     return res;
   } catch (err) {
-    // Fallback for seamless demo & test accounts if WP JWT is not configured
-    if (email.includes("@")) {
-      let idHash = 5000;
-      for (let i = 0; i < email.length; i++) {
-        idHash = (idHash + email.charCodeAt(i) * 31) % 90000 + 10000;
-      }
-      const defaultFirst = email.split("@")[0].replace(/[-_.0-9]/g, " ").replace(/\b\w/g, (c) => c.toUpperCase()).trim() || "Reader";
-      const token = `custom:${email}:${defaultFirst}:Profile:${idHash}:customer`;
-      const user = {
-        id: idHash,
-        email,
-        firstName: defaultFirst,
-        lastName: "Profile",
-        displayName: `${defaultFirst} Profile`.trim(),
-        avatarUrl: `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(email)}`,
-        role: "customer",
-      };
-      const res = NextResponse.json({ ok: true, user });
-      res.cookies.set(SESSION_COOKIE, token, {
-        httpOnly: true,
-        secure: process.env.NODE_ENV === "production",
-        sameSite: "lax",
-        path: "/",
-        maxAge: 60 * 60 * 24 * 14,
-      });
-      return res;
-    }
 
     const message = err instanceof Error ? err.message : "Login failed";
     return NextResponse.json({ error: message }, { status: 401 });

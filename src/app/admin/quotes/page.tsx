@@ -16,40 +16,10 @@ interface ChurchQuote {
   notes: string;
 }
 
-const DEMO_QUOTES: ChurchQuote[] = [
-  {
-    id: "QT-9021",
-    churchName: "Grace Bible Fellowship",
-    pastorName: "Pastor David Kumar",
-    email: "david.k@gracebible.in",
-    phone: "+91 98412 34567",
-    requestedTitles: [
-      { title: "The Holiness of God (R.C. Sproul)", quantity: 30 },
-      { title: "Knowing God (J.I. Packer)", quantity: 15 },
-    ],
-    tier: "30%",
-    status: "pending",
-    date: "2026-07-28",
-    notes: "Requesting curriculum kit for upcoming annual theological conference in Chennai.",
-  },
-  {
-    id: "QT-8890",
-    churchName: "Reformed Heritage Church",
-    pastorName: "Elder Thomas John",
-    email: "elders@reformedheritage.org",
-    phone: "+91 97801 11223",
-    requestedTitles: [
-      { title: "John Calvin's Institutes of the Christian Religion", quantity: 10 },
-    ],
-    tier: "20%",
-    status: "approved",
-    date: "2026-07-25",
-    notes: "Approved 20% discount tier. Awaiting counter pickup.",
-  },
-];
+// Initialize as empty for production
 
 export default function ChurchQuotesAdminPage() {
-  const [quotes, setQuotes] = useState<ChurchQuote[]>(DEMO_QUOTES);
+  const [quotes, setQuotes] = useState<ChurchQuote[]>([]);
   const [selectedQuote, setSelectedQuote] = useState<ChurchQuote | null>(null);
 
   const handleStatusChange = (id: string, nextStatus: "pending" | "approved" | "completed") => {
@@ -78,8 +48,13 @@ export default function ChurchQuotesAdminPage() {
       </div>
 
       {/* Quotes Cards List */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {quotes.map((quote) => {
+      {quotes.length === 0 ? (
+        <div className="rounded-2xl border border-dashed border-slate-300 bg-slate-50 p-12 text-center">
+          <p className="text-sm font-semibold text-slate-500">No quotes submitted yet.</p>
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {quotes.map((quote) => {
           const statusBadges = {
             pending: "bg-amber-100 text-amber-800 border-amber-300",
             approved: "bg-sky-100 text-sky-800 border-sky-300",
@@ -167,7 +142,8 @@ export default function ChurchQuotesAdminPage() {
             </div>
           );
         })}
-      </div>
+        </div>
+      )}
     </div>
   );
 }
