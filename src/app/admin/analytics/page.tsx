@@ -120,7 +120,8 @@ export default function AnalyticsPage() {
                   <Tooltip
                     contentStyle={{ borderRadius: "12px", border: "none", boxShadow: "0 10px 15px -3px rgb(0 0 0 / 0.1)" }}
                     itemStyle={{ color: "#0F172A", fontWeight: "bold" }}
-                    formatter={(value: number) => [`₹${value.toFixed(2)}`, "Net Sales"]}
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                    formatter={(value: any) => [`₹${(Number(value) || 0).toFixed(2)}`, "Net Sales"]}
                   />
                   <Line 
                     type="monotone" 

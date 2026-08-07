@@ -174,19 +174,11 @@ export function ProductFilters({ categories }: { categories: WCCategory[] }) {
         <div className="flex w-full sm:w-auto items-center gap-2 sm:ml-auto sm:gap-3">
           {hasFilters && (
             <button
-              onClick={() =>
-                setParam({
-                  category: null,
-                  price: null,
-                  availability: null,
-                  on_sale: null,
-                })
-              }
-              className="hidden sm:inline-flex items-center gap-1 rounded-full bg-cream border border-sand px-3.5 py-1.5 text-xs font-bold uppercase tracking-wider text-gold-dark shadow-xs transition-smooth hover:bg-gold-dark hover:text-white"
               onClick={() => {
                 setAuthorInput("");
                 setParam({ category: null, price: null, availability: null, on_sale: null, author: null });
               }}
+              className="hidden sm:inline-flex items-center gap-1 rounded-full bg-cream border border-sand px-3.5 py-1.5 text-xs font-bold uppercase tracking-wider text-gold-dark shadow-xs transition-smooth hover:bg-gold-dark hover:text-white"
             >
               Clear all ✕
             </button>
