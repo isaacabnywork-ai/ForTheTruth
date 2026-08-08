@@ -27,7 +27,7 @@ export default function ReturnsPage() {
               If your book arrives damaged, with misprinted pages, or if you receive an incorrect item, we will happily replace it or issue a full refund at no extra cost to you.
             </p>
             <p className="mt-2">
-              Please notify us within <strong>7 days of delivery</strong> by emailing <a href="mailto:abnyserver@gmail.com" className="text-gold-dark font-semibold hover:underline">abnyserver@gmail.com</a> with your order number and a photo of the damaged book.
+              Please notify us within <strong>7 days of delivery</strong> by emailing <a href="mailto:contact@forthetruth.in" className="text-gold-dark font-semibold hover:underline">contact@forthetruth.in</a> with your order number and a photo of the damaged book.
             </p>
           </section>
 
@@ -48,7 +48,7 @@ export default function ReturnsPage() {
           <section className="border-t border-sand/60 pt-6">
             <h2 className="font-display text-xl font-bold text-charcoal mb-3">4. Need Assistance?</h2>
             <p>
-              Have a question about your order return? Contact us at <Link href="/contact" className="text-gold-dark font-semibold hover:underline">Contact Support</Link> or email abnyserver@gmail.com.
+              Have a question about your order return? Contact us at <Link href="/contact" className="text-gold-dark font-semibold hover:underline">Contact Support</Link> or email contact@forthetruth.in.
             </p>
           </section>
         </div>

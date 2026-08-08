@@ -28,10 +28,10 @@ export default function ContactPage() {
               <h2 className="font-display text-lg font-bold text-charcoal">Direct Email</h2>
               <p className="mt-1 text-xs text-charcoal/60">Fastest response for order support &amp; queries.</p>
               <a
-                href="mailto:abnyserver@gmail.com"
+                href="mailto:contact@forthetruth.in"
                 className="mt-2 inline-block font-semibold text-sm text-gold-dark hover:underline"
               >
-                abnyserver@gmail.com
+                contact@forthetruth.in
               </a>
             </div>
 

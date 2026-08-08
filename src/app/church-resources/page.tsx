@@ -192,10 +192,10 @@ export default function ChurchResourcesPage() {
               <p className="text-sm text-charcoal/60">
                 Email us at{" "}
                 <a
-                  href="mailto:abnyserver@gmail.com"
+                  href="mailto:contact@forthetruth.in"
                   className="font-semibold text-gold-dark hover:underline"
                 >
-                  abnyserver@gmail.com
+                  contact@forthetruth.in
                 </a>{" "}
                 and mention your church name and group size.
               </p>

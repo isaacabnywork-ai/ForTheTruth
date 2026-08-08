@@ -112,7 +112,7 @@ export function QuoteForm() {
 
       {status === "error" && (
         <p className="text-sm font-semibold text-red-600">
-          Something went wrong. Email us at abnyserver@gmail.com instead.
+          Something went wrong. Email us at contact@forthetruth.in instead.
         </p>
       )}
 
