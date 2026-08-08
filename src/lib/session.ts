@@ -86,7 +86,7 @@ export async function getSessionUser(): Promise<SessionUser & { role?: string } 
   if (!token) return null;
 
   // Support for custom Google / Gmail Auth
-  if (token.startsWith("google:") || token.startsWith("admin:")) {
+  if (token.startsWith("google:")) {
     try {
       const parts = token.split(":");
       // format: prefix:email:firstName:lastName:id:role:avatarUrl

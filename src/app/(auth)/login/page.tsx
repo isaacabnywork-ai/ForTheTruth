@@ -124,7 +124,7 @@ function LoginForm() {
           autoComplete="username"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
-          placeholder="yourname@gmail.com or 'admin'"
+          placeholder="yourname@gmail.com"
         />
         <Field
           label="Password"
@@ -133,7 +133,7 @@ function LoginForm() {
           autoComplete="current-password"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
-          placeholder="•••••••• or 'admin123'"
+          placeholder="••••••••"
         />
         {error && (
           <p className="rounded-xl bg-rose-50 p-3 text-sm font-semibold text-rose-600">
@@ -144,25 +144,6 @@ function LoginForm() {
           {busy ? "Signing in…" : "Sign In"}
         </button>
       </form>
-
-      {/* Admin Quick Help Badge */}
-      <div className="rounded-2xl bg-navy/5 border border-navy/10 p-3.5 text-xs text-charcoal/80 flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <span className="flex h-6 w-6 items-center justify-center rounded-full bg-navy text-white font-bold text-[10px]">🔑</span>
-          <div>
-            <span className="font-bold text-navy">Master Admin Credentials:</span>{" "}
-            <code className="bg-white px-1.5 py-0.5 rounded font-mono text-gold-dark font-black">admin</code> /{" "}
-            <code className="bg-white px-1.5 py-0.5 rounded font-mono text-gold-dark font-black">admin123</code>
-          </div>
-        </div>
-        <button
-          type="button"
-          onClick={() => { setEmail("admin"); setPassword("admin123"); }}
-          className="text-[11px] font-extrabold text-gold-dark hover:underline uppercase tracking-wider"
-        >
-          Fill →
-        </button>
-      </div>
 
       {/* Google Sign-in Interactive Selector Modal */}
       {googleModal && (

@@ -13,11 +13,6 @@ export async function requireAdmin(): Promise<SessionUser | null> {
   const user = await getSessionUser().catch(() => null);
   if (!user?.email) return null;
 
-  // Allow fallback Master Admin
-  if (user.role === "admin" && user.email === "admin@forthetruth.in") {
-    return user;
-  }
-
   const allowed = (process.env.ADMIN_EMAILS ?? "")
     .split(",")
     .map((s) => s.trim().toLowerCase())
