@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { useCartStore } from "@/store/cartStore";
 import { useWishlistStore } from "@/store/wishlistStore";
 import { formatPrice } from "@/utils/currency";
@@ -19,6 +19,7 @@ interface ProductDetailProps {
 
 export function ProductDetail({ product, reviews = [] }: ProductDetailProps) {
   const [selectedImg, setSelectedImg] = useState(0);
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
   const [qty, setQty] = useState(1);
   const [activeTab, setActiveTab] = useState<"description" | "details" | "reviews">("description");
   const [isDescExpanded, setIsDescExpanded] = useState(false);
@@ -82,7 +83,18 @@ export function ProductDetail({ product, reviews = [] }: ProductDetailProps) {
       <div className="grid gap-8 md:grid-cols-12 lg:gap-12 items-start">
         {/* Left: Image Gallery (Compact / Medium Cover Size) */}
         <div className="flex flex-col gap-4 md:col-span-5 lg:col-span-5 w-full max-w-[350px] mx-auto md:mx-0">
-          <div className="relative aspect-[3/4] w-full overflow-hidden rounded-2xl border border-sand bg-cream/50 shadow-book-lg transition-transform duration-300 hover:scale-[1.01]">
+          <div 
+            ref={scrollContainerRef}
+            className="relative flex w-full overflow-x-auto snap-x snap-mandatory scrollbar-hide rounded-2xl border border-sand bg-cream/50 shadow-book-lg"
+            onScroll={(e) => {
+              const scrollLeft = e.currentTarget.scrollLeft;
+              const width = e.currentTarget.clientWidth;
+              const newIndex = Math.round(scrollLeft / width);
+              if (newIndex !== selectedImg) {
+                setSelectedImg(newIndex);
+              }
+            }}
+          >
             {/* Native App-Style Mobile/Tablet Back Button */}
             <button
               onClick={() => window.history.back()}
@@ -94,29 +106,36 @@ export function ProductDetail({ product, reviews = [] }: ProductDetailProps) {
               </svg>
             </button>
 
-            {currentImage.src ? (
-              <Image
-                src={currentImage.src}
-                alt={currentImage.alt || product.name}
-                fill
-                priority
-                fetchPriority="high"
-                sizes="(max-width: 768px) 100vw, 350px"
-                className="object-cover"
-              />
-            ) : (
-              <div className="flex h-full items-center justify-center bg-gold-gradient p-8 text-center">
-                <span className="font-display text-2xl italic text-white">{product.name}</span>
+            {images.map((img, idx) => (
+              <div 
+                key={img.id || idx}
+                className="relative min-w-full aspect-[3/4] snap-center snap-always transition-transform duration-300 hover:scale-[1.01]"
+              >
+                {img.src ? (
+                  <Image
+                    src={img.src}
+                    alt={img.alt || product.name}
+                    fill
+                    priority={idx === 0}
+                    fetchPriority={idx === 0 ? "high" : "auto"}
+                    sizes="(max-width: 768px) 100vw, 350px"
+                    className="object-cover"
+                  />
+                ) : (
+                  <div className="flex h-full items-center justify-center bg-gold-gradient p-8 text-center">
+                    <span className="font-display text-2xl italic text-white">{product.name}</span>
+                  </div>
+                )}
+                {/* Spine shadow line */}
+                <div className="absolute inset-y-0 left-0 w-[8px] bg-gradient-to-r from-black/30 to-transparent" />
+                
+                {discount > 0 && idx === 0 && (
+                  <span className="absolute right-3.5 top-3.5 z-20 rounded-full bg-gold-gradient px-3 py-1 text-xs font-bold text-white shadow-gold lg:left-4 lg:right-auto lg:top-4">
+                    −{discount}%
+                  </span>
+                )}
               </div>
-            )}
-            {/* Spine shadow line */}
-            <div className="absolute inset-y-0 left-0 w-[8px] bg-gradient-to-r from-black/30 to-transparent" />
-            
-            {discount > 0 && (
-              <span className="absolute right-3.5 top-3.5 z-20 rounded-full bg-gold-gradient px-3 py-1 text-xs font-bold text-white shadow-gold lg:left-4 lg:right-auto lg:top-4">
-                −{discount}%
-              </span>
-            )}
+            ))}
           </div>
 
           {/* Thumbnails */}
@@ -125,7 +144,15 @@ export function ProductDetail({ product, reviews = [] }: ProductDetailProps) {
               {images.map((img, idx) => (
                 <button
                   key={img.id || idx}
-                  onClick={() => setSelectedImg(idx)}
+                  onClick={() => {
+                    setSelectedImg(idx);
+                    if (scrollContainerRef.current) {
+                      scrollContainerRef.current.scrollTo({
+                        left: scrollContainerRef.current.clientWidth * idx,
+                        behavior: "smooth"
+                      });
+                    }
+                  }}
                   className={`relative h-20 w-14 shrink-0 overflow-hidden rounded-lg border-2 transition-all ${
                     selectedImg === idx ? "border-gold shadow-md scale-105" : "border-sand/60 opacity-70 hover:opacity-100"
                   }`}
