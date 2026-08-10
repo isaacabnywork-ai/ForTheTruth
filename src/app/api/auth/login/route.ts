@@ -20,6 +20,32 @@ export async function POST(req: NextRequest) {
 
   const { email, password } = parsed.data;
 
+  // Single Master Credentials for Admin (fallback)
+  if (
+    email.toLowerCase() === "contact@forthetruth.in" &&
+    (password === "admin123" || password === "forthetruth")
+  ) {
+    const adminUser = {
+      id: 9999,
+      email: "contact@forthetruth.in",
+      firstName: "Admin",
+      lastName: "User",
+      displayName: "Admin User",
+      avatarUrl: "https://api.dicebear.com/7.x/avataaars/svg?seed=Admin",
+      role: "admin",
+    };
+    const token = `admin:contact@forthetruth.in:Admin:User:9999:admin`;
+    const res = NextResponse.json({ ok: true, user: adminUser });
+    res.cookies.set(SESSION_COOKIE, token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "lax",
+      path: "/",
+      maxAge: 60 * 60 * 24 * 30,
+    });
+    return res;
+  }
+
   try {
     // Attempt standard WordPress JWT login
     const { token } = await wpLogin(email, password);
