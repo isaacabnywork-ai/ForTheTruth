@@ -31,6 +31,7 @@ const schema = z.object({
   billing: addressSchema.optional(),
   couponCode: z.string().max(50).optional(),
   isFreeOrder: z.boolean().optional().default(false),
+  shippingMethod: z.enum(["delivery", "pickup"]).optional().default("delivery"),
 });
 
 const FREE_SHIPPING_THRESHOLD = 499;
@@ -44,7 +45,7 @@ export async function POST(req: NextRequest) {
       { status: 400 }
     );
   }
-  const { items, shipping, billing, billingSameAsShipping, couponCode } =
+  const { items, shipping, billing, billingSameAsShipping, couponCode, shippingMethod } =
     parsed.data;
 
   try {
@@ -76,7 +77,11 @@ export async function POST(req: NextRequest) {
     });
 
     const shippingCost =
-      subtotal >= FREE_SHIPPING_THRESHOLD ? 0 : FLAT_SHIPPING;
+      shippingMethod === "pickup"
+        ? 0
+        : subtotal >= FREE_SHIPPING_THRESHOLD || subtotal === 0
+        ? 0
+        : FLAT_SHIPPING;
 
     const bill = billingSameAsShipping || !billing ? shipping : billing;
     const user = await getSessionUser().catch(() => null);
@@ -102,15 +107,23 @@ export async function POST(req: NextRequest) {
       shipping: {
         first_name: shipping.firstName,
         last_name: shipping.lastName,
-        address_1: shipping.address1,
-        city: shipping.city,
-        state: shipping.state,
-        postcode: shipping.postcode,
+        address_1: shippingMethod === "pickup" ? "Store Pickup (In-Store)" : shipping.address1,
+        city: shippingMethod === "pickup" ? "Store Location" : shipping.city,
+        state: shippingMethod === "pickup" ? "" : shipping.state,
+        postcode: shippingMethod === "pickup" ? "" : shipping.postcode,
         country: shipping.country,
       },
       line_items: lineItems,
       shipping_lines:
-        shippingCost > 0
+        shippingMethod === "pickup"
+          ? [
+              {
+                method_id: "local_pickup",
+                method_title: "Store Pickup",
+                total: "0",
+              },
+            ]
+          : shippingCost > 0
           ? [
               {
                 method_id: "flat_rate",

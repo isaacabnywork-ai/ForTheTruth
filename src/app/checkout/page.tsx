@@ -46,6 +46,7 @@ export default function CheckoutPage() {
   const [billingSame, setBillingSame] = useState(true);
   const [billing, setBilling] = useState(EMPTY_ADDRESS);
   const [coupon, setCoupon] = useState("");
+  const [shippingMethod, setShippingMethod] = useState<"delivery" | "pickup">("delivery");
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
   const [mockPaymentModal, setMockPaymentModal] = useState<{
@@ -69,8 +70,8 @@ export default function CheckoutPage() {
   }, [user]);
 
   const subtotal = items.reduce((sum, i) => sum + i.price * i.quantity, 0);
-  const estShipping = subtotal >= 499 || subtotal === 0 ? 0 : 49;
-  const isFreeOrder = subtotal === 0;
+  const estShipping = shippingMethod === "pickup" ? 0 : (subtotal >= 499 || subtotal === 0 ? 0 : 49);
+  const isFreeOrder = subtotal === 0 || (subtotal + estShipping === 0);
 
   if (mounted && items.length === 0 && !busy) {
     return (
@@ -103,6 +104,7 @@ export default function CheckoutPage() {
           billingSameAsShipping: billingSame,
           billing: billingSame ? undefined : billing,
           couponCode: coupon.trim() || undefined,
+          shippingMethod,
         }),
       });
       const data = await res.json();
@@ -191,8 +193,76 @@ export default function CheckoutPage() {
 
       <form onSubmit={pay} className="mt-10 grid gap-10 lg:grid-cols-[1fr_380px]">
         <div className="space-y-8">
+          {/* Shipping Method */}
           <section className="rounded-2xl border border-sand bg-white p-6 shadow-card md:p-8">
-            <h2 className="mb-6 font-serif text-lg font-bold">Shipping Address</h2>
+            <h2 className="mb-4 font-serif text-lg font-bold">Shipping Method</h2>
+            <div className="grid gap-3 sm:grid-cols-2">
+              <label
+                onClick={() => setShippingMethod("delivery")}
+                className={`flex cursor-pointer items-start gap-3 rounded-2xl border p-4 transition-all ${
+                  shippingMethod === "delivery"
+                    ? "border-gold bg-gold/5 ring-2 ring-gold/40 shadow-sm"
+                    : "border-sand bg-white hover:border-gold/50"
+                }`}
+              >
+                <input
+                  type="radio"
+                  name="shippingMethod"
+                  value="delivery"
+                  checked={shippingMethod === "delivery"}
+                  onChange={() => setShippingMethod("delivery")}
+                  className="mt-0.5 h-4 w-4 accent-[#C89B3C]"
+                />
+                <div className="flex-1">
+                  <div className="flex items-center justify-between">
+                    <p className="font-bold text-charcoal text-sm">Standard Delivery</p>
+                    <span className="font-bold text-xs">
+                      {subtotal >= 499 || subtotal === 0 ? (
+                        <span className="text-emerald-600">FREE</span>
+                      ) : (
+                        formatPrice(49)
+                      )}
+                    </span>
+                  </div>
+                  <p className="mt-1 text-xs text-charcoal/60 leading-relaxed">
+                    Delivery within 5–7 business days across India.
+                  </p>
+                </div>
+              </label>
+
+              <label
+                onClick={() => setShippingMethod("pickup")}
+                className={`flex cursor-pointer items-start gap-3 rounded-2xl border p-4 transition-all ${
+                  shippingMethod === "pickup"
+                    ? "border-gold bg-gold/5 ring-2 ring-gold/40 shadow-sm"
+                    : "border-sand bg-white hover:border-gold/50"
+                }`}
+              >
+                <input
+                  type="radio"
+                  name="shippingMethod"
+                  value="pickup"
+                  checked={shippingMethod === "pickup"}
+                  onChange={() => setShippingMethod("pickup")}
+                  className="mt-0.5 h-4 w-4 accent-[#C89B3C]"
+                />
+                <div className="flex-1">
+                  <div className="flex items-center justify-between">
+                    <p className="font-bold text-charcoal text-sm">Store Pickup</p>
+                    <span className="font-bold text-xs text-emerald-600">FREE</span>
+                  </div>
+                  <p className="mt-1 text-xs text-charcoal/60 leading-relaxed">
+                    Pick up directly from For The Truth bookstore. No delivery charge.
+                  </p>
+                </div>
+              </label>
+            </div>
+          </section>
+
+          <section className="rounded-2xl border border-sand bg-white p-6 shadow-card md:p-8">
+            <h2 className="mb-6 font-serif text-lg font-bold">
+              {shippingMethod === "pickup" ? "Contact & Identification Info" : "Shipping Address"}
+            </h2>
             <AddressForm prefix="ship" address={shipping} onChange={setShipping} />
             {!user && (
               <p className="mt-4 text-xs text-charcoal/45">

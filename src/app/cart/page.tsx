@@ -135,10 +135,13 @@ export default function CartPage() {
                 )}
               </dd>
             </div>
-            {shipping > 0 && (
+            {shipping > 0 ? (
               <p className="rounded-lg bg-gold/10 px-3 py-2 text-xs text-gold-deep">
-                Add {formatPrice(FREE_SHIPPING_THRESHOLD - subtotal)} more for free
-                shipping.
+                Add {formatPrice(FREE_SHIPPING_THRESHOLD - subtotal)} more for free delivery, or select <strong>Store Pickup (Free)</strong> at checkout.
+              </p>
+            ) : (
+              <p className="rounded-lg bg-emerald-50 px-3 py-2 text-xs font-semibold text-emerald-700">
+                ✓ Free Shipping applied! Or select Store Pickup at checkout.
               </p>
             )}
             <div className="flex justify-between border-t border-sand pt-4">
