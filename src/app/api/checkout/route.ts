@@ -8,11 +8,11 @@ const addressSchema = z.object({
   firstName: z.string().min(1),
   lastName: z.string().min(1),
   email: z.string().email(),
-  phone: z.string().min(8),
-  address1: z.string().min(3),
-  city: z.string().min(1),
-  state: z.string().min(1),
-  postcode: z.string().min(4),
+  phone: z.string().min(0).optional().default(""),
+  address1: z.string().min(0).optional().default(""),
+  city: z.string().min(0).optional().default(""),
+  state: z.string().min(0).optional().default(""),
+  postcode: z.string().min(0).optional().default(""),
   country: z.string().default("IN"),
 });
 
@@ -30,6 +30,7 @@ const schema = z.object({
   billingSameAsShipping: z.boolean().default(true),
   billing: addressSchema.optional(),
   couponCode: z.string().max(50).optional(),
+  isFreeOrder: z.boolean().optional().default(false),
 });
 
 const FREE_SHIPPING_THRESHOLD = 499;
@@ -158,8 +159,24 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    // 3. Charge the total WooCommerce computed (includes coupon + shipping)
-    const amount = parseFloat(order.total);
+    // 3. If total is ₹0 (all free items / e-books), complete order directly — no Razorpay needed
+    const amount = parseFloat(order.total ?? "0");
+    if (amount === 0) {
+      // Mark order as completed directly in WooCommerce
+      try {
+        const { updateOrder } = await import("@/services/woocommerce");
+        await updateOrder(order.id, { status: "completed", payment_method: "free", payment_method_title: "Free Download" });
+      } catch (updateErr) {
+        console.warn("Could not mark free order as completed:", updateErr);
+      }
+      return NextResponse.json({
+        wcOrderId: order.id,
+        orderKey: order.order_key,
+        freeOrder: true,
+        amount: 0,
+      });
+    }
+
     const rzpOrder = await createRazorpayOrder(amount, `wc_${order.id}`);
 
     return NextResponse.json({
@@ -170,6 +187,7 @@ export async function POST(req: NextRequest) {
       currency: rzpOrder.currency,
       keyId: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID,
     });
+
   } catch (err) {
     if (err instanceof StockError) {
       return NextResponse.json(

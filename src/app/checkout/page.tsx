@@ -70,6 +70,7 @@ export default function CheckoutPage() {
 
   const subtotal = items.reduce((sum, i) => sum + i.price * i.quantity, 0);
   const estShipping = subtotal >= 499 || subtotal === 0 ? 0 : 49;
+  const isFreeOrder = subtotal === 0;
 
   if (mounted && items.length === 0 && !busy) {
     return (
@@ -106,6 +107,13 @@ export default function CheckoutPage() {
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error ?? "Checkout failed");
+
+      // Free order (₹0 total) — no payment needed, redirect straight to confirmation
+      if (data.freeOrder) {
+        clearCart();
+        router.push(`/checkout/confirmation?order=${data.wcOrderId}&key=${data.orderKey ?? ""}&free=1`);
+        return;
+      }
 
       // Switch to interactive simulated checkout modal if running in test sandbox mode without real keys
       if (
@@ -274,11 +282,19 @@ export default function CheckoutPage() {
             disabled={busy}
             className="btn-gold mt-6 w-full justify-center disabled:opacity-60"
           >
-            {busy ? "Opening payment…" : "Pay with Razorpay"}
+            {busy
+              ? (isFreeOrder ? "Placing order…" : "Opening payment…")
+              : (isFreeOrder ? "Place Free Order →" : "Pay with Razorpay")}
           </button>
-          <p className="mt-3 text-center text-[11px] text-charcoal/40">
-            UPI · Cards · Netbanking · Wallets — secured by Razorpay
-          </p>
+          {isFreeOrder ? (
+            <p className="mt-3 text-center text-[11px] text-emerald-600 font-semibold">
+              ✓ No payment required — your e-book is completely free!
+            </p>
+          ) : (
+            <p className="mt-3 text-center text-[11px] text-charcoal/40">
+              UPI · Cards · Netbanking · Wallets — secured by Razorpay
+            </p>
+          )}
         </aside>
       </form>
 

@@ -1,76 +1,51 @@
 "use client";
 
-import { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import type { Product } from "@/types/product";
+import { useCartStore } from "@/store/cartStore";
+import { useState } from "react";
 
 interface Props {
   books: Product[];
 }
 
-interface DownloadResult {
-  download_url: string;
-  download_name: string;
-  product_name: string;
-}
-
 function EbookCard({ book }: { book: Product }) {
-  const [state, setState] = useState<"idle" | "loading" | "done" | "error">("idle");
-  const [downloads, setDownloads] = useState<DownloadResult[]>([]);
-  const [errorMsg, setErrorMsg] = useState("");
+  const addToCart = useCartStore((s) => s.addToCart);
+  const items = useCartStore((s) => s.items);
+  const [added, setAdded] = useState(false);
 
+  const inCart = items.some((i) => i.productId === book.id);
   const cover = book.images?.[0]?.src ?? "/placeholder-book.png";
   const author = book.attributes?.find(
     (a) => a.name.toLowerCase() === "author" || a.name.toLowerCase() === "by"
   )?.options?.[0] ?? "";
 
-  const handleClaim = async () => {
-    setState("loading");
-    setErrorMsg("");
-    try {
-      const res = await fetch("/api/ebooks", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ productId: book.id, productName: book.name }),
-      });
-      const data = await res.json();
-
-      if (!res.ok) {
-        if (res.status === 401) {
-          window.location.href = "/login?redirect=/free-ebooks";
-          return;
-        }
-        setErrorMsg(data.error || "Something went wrong. Please try again.");
-        setState("error");
-        return;
-      }
-
-      if (data.downloads?.length > 0) {
-        setDownloads(data.downloads);
-        setState("done");
-      } else {
-        // Download link might take a moment to generate
-        setErrorMsg("Your download is being prepared. Please refresh in a moment.");
-        setState("error");
-      }
-    } catch {
-      setErrorMsg("Network error. Please check your connection and try again.");
-      setState("error");
-    }
+  const handleAddToCart = () => {
+    addToCart({
+      productId: book.id,
+      name: book.name,
+      price: 0,
+      image: cover,
+      slug: book.slug,
+    });
+    setAdded(true);
+    setTimeout(() => setAdded(false), 2000);
   };
 
   return (
     <article className="group flex flex-col rounded-3xl border border-sand/60 bg-white shadow-card overflow-hidden transition-all duration-300 hover:-translate-y-1 hover:shadow-lg">
       {/* Cover */}
       <div className="relative h-56 w-full bg-cream overflow-hidden">
-        <Image
-          src={cover}
-          alt={book.name}
-          fill
-          className="object-contain p-4 transition-transform duration-500 group-hover:scale-105"
-          sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
-        />
+        <Link href={`/products/${book.slug}`}>
+          <Image
+            src={cover}
+            alt={book.name}
+            fill
+            className="object-contain p-4 transition-transform duration-500 group-hover:scale-105"
+            sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+          />
+        </Link>
         {/* Free badge */}
         <div className="absolute left-3 top-3 flex items-center gap-1.5 rounded-full bg-emerald-500 px-3 py-1 text-[11px] font-bold text-white shadow-sm">
           <svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor" aria-hidden>
@@ -82,12 +57,21 @@ function EbookCard({ book }: { book: Product }) {
 
       {/* Info */}
       <div className="flex flex-1 flex-col p-5">
-        <h3 className="font-display text-lg font-bold leading-tight text-charcoal line-clamp-2">
-          {book.name}
-        </h3>
+        <Link href={`/products/${book.slug}`}>
+          <h3 className="font-display text-lg font-bold leading-tight text-charcoal line-clamp-2 hover:text-gold-dark transition-colors">
+            {book.name}
+          </h3>
+        </Link>
         {author && (
           <p className="mt-1 text-sm text-charcoal/60">by {author}</p>
         )}
+
+        {/* Price row */}
+        <div className="mt-3 flex items-center gap-2">
+          <span className="font-display text-xl font-black text-emerald-600">FREE</span>
+          <span className="text-sm text-charcoal/40 line-through">₹0.00</span>
+        </div>
+
         {book.short_description && (
           <p
             className="mt-2 text-sm text-charcoal/70 line-clamp-3"
@@ -96,55 +80,37 @@ function EbookCard({ book }: { book: Product }) {
         )}
 
         <div className="mt-auto pt-4 space-y-2">
-          {/* Error */}
-          {state === "error" && (
-            <p className="rounded-xl bg-rose-50 border border-rose-200 p-2.5 text-xs font-semibold text-rose-700">
-              {errorMsg}
-            </p>
+          {/* In-cart notice */}
+          {inCart && !added && (
+            <Link
+              href="/cart"
+              className="flex w-full items-center justify-center gap-2 rounded-xl border-2 border-gold bg-gold/5 px-4 py-2.5 text-sm font-bold text-gold-dark transition hover:bg-gold/10"
+            >
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" aria-hidden><path d="M20 6 9 17l-5-5"/></svg>
+              In Cart — View Cart
+            </Link>
           )}
 
-          {/* Download links */}
-          {state === "done" && downloads.length > 0 && (
-            <div className="space-y-2">
-              <p className="text-xs font-bold text-emerald-700">✓ Ready to download!</p>
-              {downloads.map((d, i) => (
-                <a
-                  key={i}
-                  href={d.download_url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex w-full items-center justify-center gap-2 rounded-xl bg-emerald-600 px-4 py-3 text-sm font-bold text-white shadow-sm transition hover:bg-emerald-700 active:scale-95"
-                >
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" aria-hidden>
-                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
-                    <polyline points="7 10 12 15 17 10"/>
-                    <line x1="12" y1="15" x2="12" y2="3"/>
-                  </svg>
-                  Download PDF
-                </a>
-              ))}
+          {/* Added animation */}
+          {added && (
+            <div className="flex w-full items-center justify-center gap-2 rounded-xl bg-emerald-50 border border-emerald-200 px-4 py-2.5 text-sm font-bold text-emerald-700">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" aria-hidden><path d="M20 6 9 17l-5-5"/></svg>
+              Added to Cart!
             </div>
           )}
 
-          {/* CTA */}
-          {state !== "done" && (
+          {/* Add to cart */}
+          {!inCart && !added && (
             <button
-              onClick={handleClaim}
-              disabled={state === "loading"}
-              className="flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-gold-dark to-gold px-4 py-3 text-sm font-bold text-navy shadow-sm transition hover:brightness-110 active:scale-95 disabled:opacity-70"
+              onClick={handleAddToCart}
+              className="flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-gold-dark to-gold px-4 py-3 text-sm font-bold text-navy shadow-sm transition hover:brightness-110 active:scale-95"
             >
-              {state === "loading" ? (
-                <><span className="animate-spin">⏳</span> Preparing…</>
-              ) : (
-                <>
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" aria-hidden>
-                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
-                    <polyline points="7 10 12 15 17 10"/>
-                    <line x1="12" y1="15" x2="12" y2="3"/>
-                  </svg>
-                  Get Free E-Book
-                </>
-              )}
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" aria-hidden>
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                <polyline points="7 10 12 15 17 10"/>
+                <line x1="12" y1="15" x2="12" y2="3"/>
+              </svg>
+              Get Free E-Book
             </button>
           )}
 
@@ -170,7 +136,7 @@ export function FreeEbooksGrid({ books }: Props) {
           </svg>
         </div>
         <h2 className="font-display text-2xl font-bold text-charcoal">No Free E-Books Yet</h2>
-        <p className="mt-2 text-charcoal/60">Check back soon — we're adding more titles regularly.</p>
+        <p className="mt-2 text-charcoal/60">Check back soon — we&apos;re adding more titles regularly.</p>
         <Link href="/products" className="btn-gold mt-6 inline-flex">Browse All Books</Link>
       </div>
     );
