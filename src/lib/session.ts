@@ -56,6 +56,7 @@ interface WPUser {
   name: string;
   email?: string;
   avatar_urls?: Record<string, string>;
+  roles?: string[];
 }
 
 /** Fetch the WP user for a token. Returns null if the token is invalid. */
@@ -122,6 +123,13 @@ export async function getSessionUser(): Promise<SessionUser & { role?: string } 
     /* customer record optional */
   }
 
+  const wpRoles = wpUser.roles ?? [];
+  const role = wpRoles.some((r) =>
+    ["administrator", "shop_manager"].includes(r)
+  )
+    ? "admin"
+    : "customer";
+
   return {
     id: customer?.id ?? 0,
     wpUserId: wpUser.id,
@@ -130,6 +138,6 @@ export async function getSessionUser(): Promise<SessionUser & { role?: string } 
     lastName: customer?.last_name ?? "",
     displayName: wpUser.name,
     avatarUrl: customer?.avatar_url ?? wpUser.avatar_urls?.["96"],
-    role: "customer",
+    role,
   };
 }

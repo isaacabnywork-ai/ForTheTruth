@@ -195,6 +195,27 @@ export function AdminSidebar({ onLock }: { onLock: () => void }) {
           <ul className="space-y-1.5">
             <li>
               <Link
+                href="/admin/staff"
+                onClick={() => setMobileOpen(false)}
+                className={`group flex items-center gap-3 rounded-xl px-3.5 py-2.5 text-sm font-semibold transition-colors ${
+                  pathname.startsWith("/admin/staff")
+                    ? "bg-gradient-to-r from-gold/25 to-gold/10 text-gold-light shadow-[inset_4px_0_0_0_#C89B3C]"
+                    : "text-white/60 hover:bg-white/5 hover:text-white"
+                }`}
+              >
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="shrink-0 text-white/40 group-hover:text-white/70">
+                  <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
+                  <circle cx="9" cy="7" r="4" />
+                  <path d="M22 21v-2a4 4 0 0 0-3-3.87" />
+                  <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+                  <line x1="19" y1="8" x2="19" y2="14" />
+                  <line x1="22" y1="11" x2="16" y2="11" />
+                </svg>
+                <span>Staff &amp; Access</span>
+              </Link>
+            </li>
+            <li>
+              <Link
                 href="/"
                 target="_blank"
                 className="flex items-center gap-3 rounded-xl px-3.5 py-2.5 text-sm font-semibold text-white/60 transition-colors hover:bg-white/5 hover:text-white"
