@@ -367,3 +367,60 @@ export async function getAllCustomersPaged(
     totalPages: parseInt(res.headers.get("x-wp-totalpages") ?? "1", 10),
   };
 }
+
+// ─── Free E-Books ──────────────────────────────────────────────────────────────
+
+/** A downloadable link attached to an order line item */
+export interface WCDownloadLink {
+  download_id: string;
+  download_url: string;
+  product_id: number;
+  product_name: string;
+  download_name: string;
+  order_id: number;
+  downloads_remaining: string; // "unlimited" or a number string
+  access_expires: string | null; // ISO date or null
+  file: { name: string; file: string };
+}
+
+/** Fetch all free downloadable products from WooCommerce */
+export async function getFreeEbooks(): Promise<Product[]> {
+  return wcFetch<Product[]>("/products", {
+    searchParams: {
+      downloadable: true,
+      virtual: true,
+      status: "publish",
+      per_page: 100,
+      orderby: "date",
+      order: "desc",
+    },
+    revalidate: 3600,
+  }).then((products) => products.filter((p) => parseFloat(p.price ?? "1") === 0));
+}
+
+/** Fetch all downloads available to a customer */
+export async function getCustomerDownloads(customerId: number): Promise<WCDownloadLink[]> {
+  return wcFetch<WCDownloadLink[]>(`/customers/${customerId}/downloads`, {
+    revalidate: 0,
+  });
+}
+
+/** Create a free order for a downloadable product (sets status=completed so download is available immediately) */
+export async function createFreeOrder(opts: {
+  productId: number;
+  productName: string;
+  customerId: number;
+  billing: Record<string, string>;
+}): Promise<WCOrder> {
+  return createOrder({
+    customer_id: opts.customerId,
+    status: "completed",
+    payment_method: "free",
+    payment_method_title: "Free Download",
+    billing: opts.billing,
+    shipping: opts.billing,
+    line_items: [{ product_id: opts.productId, quantity: 1 }],
+    set_paid: true,
+  });
+}
+
