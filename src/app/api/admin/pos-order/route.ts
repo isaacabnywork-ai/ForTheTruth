@@ -16,10 +16,10 @@ export async function POST(req: NextRequest) {
     }
     const order = await submitPosOrder(body);
     return NextResponse.json({ success: true, order });
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("POS Order creation failed:", error);
     return NextResponse.json(
-      { error: error?.message || "Failed to finalize POS order in WooCommerce" },
+      { error: (error as Error)?.message || "Failed to finalize POS order in WooCommerce" },
       { status: 500 }
     );
   }

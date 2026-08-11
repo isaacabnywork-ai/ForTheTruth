@@ -72,8 +72,8 @@ export function PaymentModal({
 
       setCompletedOrder(data.order || null);
       setIsSuccess(true);
-    } catch (err: any) {
-      setErrorMsg(err.message || "Network error while syncing order.");
+    } catch (err: unknown) {
+      setErrorMsg((err as Error).message || "Network error while syncing order.");
     } finally {
       setLoading(false);
     }

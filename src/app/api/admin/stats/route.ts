@@ -7,10 +7,10 @@ export async function GET() {
   try {
     const stats = await getAdminOverview();
     return NextResponse.json(stats);
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("Failed to fetch admin stats:", error);
     return NextResponse.json(
-      { error: error?.message || "Failed to retrieve store overview statistics" },
+      { error: (error as Error)?.message || "Failed to retrieve store overview statistics" },
       { status: 500 }
     );
   }

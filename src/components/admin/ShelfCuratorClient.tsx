@@ -110,8 +110,8 @@ export function ShelfCuratorClient({ initialProducts, initialConfig }: ShelfCura
       if (!res.ok) throw new Error(data.error || "Failed to save settings");
       setToastMsg("🎉 All customizations & book overrides saved! Homepage is live with your choices!");
       setTimeout(() => setToastMsg(""), 6000);
-    } catch (err: any) {
-      alert(err.message || "Network error saving curation.");
+    } catch (err: unknown) {
+      alert((err as Error).message || "Network error saving curation.");
     } finally {
       setSaving(false);
     }

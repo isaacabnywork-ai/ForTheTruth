@@ -13,10 +13,10 @@ export async function GET(req: NextRequest) {
   try {
     const reports = await getTopSellersReport();
     return NextResponse.json(reports);
-  } catch (err: any) {
+  } catch (err: unknown) {
     console.error("Top Sellers Report API error:", err);
     return NextResponse.json(
-      { error: err.message || "Failed to fetch top sellers report" },
+      { error: (err as Error).message || "Failed to fetch top sellers report" },
       { status: 500 }
     );
   }

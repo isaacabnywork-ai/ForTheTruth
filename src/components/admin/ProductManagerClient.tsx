@@ -58,8 +58,8 @@ export function ProductManagerClient({ initialProducts }: { initialProducts: Pro
       setEditingId(null);
       setToastMsg(`Successfully updated inventory for Title #${id}!`);
       setTimeout(() => setToastMsg(""), 3500);
-    } catch (err: any) {
-      alert(err.message || "Failed to save stock update.");
+    } catch (err: unknown) {
+      alert((err as Error).message || "Failed to save stock update.");
     } finally {
       setSaving(false);
     }

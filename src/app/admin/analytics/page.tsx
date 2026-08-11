@@ -86,7 +86,7 @@ export default function AnalyticsPage() {
         </div>
         <select
           value={period}
-          onChange={(e) => setPeriod(e.target.value as any)}
+          onChange={(e) => setPeriod(e.target.value as "week" | "month" | "year")}
           className="cursor-pointer rounded-lg border border-charcoal/10 bg-white px-4 py-2.5 text-sm font-semibold shadow-sm focus:border-gold-light focus:outline-none focus:ring-1 focus:ring-gold-light"
         >
           <option value="week">Last 7 Days</option>

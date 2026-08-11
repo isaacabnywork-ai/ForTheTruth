@@ -17,10 +17,10 @@ export async function GET(req: NextRequest) {
   try {
     const customersData = await getAllCustomersPaged(page, search);
     return NextResponse.json(customersData);
-  } catch (err: any) {
+  } catch (err: unknown) {
     console.error("Customers API error:", err);
     return NextResponse.json(
-      { error: err.message || "Failed to fetch customers" },
+      { error: (err as Error).message || "Failed to fetch customers" },
       { status: 500 }
     );
   }

@@ -8,10 +8,10 @@ export async function GET(req: NextRequest) {
     const status = req.nextUrl.searchParams.get("status") || "all";
     const orders = await fetchAllOrders(status);
     return NextResponse.json({ orders });
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("Failed to fetch orders ledger:", error);
     return NextResponse.json(
-      { error: error?.message || "Failed to query orders ledger" },
+      { error: (error as Error)?.message || "Failed to query orders ledger" },
       { status: 500 }
     );
   }

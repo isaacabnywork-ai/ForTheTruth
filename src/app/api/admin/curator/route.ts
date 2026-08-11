@@ -42,10 +42,10 @@ export async function POST(req: Request) {
     saveCuratedShelfConfig(nextConfig);
 
     return NextResponse.json({ success: true, config: nextConfig });
-  } catch (err: any) {
+  } catch (err: unknown) {
     console.error("Error saving curated shelf config:", err);
     return NextResponse.json(
-      { error: err.message || "Failed to update shelf overrides" },
+      { error: (err as Error).message || "Failed to update shelf overrides" },
       { status: 500 }
     );
   }

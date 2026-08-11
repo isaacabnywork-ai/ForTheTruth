@@ -17,10 +17,10 @@ export async function GET(req: NextRequest) {
   try {
     const reports = await getSalesReports(validPeriod);
     return NextResponse.json(reports);
-  } catch (err: any) {
+  } catch (err: unknown) {
     console.error("Sales Report API error:", err);
     return NextResponse.json(
-      { error: err.message || "Failed to fetch sales reports" },
+      { error: (err as Error).message || "Failed to fetch sales reports" },
       { status: 500 }
     );
   }

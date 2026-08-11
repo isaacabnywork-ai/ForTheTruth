@@ -20,10 +20,10 @@ export async function PUT(req: NextRequest) {
     });
 
     return NextResponse.json({ success: true, product: updated });
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("Stock adjustment error:", error);
     return NextResponse.json(
-      { error: error?.message || "Failed to update book catalog inventory in WooCommerce" },
+      { error: (error as Error)?.message || "Failed to update book catalog inventory in WooCommerce" },
       { status: 500 }
     );
   }
