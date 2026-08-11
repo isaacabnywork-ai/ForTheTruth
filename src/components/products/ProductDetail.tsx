@@ -167,9 +167,9 @@ export function ProductDetail({ product, reviews = [] }: ProductDetailProps) {
         {/* Right: Product Details & Purchase Controls */}
         <div className="flex flex-col justify-start md:col-span-7 lg:col-span-7">
           <div>
-            <div className="flex items-center gap-3">
+            <div className="flex flex-wrap items-center gap-2">
               {product.categories.map((cat) => (
-                <span key={cat.id} className="overline-label">
+                <span key={cat.id} className="rounded-full border border-sand bg-white px-3 py-1 text-[11px] font-bold uppercase tracking-widest text-charcoal/70">
                   {cat.name}
                 </span>
               ))}
