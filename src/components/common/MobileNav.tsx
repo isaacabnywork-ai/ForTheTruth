@@ -39,30 +39,25 @@ export function MobileNav({ categories }: { categories: WCCategory[] }) {
 
   return (
     <>
-      {/* Sleek Slim Dynamic Island Bottom Nav Bar */}
+      {/* Redesigned Full-Width Bottom Nav Bar */}
       <nav
         aria-label="Mobile bottom navigation"
-        className="fixed bottom-3 left-1/2 z-50 flex w-[92vw] max-w-[440px] -translate-x-1/2 items-center justify-between rounded-full border border-sand/80 bg-white/95 px-3 py-1.5 shadow-[0_8px_30px_rgb(0,0,0,0.15)] backdrop-blur-md transition-all duration-300 lg:hidden"
+        className="fixed bottom-0 left-0 z-50 flex w-full items-center justify-between bg-[#FBF9F6] border-t border-charcoal/30 px-2 pt-2 h-[68px] lg:hidden"
+        style={{ paddingBottom: 'calc(env(safe-area-inset-bottom) + 8px)' }}
       >
         {/* 1. Home */}
         <Link
           href="/"
           onClick={() => triggerHaptic("tap")}
           aria-current={isHome ? "page" : undefined}
-          className={`relative flex flex-1 flex-col items-center justify-center py-1 transition-all duration-200 active:scale-95 ${
-            isHome ? "text-gold-dark font-bold" : "text-charcoal/60 hover:text-charcoal"
+          className={`flex flex-col items-center justify-center w-[20%] transition-all duration-200 active:scale-95 ${
+            isHome ? "text-charcoal" : "text-charcoal/40 hover:text-charcoal/70"
           }`}
         >
-          <span
-            className={`relative flex h-[28px] w-12 items-center justify-center rounded-full transition-all duration-200 ${
-              isHome ? "bg-gold/15" : ""
-            }`}
-          >
-            <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={isHome ? 2.2 : 1.7} aria-hidden="true">
-              <path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
-            </svg>
-          </span>
-          <span className="mt-0.5 text-[10px] font-bold tracking-tight uppercase">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill={isHome ? "currentColor" : "none"} stroke="currentColor" strokeWidth={isHome ? "0" : "2"} className="mb-1">
+            <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
+          </svg>
+          <span className="text-[9px] font-extrabold tracking-widest uppercase mt-0.5">
             Home
           </span>
         </Link>
@@ -72,20 +67,14 @@ export function MobileNav({ categories }: { categories: WCCategory[] }) {
           href="/products"
           onClick={() => triggerHaptic("tap")}
           aria-current={isShop ? "page" : undefined}
-          className={`relative flex flex-1 flex-col items-center justify-center py-1 transition-all duration-200 active:scale-95 ${
-            isShop ? "text-gold-dark font-bold" : "text-charcoal/60 hover:text-charcoal"
+          className={`flex flex-col items-center justify-center w-[20%] transition-all duration-200 active:scale-95 ${
+            isShop ? "text-charcoal" : "text-charcoal/40 hover:text-charcoal/70"
           }`}
         >
-          <span
-            className={`relative flex h-[28px] w-12 items-center justify-center rounded-full transition-all duration-200 ${
-              isShop ? "bg-gold/15" : ""
-            }`}
-          >
-            <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={isShop ? 2.2 : 1.7} aria-hidden="true">
-              <path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1 0-5H20" />
-            </svg>
-          </span>
-          <span className="mt-0.5 text-[10px] font-bold tracking-tight uppercase">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill={isShop ? "currentColor" : "none"} stroke="currentColor" strokeWidth={isShop ? "0" : "2"} className="mb-1">
+            <path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1 0-5H20" />
+          </svg>
+          <span className="text-[9px] font-extrabold tracking-widest uppercase mt-0.5">
             Shop
           </span>
         </Link>
@@ -95,15 +84,23 @@ export function MobileNav({ categories }: { categories: WCCategory[] }) {
           href="/products/search"
           onClick={() => triggerHaptic("tap")}
           aria-current={isSearch ? "page" : undefined}
-          className="group relative flex flex-1 flex-col items-center justify-center py-0 transition-all duration-200 active:scale-95"
+          className="group relative flex flex-col items-center justify-start w-[20%] h-full transition-all duration-200 active:scale-95"
         >
-          <span className="flex h-10 w-14 items-center justify-center rounded-2xl bg-gradient-to-r from-gold-dark via-gold to-[#DABB6B] text-white shadow-md shadow-gold/35 transition-transform duration-200 group-hover:scale-105">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" aria-hidden="true">
-              <circle cx="11" cy="11" r="8" />
-              <path d="m21 21-4.35-4.35" strokeLinecap="round" strokeLinejoin="round" />
-            </svg>
-          </span>
-          <span className="mt-0.5 text-[10px] font-extrabold tracking-tight uppercase text-gold-dark">
+          {/* Outer ring masking the top border */}
+          <div className="absolute -top-[30px] flex h-[64px] w-[64px] items-center justify-center rounded-full bg-[#FBF9F6] border border-charcoal/30">
+            {/* Inner dark button */}
+            <div className={`flex h-[52px] w-[52px] items-center justify-center rounded-full text-white shadow-md transition-colors ${
+              isSearch ? "bg-gold-dark" : "bg-charcoal"
+            }`}>
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" aria-hidden="true">
+                <circle cx="11" cy="11" r="8" />
+                <path d="m21 21-4.35-4.35" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
+            </div>
+          </div>
+          <span className={`absolute bottom-0 text-[9px] font-extrabold tracking-widest uppercase ${
+            isSearch ? "text-charcoal" : "text-charcoal/80"
+          }`}>
             Search
           </span>
         </Link>
@@ -113,27 +110,23 @@ export function MobileNav({ categories }: { categories: WCCategory[] }) {
           href="/cart"
           onClick={() => triggerHaptic("tap")}
           aria-current={isCart ? "page" : undefined}
-          className={`relative flex flex-1 flex-col items-center justify-center py-1 transition-all duration-200 active:scale-95 ${
-            isCart ? "text-gold-dark font-bold" : "text-charcoal/60 hover:text-charcoal"
+          className={`relative flex flex-col items-center justify-center w-[20%] transition-all duration-200 active:scale-95 ${
+            isCart ? "text-charcoal" : "text-charcoal/40 hover:text-charcoal/70"
           }`}
         >
-          <span
-            className={`relative flex h-[28px] w-12 items-center justify-center rounded-full transition-all duration-200 ${
-              isCart ? "bg-gold/15" : ""
-            }`}
-          >
-            <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={isCart ? 2.2 : 1.7} aria-hidden="true">
+          <div className="relative mb-1">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill={isCart ? "currentColor" : "none"} stroke="currentColor" strokeWidth={isCart ? "0" : "2"}>
               <circle cx="9" cy="21" r="1" />
               <circle cx="20" cy="21" r="1" />
               <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6" />
             </svg>
             {mounted && cartCount > 0 && (
-              <span className="absolute -top-1.5 right-0.5 flex h-[15px] min-w-[15px] items-center justify-center rounded-full bg-cta px-1 text-[9px] font-bold text-white shadow-sm ring-1 ring-white">
+              <span className="absolute -top-1.5 -right-2 flex h-[15px] min-w-[15px] items-center justify-center rounded-full bg-cta px-1 text-[9px] font-bold text-white shadow-sm">
                 {cartCount}
               </span>
             )}
-          </span>
-          <span className="mt-0.5 text-[10px] font-bold tracking-tight uppercase">
+          </div>
+          <span className="text-[9px] font-extrabold tracking-widest uppercase mt-0.5">
             Cart
           </span>
         </Link>
@@ -145,14 +138,14 @@ export function MobileNav({ categories }: { categories: WCCategory[] }) {
             setDrawerOpen(true);
           }}
           aria-expanded={drawerOpen}
-          className="group relative flex flex-1 flex-col items-center justify-center py-1 text-charcoal/60 hover:text-charcoal transition-all duration-200 active:scale-95"
+          className={`flex flex-col items-center justify-center w-[20%] transition-all duration-200 active:scale-95 ${
+            drawerOpen ? "text-charcoal" : "text-charcoal/40 hover:text-charcoal/70"
+          }`}
         >
-          <span className="relative flex h-[28px] w-12 items-center justify-center rounded-full transition-all duration-200">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" aria-hidden="true">
-              <path d="M3 12h18M3 6h18M3 18h18" strokeLinecap="round" strokeLinejoin="round" />
-            </svg>
-          </span>
-          <span className="mt-0.5 text-[10px] font-bold tracking-tight uppercase">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="mb-1">
+            <path d="M3 12h18M3 6h18M3 18h18" strokeLinecap="round" strokeLinejoin="round" />
+          </svg>
+          <span className="text-[9px] font-extrabold tracking-widest uppercase mt-0.5">
             Menu
           </span>
         </button>
