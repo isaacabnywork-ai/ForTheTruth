@@ -114,32 +114,40 @@ export async function POST(req: NextRequest) {
         country: shipping.country,
       },
       line_items: lineItems,
-      shipping_lines:
-        shippingMethod === "pickup"
-          ? [
-              {
-                method_id: "local_pickup",
-                method_title: "Store Pickup",
-                total: "0",
-              },
-            ]
-          : shippingCost > 0
-          ? [
-              {
-                method_id: "flat_rate",
-                method_title: "Standard Shipping",
-                total: String(shippingCost),
-              },
-            ]
-          : [
-              {
-                method_id: "free_shipping",
-                method_title: "Free Shipping",
-                total: "0",
-              },
-            ],
+      ...(shippingMethod !== undefined && {
+        shipping_lines:
+          shippingMethod === "pickup"
+            ? [
+                {
+                  method_id: "local_pickup",
+                  method_title: "Store Pickup",
+                  total: "0",
+                },
+              ]
+            : shippingCost > 0
+            ? [
+                {
+                  method_id: "flat_rate",
+                  method_title: "Standard Shipping",
+                  total: String(shippingCost),
+                },
+              ]
+            : [
+                {
+                  method_id: "free_shipping",
+                  method_title: "Free Shipping",
+                  total: "0",
+                },
+              ],
+      }),
       coupon_lines: couponCode ? [{ code: couponCode }] : [],
     };
+
+    // If it's a completely free order, don't pass razorpay as payment method because WC might reject it
+    if (subtotal + shippingCost === 0) {
+      orderPayload.payment_method = "free";
+      orderPayload.payment_method_title = "Free Download";
+    }
 
     let order;
     try {
@@ -148,16 +156,16 @@ export async function POST(req: NextRequest) {
     } catch (createErr) {
       console.warn("Stage 1 WooCommerce Order Creation failed:", createErr instanceof Error ? createErr.message : createErr);
       try {
-        // Stage 2: Retry with minimal guest payload (customer_id 0, omitting payment_method & shipping_lines that often cause PHP 500 fatal errors in custom WordPress gateways or plugins)
-        const guestMinimalPayload = {
+        // Stage 2: Retry with minimal payload but KEEP customer_id (omitting payment_method & shipping_lines that often cause PHP 500 errors)
+        const fallbackPayload = {
           status: "pending",
-          customer_id: 0,
+          customer_id: orderPayload.customer_id,
           billing: orderPayload.billing,
           shipping: orderPayload.shipping,
           line_items: orderPayload.line_items,
           coupon_lines: orderPayload.coupon_lines,
         };
-        order = await createOrder(guestMinimalPayload);
+        order = await createOrder(fallbackPayload);
       } catch (retryErr) {
         console.warn("Stage 2 Minimal Guest Order Creation failed:", retryErr instanceof Error ? retryErr.message : retryErr);
 
