@@ -31,14 +31,19 @@ export function TopicGrid({
         </Link>
       </div>
 
-      <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
+      {/* 
+        Native app style horizontal scroll on mobile/tablet. 
+        On large desktops, falls back to a neat grid.
+        Using negative margins to allow bleeding off the screen edges cleanly.
+      */}
+      <div className="flex w-full snap-x snap-mandatory gap-4 overflow-x-auto pb-4 scrollbar-hide -mx-4 px-4 lg:mx-0 lg:grid lg:grid-cols-4 lg:overflow-visible lg:px-0">
         {categories.slice(0, 8).map((cat) => {
           const covers = (coversByCategory[cat.id] ?? []).slice(0, 3);
           return (
             <Link
               key={cat.id}
               href={`/categories/${cat.slug}`}
-              className="group relative overflow-hidden rounded-2xl border border-sand bg-white p-5 shadow-card transition-all duration-500 hover:-translate-y-1.5 hover:border-gold/50 hover:shadow-card-hover"
+              className="group relative w-[42vw] flex-none snap-start overflow-hidden rounded-2xl border border-sand bg-white p-5 shadow-card transition-all duration-500 hover:-translate-y-1.5 hover:border-gold/50 hover:shadow-card-hover sm:w-56 lg:w-auto"
             >
               {/* Overlapping covers */}
               <div className="flex h-20 items-end justify-center">
