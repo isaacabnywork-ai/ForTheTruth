@@ -94,9 +94,19 @@ export async function getSessionUser(): Promise<SessionUser & { role?: string } 
       const email = parts[1] || "user@gmail.com";
       const firstName = parts[2] || "Reader";
       const lastName = parts[3] || "";
-      const id = parseInt(parts[4] || "1001", 10);
+      let id = parseInt(parts[4] || "1", 10);
       const role = parts[5] || "customer";
       const avatarUrl = parts[6] || `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(email)}`;
+
+      // Resolve real WooCommerce customer ID by email if available
+      try {
+        const wcCustomer = await getCustomerByEmail(email);
+        if (wcCustomer?.id) {
+          id = wcCustomer.id;
+        }
+      } catch {
+        /* fallback to token id */
+      }
 
       return {
         id,

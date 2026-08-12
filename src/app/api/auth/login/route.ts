@@ -25,8 +25,11 @@ export async function POST(req: NextRequest) {
     email.toLowerCase() === "contact@forthetruth.in" &&
     (password === "admin123" || password === "forthetruth")
   ) {
+    const wcCust = await getCustomerByEmail("contact@forthetruth.in").catch(() => null);
+    const realId = wcCust?.id ?? 1;
+
     const adminUser = {
-      id: 9999,
+      id: realId,
       email: "contact@forthetruth.in",
       firstName: "Admin",
       lastName: "User",
@@ -34,7 +37,7 @@ export async function POST(req: NextRequest) {
       avatarUrl: "https://api.dicebear.com/7.x/avataaars/svg?seed=Admin",
       role: "admin",
     };
-    const token = `admin:contact@forthetruth.in:Admin:User:9999:admin`;
+    const token = `admin:contact@forthetruth.in:Admin:User:${realId}:admin`;
     const res = NextResponse.json({ ok: true, user: adminUser });
     res.cookies.set(SESSION_COOKIE, token, {
       httpOnly: true,
