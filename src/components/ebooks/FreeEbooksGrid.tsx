@@ -28,6 +28,7 @@ function EbookCard({ book }: { book: Product }) {
       price: 0,
       image: cover,
       slug: book.slug,
+      isVirtual: true,
     });
     setAdded(true);
     setTimeout(() => setAdded(false), 2000);

@@ -34,6 +34,7 @@ export function Bookshelf({ title, href, products }: BookshelfProps) {
       name: p.name,
       price: parseFloat(p.price || p.regular_price || "0"),
       image: p.images[0]?.src,
+      isVirtual: p.categories.some((c) => c.slug === "e-books"),
     });
     setAddedId(p.id);
     setTimeout(() => {

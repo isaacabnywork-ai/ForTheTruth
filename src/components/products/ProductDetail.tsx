@@ -55,6 +55,7 @@ export function ProductDetail({ product, reviews = [] }: ProductDetailProps) {
         name: product.name,
         price: parseFloat(product.price),
         image: currentImage.src,
+        isVirtual: product.categories.some((c) => c.slug === "e-books"),
       },
       qty
     );

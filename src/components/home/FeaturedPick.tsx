@@ -144,6 +144,7 @@ export function FeaturedPick({
                     name: product.name,
                     price: parseFloat(product.price),
                     image: product.images[0]?.src,
+                    isVirtual: product.categories.some((c) => c.slug === "e-books"),
                   });
                   setAdded(true);
                   setTimeout(() => setAdded(false), 1800);

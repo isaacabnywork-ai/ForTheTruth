@@ -52,6 +52,7 @@ export function ProductCard({
       name: product.name,
       price,
       image: image?.src,
+      isVirtual: product.categories.some((c) => c.slug === "e-books"),
     });
     setAdded(true);
     setTimeout(() => setAdded(false), 1800);

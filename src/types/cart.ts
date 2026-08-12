@@ -6,6 +6,7 @@ export interface CartItem {
   price: number;
   image?: string;
   quantity: number;
+  isVirtual?: boolean;
 }
 
 export interface User {

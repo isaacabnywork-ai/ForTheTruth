@@ -69,8 +69,11 @@ export default function CheckoutPage() {
     }
   }, [user]);
 
+  const requiresShipping = items.some((i) => !i.isVirtual);
   const subtotal = items.reduce((sum, i) => sum + i.price * i.quantity, 0);
-  const estShipping = shippingMethod === "pickup" ? 0 : (subtotal >= 499 || subtotal === 0 ? 0 : 49);
+  const estShipping = requiresShipping 
+    ? (shippingMethod === "pickup" ? 0 : (subtotal >= 499 || subtotal === 0 ? 0 : 49))
+    : 0;
   const isFreeOrder = subtotal === 0 || (subtotal + estShipping === 0);
 
   if (mounted && items.length === 0 && !busy) {
@@ -100,11 +103,11 @@ export default function CheckoutPage() {
             productId: i.productId,
             quantity: i.quantity,
           })),
-          shipping,
-          billingSameAsShipping: billingSame,
-          billing: billingSame ? undefined : billing,
+          shipping: requiresShipping ? shipping : undefined,
+          billingSameAsShipping: requiresShipping ? billingSame : false,
+          billing: requiresShipping ? (billingSame ? undefined : billing) : shipping,
           couponCode: coupon.trim() || undefined,
-          shippingMethod,
+          shippingMethod: requiresShipping ? shippingMethod : undefined,
         }),
       });
       const data = await res.json();
@@ -194,6 +197,7 @@ export default function CheckoutPage() {
       <form onSubmit={pay} className="mt-10 grid gap-10 lg:grid-cols-[1fr_380px]">
         <div className="space-y-8">
           {/* Shipping Method */}
+          {requiresShipping && (
           <section className="rounded-2xl border border-sand bg-white p-6 shadow-card md:p-8">
             <h2 className="mb-4 font-serif text-lg font-bold">Shipping Method</h2>
             <div className="grid gap-3 sm:grid-cols-2">
@@ -258,12 +262,13 @@ export default function CheckoutPage() {
               </label>
             </div>
           </section>
+          )}
 
           <section className="rounded-2xl border border-sand bg-white p-6 shadow-card md:p-8">
             <h2 className="mb-6 font-serif text-lg font-bold">
-              {shippingMethod === "pickup" ? "Contact & Identification Info" : "Shipping Address"}
+              {!requiresShipping ? "Billing Details" : shippingMethod === "pickup" ? "Contact & Identification Info" : "Shipping Address"}
             </h2>
-            <AddressForm prefix="ship" address={shipping} onChange={setShipping} />
+            <AddressForm prefix={!requiresShipping ? "bill" : "ship"} address={shipping} onChange={setShipping} />
             {!user && (
               <p className="mt-4 text-xs text-charcoal/45">
                 Have an account?{" "}
@@ -275,6 +280,7 @@ export default function CheckoutPage() {
             )}
           </section>
 
+          {requiresShipping && (
           <section className="rounded-2xl border border-sand bg-white p-6 shadow-card md:p-8">
             <label className="flex cursor-pointer items-center gap-3 font-serif text-lg font-bold">
               <input
@@ -291,6 +297,7 @@ export default function CheckoutPage() {
               </div>
             )}
           </section>
+          )}
         </div>
 
         {/* Summary */}
@@ -327,12 +334,14 @@ export default function CheckoutPage() {
               <dt className="text-charcoal/55">Subtotal</dt>
               <dd className="font-semibold">{formatPrice(subtotal)}</dd>
             </div>
+            {requiresShipping && (
             <div className="flex justify-between">
               <dt className="text-charcoal/55">Shipping</dt>
               <dd className="font-semibold">
                 {estShipping === 0 ? "Free" : formatPrice(estShipping)}
               </dd>
             </div>
+            )}
             <div className="flex justify-between border-t border-sand pt-3">
               <dt className="font-bold">Total</dt>
               <dd className="font-display text-xl font-bold text-gold-dark">
