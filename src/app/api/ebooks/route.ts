@@ -15,10 +15,14 @@ export async function GET(req: NextRequest) {
   const productId = req.nextUrl.searchParams.get("productId");
 
   try {
-    const customer = await getCustomerByEmail(user.email).catch(() => null);
-    if (!customer?.id) return NextResponse.json({ downloads: [], alreadyOwned: false });
+    let customerId = user.id;
+    if (!customerId) {
+      const customer = await getCustomerByEmail(user.email).catch(() => null);
+      customerId = customer?.id ?? 0;
+    }
+    if (!customerId) return NextResponse.json({ downloads: [], alreadyOwned: false });
 
-    const downloads = await getCustomerDownloads(customer.id);
+    const downloads = await getCustomerDownloads(customerId);
 
     if (productId) {
       const match = downloads.filter((d) => d.product_id === parseInt(productId, 10));
@@ -44,14 +48,17 @@ export async function POST(req: NextRequest) {
   if (!productId) return NextResponse.json({ error: "productId is required" }, { status: 400 });
 
   try {
-    // Get or verify the customer record
-    const customer = await getCustomerByEmail(user.email).catch(() => null);
-    if (!customer?.id) {
+    let customerId = user.id;
+    if (!customerId) {
+      const customer = await getCustomerByEmail(user.email).catch(() => null);
+      customerId = customer?.id ?? 0;
+    }
+    if (!customerId) {
       return NextResponse.json({ error: "Customer record not found. Please try again." }, { status: 404 });
     }
 
     // Check if already owned to avoid duplicate orders
-    const existingDownloads = await getCustomerDownloads(customer.id).catch(() => []);
+    const existingDownloads = await getCustomerDownloads(customerId).catch(() => []);
     const alreadyOwned = existingDownloads.some((d) => d.product_id === productId);
     if (alreadyOwned) {
       const links = existingDownloads.filter((d) => d.product_id === productId);
@@ -74,12 +81,12 @@ export async function POST(req: NextRequest) {
     const order = await createFreeOrder({
       productId,
       productName: productName ?? "E-Book",
-      customerId: customer.id,
+      customerId: customerId,
       billing,
     });
 
     // Fetch fresh download links after order creation
-    const downloads = await getCustomerDownloads(customer.id).catch(() => []);
+    const downloads = await getCustomerDownloads(customerId).catch(() => []);
     const newLinks = downloads.filter((d) => d.product_id === productId);
 
     return NextResponse.json({

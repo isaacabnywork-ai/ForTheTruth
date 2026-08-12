@@ -236,7 +236,7 @@ export async function getCustomerByEmail(
   email: string
 ): Promise<WCCustomer | null> {
   const res = await wcFetch<WCCustomer[]>("/customers", {
-    searchParams: { email, per_page: 1 },
+    searchParams: { email, per_page: 1, role: "all" },
     revalidate: 0,
   });
   return res[0] ?? null;

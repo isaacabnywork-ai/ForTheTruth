@@ -131,7 +131,7 @@ export async function getSessionUser(): Promise<SessionUser & { role?: string } 
     : "customer";
 
   return {
-    id: customer?.id ?? 0,
+    id: customer?.id ?? wpUser.id,
     wpUserId: wpUser.id,
     email: wpUser.email,
     firstName: customer?.first_name ?? wpUser.name.split(" ")[0] ?? "",
