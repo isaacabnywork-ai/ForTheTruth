@@ -26,7 +26,7 @@ const schema = z.object({
     )
     .min(1)
     .max(50),
-  shipping: addressSchema,
+  shipping: addressSchema.optional(),
   billingSameAsShipping: z.boolean().default(true),
   billing: addressSchema.optional(),
   couponCode: z.string().max(50).optional(),
@@ -83,12 +83,15 @@ export async function POST(req: NextRequest) {
         ? 0
         : FLAT_SHIPPING;
 
-    const bill = billingSameAsShipping || !billing ? shipping : billing;
+    const bill = billing || shipping;
+    if (!bill) {
+      return NextResponse.json({ error: "Billing address is required" }, { status: 400 });
+    }
     const user = await getSessionUser().catch(() => null);
 
     // 2. Create the WooCommerce order (pending payment).
     //    WooCommerce recomputes item prices and applies the coupon itself.
-    const orderPayload = {
+    const orderPayload: any = {
       status: "pending",
       payment_method: "razorpay",
       payment_method_title: "Razorpay",
@@ -104,16 +107,18 @@ export async function POST(req: NextRequest) {
         postcode: bill.postcode,
         country: bill.country,
       },
-      shipping: {
-        first_name: shipping.firstName,
-        last_name: shipping.lastName,
-        address_1: shippingMethod === "pickup" ? "Store Pickup (In-Store)" : shipping.address1,
-        city: shippingMethod === "pickup" ? "Store Location" : shipping.city,
-        state: shippingMethod === "pickup" ? "" : shipping.state,
-        postcode: shippingMethod === "pickup" ? "" : shipping.postcode,
-        country: shipping.country,
-      },
       line_items: lineItems,
+      ...(shipping && {
+        shipping: {
+          first_name: shipping.firstName,
+          last_name: shipping.lastName,
+          address_1: shippingMethod === "pickup" ? "Store Pickup (In-Store)" : shipping.address1,
+          city: shippingMethod === "pickup" ? "Store Location" : shipping.city,
+          state: shippingMethod === "pickup" ? "" : shipping.state,
+          postcode: shippingMethod === "pickup" ? "" : shipping.postcode,
+          country: shipping.country,
+        }
+      }),
       ...(shippingMethod !== undefined && {
         shipping_lines:
           shippingMethod === "pickup"
