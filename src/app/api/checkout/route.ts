@@ -148,10 +148,12 @@ export async function POST(req: NextRequest) {
       coupon_lines: couponCode ? [{ code: couponCode }] : [],
     };
 
-    // If it's a completely free order, don't pass razorpay as payment method because WC might reject it
+    // If it's a completely free order, mark it as completed & paid immediately so WooCommerce generates download permissions
     if (subtotal + shippingCost === 0) {
+      orderPayload.status = "completed";
       orderPayload.payment_method = "free";
       orderPayload.payment_method_title = "Free Download";
+      orderPayload.set_paid = true;
     }
 
     let order;
