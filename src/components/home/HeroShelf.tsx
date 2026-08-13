@@ -42,19 +42,19 @@ export function HeroShelf({
         <div className="pointer-events-none absolute inset-0 bg-paper-texture opacity-50" />
 
         <div 
-          className="relative grid items-center gap-8 sm:gap-10 px-5 sm:px-8 py-8 sm:py-12 md:px-12 md:grid-cols-2 lg:grid-cols-[1.05fr_auto_0.95fr] lg:gap-8 lg:px-14 lg:py-16"
+          className="relative grid items-center gap-8 sm:gap-10 px-5 sm:px-8 py-8 sm:py-12 md:px-12 grid-cols-1 lg:grid-cols-[1.05fr_auto_0.95fr] lg:gap-8 lg:px-14 lg:py-16"
         >
-          {/* ---------- LEFT: Headline & Actions (spans full width on phone & tablet top row) ---------- */}
-          <div className="text-center md:col-span-2 lg:col-span-1 lg:text-left">
-            <p className="text-[11px] sm:text-xs font-semibold uppercase tracking-[0.25em] sm:tracking-[0.28em] text-gold-dark">
+          {/* ---------- LEFT: Headline & Actions (Hidden on mobile & tablet, visible on desktop) ---------- */}
+          <div className="hidden lg:block text-left">
+            <p className="text-xs font-semibold uppercase tracking-[0.28em] text-gold-dark">
               {badge}
             </p>
 
-            <h1 className="mt-4 sm:mt-5 font-display text-3xl sm:text-4xl md:text-display-sm lg:text-display-md font-black leading-tight text-charcoal">
+            <h1 className="mt-5 font-display text-display-md font-black leading-tight text-charcoal">
               {titleParts[0]}
               {titleParts[1] ? (
                 <>
-                  ,<br className="hidden sm:inline" />
+                  ,<br />
                   <em className="text-gradient-gold"> {titleParts[1].trim()}</em>
                 </>
               ) : (
@@ -62,24 +62,24 @@ export function HeroShelf({
               )}
             </h1>
 
-            <p className="mx-auto mt-4 sm:mt-5 max-w-md sm:text-[15px] leading-relaxed text-charcoal/65 lg:mx-0 text-xs sm:text-sm">
+            <p className="mt-5 max-w-md text-[15px] leading-relaxed text-charcoal/65">
               {subtitle}
             </p>
 
-            <div className="mt-8 flex flex-wrap items-center justify-center gap-3 lg:justify-start">
-              <Link href="/products" className="btn-cta text-xs sm:text-sm px-6 py-3 sm:px-8 sm:py-3.5">
+            <div className="mt-8 flex flex-wrap items-center gap-3 justify-start">
+              <Link href="/products" className="btn-cta text-sm px-8 py-3.5">
                 Start Browsing <span aria-hidden="true">↗</span>
               </Link>
-              <Link href="/products?orderby=popularity" className="btn-outline text-xs sm:text-sm px-6 py-3 sm:px-8 sm:py-3.5">
+              <Link href="/products?orderby=popularity" className="btn-outline text-sm px-8 py-3.5">
                 Bestsellers
               </Link>
             </div>
 
-            <ul className="mt-6 sm:mt-8 space-y-2 max-w-sm mx-auto lg:mx-0">
+            <ul className="mt-8 space-y-2 max-w-sm">
               {READER_TRUST.map((t) => (
                 <li
                   key={t.title}
-                  className="flex items-center justify-center gap-2.5 lg:justify-start"
+                  className="flex items-center gap-2.5 justify-start"
                 >
                   <svg
                     width="14"
@@ -93,7 +93,7 @@ export function HeroShelf({
                   >
                     <path d="M20 6 9 17l-5-5" />
                   </svg>
-                  <span className="text-xs sm:text-[13px] font-semibold text-charcoal/70">
+                  <span className="text-[13px] font-semibold text-charcoal/70">
                     {t.title}
                   </span>
                 </li>
@@ -101,14 +101,17 @@ export function HeroShelf({
             </ul>
           </div>
 
-          {/* ---------- CENTRE: Floating 3D Book (sits side-by-side on tablet with book details) ---------- */}
-          <div className="flex justify-center py-2 sm:py-4 md:col-span-1 lg:col-span-1">
+          {/* ---------- CENTRE: Floating 3D Book ---------- */}
+          <div className="flex justify-center py-2 sm:py-4 lg:col-span-1">
             {hero ? <FloatingBook product={hero} /> : <BookSkeleton />}
           </div>
 
           {/* ---------- RIGHT: Featured Book Summary ---------- */}
           {hero && (
-            <div className="text-center md:text-left md:col-span-1 lg:col-span-1">
+            <div className="text-center lg:text-left lg:col-span-1">
+              <p className="mb-2.5 text-xs font-bold uppercase tracking-[0.25em] text-gold-dark">
+                Featuring books this week
+              </p>
               <Link href={`/products/${hero.slug}`}>
                 <h2 className="font-display text-xl sm:text-2xl md:text-[28px] lg:text-[32px] font-black leading-tight text-charcoal transition-colors hover:text-gold-dark">
                   {hero.name}
