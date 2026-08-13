@@ -87,16 +87,22 @@ export function ProductFilters({ categories }: { categories: WCCategory[] }) {
       {/* Floating Hamburger Button */}
       <button
         onClick={() => setIsOpen(true)}
-        className="fixed bottom-24 left-6 z-40 flex h-14 w-14 items-center justify-center rounded-full bg-white text-charcoal border border-sand shadow-xl transition-transform hover:scale-105 active:scale-95 sm:bottom-12 sm:left-12"
+        className="fixed bottom-24 left-6 z-40 flex h-12 w-12 items-center justify-center rounded-full bg-white text-charcoal border border-sand shadow-xl transition-transform hover:scale-105 active:scale-95 sm:bottom-12 sm:left-12"
         aria-label="Open Filters"
       >
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden>
-          <line x1="3" y1="12" x2="21" y2="12" />
-          <line x1="3" y1="6" x2="21" y2="6" />
-          <line x1="3" y1="18" x2="21" y2="18" />
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+          <line x1="3" y1="6" x2="15" y2="6" />
+          <line x1="19" y1="6" x2="21" y2="6" />
+          <circle cx="17" cy="6" r="2" />
+          <line x1="3" y1="12" x2="5" y2="12" />
+          <line x1="9" y1="12" x2="21" y2="12" />
+          <circle cx="7" cy="12" r="2" />
+          <line x1="3" y1="18" x2="11" y2="18" />
+          <line x1="15" y1="18" x2="21" y2="18" />
+          <circle cx="13" cy="18" r="2" />
         </svg>
         {hasFilters && (
-          <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-gold-dark text-[10px] font-bold text-white" />
+          <span className="absolute -top-1 -right-1 flex h-3.5 w-3.5 items-center justify-center rounded-full bg-gold-dark text-[9px] font-bold text-white" />
         )}
       </button>
 
