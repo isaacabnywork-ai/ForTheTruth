@@ -51,51 +51,9 @@ export default async function ProductsCatalogPage({
 
   return (
     <div className="mx-auto max-w-7xl px-4 py-10 lg:px-8">
-      {/* Header */}
-      <div className="mb-8 border-b border-sand pb-6">
-        <p className="overline-label">Library Catalog</p>
-        <h1 className="mt-2 font-display text-3xl font-bold text-charcoal md:text-4xl">
-          {selectedCategory ? selectedCategory.name : "All Handpicked Books"}
-        </h1>
-        <p className="mt-2 text-sm text-charcoal/60">
-          {result.total} {result.total === 1 ? "title" : "titles"} — sound
-          theological books carefully curated for serious readers.
-        </p>
-      </div>
-
-      {/* Category pills */}
-      <div className="mb-6 flex flex-wrap gap-2">
-        <Link
-          href="/products"
-          className={`rounded-full px-4 py-2 text-xs font-bold transition-all ${
-            !selectedCategory
-              ? "bg-gold text-white shadow-gold"
-              : "bg-cream text-charcoal/70 hover:bg-sand/60"
-          }`}
-        >
-          All Titles
-        </Link>
-        {categories.slice(0, 6).map((cat) => (
-          <Link
-            key={cat.id}
-            href={`/products?category=${cat.slug}`}
-            className={`rounded-full px-4 py-2 text-xs font-bold transition-all ${
-              selectedCategory?.slug === cat.slug
-                ? "bg-gold text-white shadow-gold"
-                : "bg-cream text-charcoal/70 hover:bg-sand/60"
-            }`}
-          >
-            {cat.name}
-          </Link>
-        ))}
-      </div>
-
-      {/* Price / availability / sale / sort */}
-      <div className="mb-10">
-        <Suspense>
-          <ProductFilters categories={[]} />
-        </Suspense>
-      </div>
+      <Suspense>
+        <ProductFilters categories={categories} />
+      </Suspense>
 
       {/* Grid */}
       {result.products.length > 0 ? (
