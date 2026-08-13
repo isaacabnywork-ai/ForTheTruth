@@ -87,7 +87,7 @@ export function ProductFilters({ categories }: { categories: WCCategory[] }) {
       {/* Floating Hamburger Button */}
       <button
         onClick={() => setIsOpen(true)}
-        className="fixed bottom-24 right-6 z-40 flex h-14 w-14 items-center justify-center rounded-full bg-charcoal text-white shadow-xl transition-transform hover:scale-105 active:scale-95 sm:bottom-12 sm:right-12"
+        className="fixed bottom-24 left-6 z-40 flex h-14 w-14 items-center justify-center rounded-full bg-white text-charcoal border border-sand shadow-xl transition-transform hover:scale-105 active:scale-95 sm:bottom-12 sm:left-12"
         aria-label="Open Filters"
       >
         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden>
@@ -102,10 +102,10 @@ export function ProductFilters({ categories }: { categories: WCCategory[] }) {
 
       {/* Filter Modal */}
       {isOpen && (
-        <div className="fixed inset-0 z-50 flex items-end justify-center sm:items-center bg-charcoal/40 backdrop-blur-sm p-4 sm:p-6 animate-in fade-in duration-200">
-          <div className="w-full max-w-md rounded-3xl bg-cream p-6 shadow-2xl overflow-y-auto max-h-[85vh] animate-in slide-in-from-bottom-10 sm:slide-in-from-bottom-0 sm:zoom-in-95">
-            <div className="flex items-center justify-between mb-6">
-              <h3 className="font-display text-xl font-bold text-charcoal">Filters & Sorting</h3>
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-charcoal/40 backdrop-blur-sm p-4 animate-in fade-in duration-200">
+          <div className="w-full max-w-sm rounded-3xl bg-cream p-5 shadow-2xl overflow-y-auto max-h-[85vh] animate-in zoom-in-95">
+            <div className="flex items-center justify-between mb-5">
+              <h3 className="font-display text-lg font-bold text-charcoal">Filters & Sorting</h3>
               <button
                 onClick={() => setIsOpen(false)}
                 className="rounded-full p-2 text-charcoal/60 hover:bg-sand/60 hover:text-charcoal transition-colors"
@@ -118,17 +118,17 @@ export function ProductFilters({ categories }: { categories: WCCategory[] }) {
               </button>
             </div>
 
-            <div className="flex flex-col gap-5">
+            <div className="flex flex-col gap-4">
               {/* Author search */}
-              <div className="space-y-2">
-                <label className="text-xs font-bold uppercase tracking-wider text-charcoal/60">Search Author</label>
+              <div className="space-y-1.5">
+                <label className="text-[10px] font-bold uppercase tracking-wider text-charcoal/60">Search Author</label>
                 <div className="relative">
                   <input
                     type="text"
                     value={authorInput}
                     onChange={(e) => handleAuthorChange(e.target.value)}
                     placeholder="Search by author..."
-                    className="w-full rounded-xl border border-sand bg-white px-4 py-3 pr-10 text-sm font-medium text-charcoal shadow-sm placeholder:text-charcoal/40 transition-smooth hover:border-gold/50 focus:border-gold focus:outline-none focus:ring-2 focus:ring-gold/25"
+                    className="w-full rounded-xl border border-sand bg-white px-3 py-2.5 pr-10 text-sm font-medium text-charcoal shadow-sm placeholder:text-charcoal/40 transition-smooth hover:border-gold/50 focus:border-gold focus:outline-none focus:ring-2 focus:ring-gold/25"
                   />
                   {authorInput && (
                     <button
@@ -147,10 +147,10 @@ export function ProductFilters({ categories }: { categories: WCCategory[] }) {
 
               {/* Category */}
               {!isCategoryPage && categories.length > 0 && (
-                <div className="space-y-2">
-                  <label className="text-xs font-bold uppercase tracking-wider text-charcoal/60">Category</label>
+                <div className="space-y-1.5">
+                  <label className="text-[10px] font-bold uppercase tracking-wider text-charcoal/60">Category</label>
                   <select
-                    className="w-full rounded-xl border border-sand bg-white px-4 py-3 text-sm font-medium text-charcoal shadow-sm transition-smooth hover:border-gold/50 focus:border-gold focus:outline-none focus:ring-2 focus:ring-gold/25"
+                    className="w-full rounded-xl border border-sand bg-white px-3 py-2.5 text-sm font-medium text-charcoal shadow-sm transition-smooth hover:border-gold/50 focus:border-gold focus:outline-none focus:ring-2 focus:ring-gold/25"
                     value={searchParams.get("category") ?? ""}
                     onChange={(e) => setParam({ category: e.target.value || null })}
                   >
@@ -165,10 +165,10 @@ export function ProductFilters({ categories }: { categories: WCCategory[] }) {
               )}
 
               {/* Price */}
-              <div className="space-y-2">
-                <label className="text-xs font-bold uppercase tracking-wider text-charcoal/60">Price</label>
+              <div className="space-y-1.5">
+                <label className="text-[10px] font-bold uppercase tracking-wider text-charcoal/60">Price</label>
                 <select
-                  className="w-full rounded-xl border border-sand bg-white px-4 py-3 text-sm font-medium text-charcoal shadow-sm transition-smooth hover:border-gold/50 focus:border-gold focus:outline-none focus:ring-2 focus:ring-gold/25"
+                  className="w-full rounded-xl border border-sand bg-white px-3 py-2.5 text-sm font-medium text-charcoal shadow-sm transition-smooth hover:border-gold/50 focus:border-gold focus:outline-none focus:ring-2 focus:ring-gold/25"
                   value={searchParams.get("price") ?? ""}
                   onChange={(e) => setParam({ price: e.target.value || null })}
                 >
@@ -181,10 +181,10 @@ export function ProductFilters({ categories }: { categories: WCCategory[] }) {
               </div>
 
               {/* Availability */}
-              <div className="space-y-2">
-                <label className="text-xs font-bold uppercase tracking-wider text-charcoal/60">Availability</label>
+              <div className="space-y-1.5">
+                <label className="text-[10px] font-bold uppercase tracking-wider text-charcoal/60">Availability</label>
                 <select
-                  className="w-full rounded-xl border border-sand bg-white px-4 py-3 text-sm font-medium text-charcoal shadow-sm transition-smooth hover:border-gold/50 focus:border-gold focus:outline-none focus:ring-2 focus:ring-gold/25"
+                  className="w-full rounded-xl border border-sand bg-white px-3 py-2.5 text-sm font-medium text-charcoal shadow-sm transition-smooth hover:border-gold/50 focus:border-gold focus:outline-none focus:ring-2 focus:ring-gold/25"
                   value={searchParams.get("availability") ?? ""}
                   onChange={(e) => setParam({ availability: e.target.value || null })}
                 >
@@ -195,10 +195,10 @@ export function ProductFilters({ categories }: { categories: WCCategory[] }) {
               </div>
 
               {/* Sort By */}
-              <div className="space-y-2">
-                <label className="text-xs font-bold uppercase tracking-wider text-charcoal/60">Sort By</label>
+              <div className="space-y-1.5">
+                <label className="text-[10px] font-bold uppercase tracking-wider text-charcoal/60">Sort By</label>
                 <select
-                  className="w-full rounded-xl border border-sand bg-white px-4 py-3 text-sm font-medium text-charcoal shadow-sm transition-smooth hover:border-gold/50 focus:border-gold focus:outline-none focus:ring-2 focus:ring-gold/25"
+                  className="w-full rounded-xl border border-sand bg-white px-3 py-2.5 text-sm font-medium text-charcoal shadow-sm transition-smooth hover:border-gold/50 focus:border-gold focus:outline-none focus:ring-2 focus:ring-gold/25"
                   value={searchParams.get("orderby") ?? "date"}
                   onChange={(e) => setParam({ orderby: e.target.value })}
                 >
@@ -211,23 +211,23 @@ export function ProductFilters({ categories }: { categories: WCCategory[] }) {
               </div>
 
               {/* On Sale */}
-              <label className="mt-2 flex w-full cursor-pointer items-center justify-between rounded-xl border border-sand bg-white px-4 py-3 text-sm font-medium text-charcoal shadow-sm transition-smooth hover:border-gold/50 has-[:checked]:border-gold has-[:checked]:bg-gold/10 has-[:checked]:font-bold has-[:checked]:text-gold-dark">
+              <label className="mt-2 flex w-full cursor-pointer items-center justify-between rounded-xl border border-sand bg-white px-3 py-2.5 text-sm font-medium text-charcoal shadow-sm transition-smooth hover:border-gold/50 has-[:checked]:border-gold has-[:checked]:bg-gold/10 has-[:checked]:font-bold has-[:checked]:text-gold-dark">
                 <span>Show On Sale Only</span>
                 <input
                   type="checkbox"
-                  className="h-5 w-5 accent-gold rounded cursor-pointer"
+                  className="h-4 w-4 accent-gold rounded cursor-pointer"
                   checked={searchParams.get("on_sale") === "true"}
                   onChange={(e) => setParam({ on_sale: e.target.checked ? "true" : null })}
                 />
               </label>
 
               {/* Actions */}
-              <div className="mt-4 flex gap-3 pt-4 border-t border-sand">
+              <div className="mt-3 flex gap-2 pt-3 border-t border-sand">
                 <button
                   onClick={() => setIsOpen(false)}
-                  className="flex-1 btn-gold py-3 text-sm shadow-md"
+                  className="flex-1 btn-gold py-2.5 text-sm shadow-md"
                 >
-                  Apply & Close
+                  Apply
                 </button>
                 {hasFilters && (
                   <button
@@ -236,7 +236,7 @@ export function ProductFilters({ categories }: { categories: WCCategory[] }) {
                       setParam({ category: null, price: null, availability: null, on_sale: null, author: null, orderby: null });
                       setIsOpen(false);
                     }}
-                    className="btn-outline py-3 px-6 text-sm whitespace-nowrap"
+                    className="btn-outline py-2.5 px-4 text-sm whitespace-nowrap"
                   >
                     Clear All
                   </button>
