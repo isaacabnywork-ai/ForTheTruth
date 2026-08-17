@@ -11,7 +11,7 @@ export const metadata = {
 
 export default async function StaffPage() {
   const admin = await requireAdmin();
-  if (!admin) redirect("/admin/login");
+  if (!admin) return null;
 
   const token = await getSessionToken();
   const env = getServerEnv();
