@@ -80,17 +80,17 @@ export function StaffLockScreen({ onUnlock }: StaffLockScreenProps) {
         <form onSubmit={handleSubmit} className="mt-6 space-y-4 text-left">
           <div>
             <label htmlFor="admin-email" className="mb-1.5 block text-xs font-bold uppercase tracking-wider text-white/70">
-              Email
+              Email or Username
             </label>
             <input
               id="admin-email"
-              type="email"
+              type="text"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
               autoComplete="username"
               className="w-full rounded-xl border border-white/20 bg-white/10 px-4 py-3 text-sm font-semibold text-white placeholder-white/40 outline-none focus:border-gold focus:ring-2 focus:ring-gold/30"
-              placeholder="you@forthetruth.in"
+              placeholder="you@forthetruth.in or username"
             />
           </div>
           <div>
