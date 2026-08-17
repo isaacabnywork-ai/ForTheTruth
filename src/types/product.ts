@@ -39,6 +39,12 @@ export interface Product {
   images: WCImage[];
   categories: Pick<WCCategory, "id" | "name" | "slug">[];
   attributes: WCAttribute[];
+  weight?: string;
+  dimensions?: {
+    length: string;
+    width: string;
+    height: string;
+  };
 }
 
 export interface ProductReview {

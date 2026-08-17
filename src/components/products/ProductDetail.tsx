@@ -307,6 +307,14 @@ export function ProductDetail({ product, reviews = [] }: ProductDetailProps) {
             Synopsis &amp; Description
           </button>
           <button
+            onClick={() => setActiveTab("details")}
+            className={`font-serif text-lg font-bold transition-colors ${
+              activeTab === "details" ? "text-gold-dark border-b-2 border-gold pb-3 -mb-3.5" : "text-charcoal/50 hover:text-charcoal"
+            }`}
+          >
+            Additional Information
+          </button>
+          <button
             onClick={() => setActiveTab("reviews")}
             className={`font-serif text-lg font-bold transition-colors ${
               activeTab === "reviews" ? "text-gold-dark border-b-2 border-gold pb-3 -mb-3.5" : "text-charcoal/50 hover:text-charcoal"
@@ -354,6 +362,46 @@ export function ProductDetail({ product, reviews = [] }: ProductDetailProps) {
                   {isDescExpanded ? "Full book overview shown" : "Showing preview summary"}
                 </span>
               </div>
+            </div>
+          )}
+
+          {activeTab === "details" && (
+            <div className="rounded-3xl border border-sand/80 bg-white/70 p-6 md:p-8 shadow-sm">
+              <ul className="space-y-4 text-sm text-charcoal/80">
+                {product.weight && (
+                  <li className="flex flex-col sm:flex-row sm:gap-4 border-b border-sand/50 pb-3 last:border-0 last:pb-0">
+                    <span className="font-bold text-charcoal min-w-[140px]">Weight</span>
+                    <span>{product.weight} kg</span>
+                  </li>
+                )}
+                {product.dimensions && (product.dimensions.length || product.dimensions.width || product.dimensions.height) && (
+                  <li className="flex flex-col sm:flex-row sm:gap-4 border-b border-sand/50 pb-3 last:border-0 last:pb-0">
+                    <span className="font-bold text-charcoal min-w-[140px]">Dimensions</span>
+                    <span>
+                      {[product.dimensions.length, product.dimensions.width, product.dimensions.height]
+                        .filter(Boolean)
+                        .join(" × ")}{" "}
+                      cm
+                    </span>
+                  </li>
+                )}
+                {product.attributes.map((attr) => {
+                  // If we already show author near title, we can optionally skip it here. But standard WC shows it. 
+                  // We'll show all attributes as requested by the user.
+                  return (
+                    <li key={attr.id || attr.name} className="flex flex-col sm:flex-row sm:gap-4 border-b border-sand/50 pb-3 last:border-0 last:pb-0">
+                      <span className="font-bold text-charcoal min-w-[140px] capitalize">{attr.name}</span>
+                      <span>{attr.options.join(", ")}</span>
+                    </li>
+                  );
+                })}
+                {product.sku && (
+                  <li className="flex flex-col sm:flex-row sm:gap-4 border-b border-sand/50 pb-3 last:border-0 last:pb-0">
+                    <span className="font-bold text-charcoal min-w-[140px]">ISBN / SKU</span>
+                    <span>{product.sku}</span>
+                  </li>
+                )}
+              </ul>
             </div>
           )}
 
