@@ -32,18 +32,18 @@ export function TopicGrid({
       </div>
 
       {/* 
-        Native app style horizontal scroll on mobile/tablet. 
+        Native app style horizontal scroll on mobile/tablet with 2 rows. 
         On large desktops, falls back to a neat grid.
         Using negative margins to allow bleeding off the screen edges cleanly.
       */}
-      <div className="flex w-full snap-x snap-mandatory gap-4 overflow-x-auto pb-4 scrollbar-hide -mx-4 px-4 lg:mx-0 lg:grid lg:grid-cols-4 lg:overflow-visible lg:px-0">
+      <div className="grid w-full grid-flow-col grid-rows-2 auto-cols-[42vw] snap-x snap-mandatory gap-4 overflow-x-auto pb-4 scrollbar-hide -mx-4 px-4 sm:auto-cols-[220px] lg:mx-0 lg:auto-cols-auto lg:grid-flow-row lg:grid-cols-4 lg:grid-rows-none lg:overflow-visible lg:px-0">
         {categories.slice(0, 8).map((cat) => {
           const covers = (coversByCategory[cat.id] ?? []).slice(0, 3);
           return (
             <Link
               key={cat.id}
               href={`/categories/${cat.slug}`}
-              className="group relative w-[42vw] flex-none snap-start overflow-hidden rounded-2xl border border-sand bg-white p-5 shadow-card transition-all duration-500 hover:-translate-y-1.5 hover:border-gold/50 hover:shadow-card-hover sm:w-56 lg:w-auto"
+              className="group relative flex flex-col justify-between overflow-hidden rounded-2xl border border-sand bg-white p-5 shadow-card transition-all duration-500 hover:-translate-y-1.5 hover:border-gold/50 hover:shadow-card-hover"
             >
               {/* Overlapping covers */}
               <div className="flex h-20 items-end justify-center">
