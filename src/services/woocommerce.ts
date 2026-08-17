@@ -299,6 +299,40 @@ export async function getOrdersByCustomer(
   });
 }
 
+export async function getOrdersByEmail(
+  email: string,
+  customerId?: number
+): Promise<WCOrder[]> {
+  // Fetch by billing email (catches guest orders)
+  const emailOrders = await wcFetch<WCOrder[]>("/orders", {
+    searchParams: { search: email, per_page: 50, orderby: "date", order: "desc" },
+    revalidate: 0,
+  });
+
+  // Fetch by customer ID (catches logged-in orders)
+  let idOrders: WCOrder[] = [];
+  if (customerId) {
+    idOrders = await getOrdersByCustomer(customerId).catch(() => []);
+  }
+
+  // Deduplicate and strictly filter
+  const map = new Map<number, WCOrder>();
+  
+  for (const o of [...emailOrders, ...idOrders]) {
+    const isOwner =
+      o.customer_id === customerId ||
+      o.billing?.email?.toLowerCase() === email.toLowerCase();
+      
+    if (isOwner) {
+      map.set(o.id, o);
+    }
+  }
+
+  return Array.from(map.values()).sort(
+    (a, b) => new Date(b.date_created).getTime() - new Date(a.date_created).getTime()
+  );
+}
+
 // ---------- Analytics & Reports ----------
 
 export interface WCSalesReport {

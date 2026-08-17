@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { getSessionUser } from "@/lib/session";
-import { getOrdersByCustomer } from "@/services/woocommerce";
+import { getOrdersByEmail } from "@/services/woocommerce";
 
 export const revalidate = 0;
 
@@ -11,7 +11,7 @@ export async function GET() {
   }
 
   try {
-    const liveOrders = user.id ? await getOrdersByCustomer(user.id).catch(() => []) : [];
+    const liveOrders = await getOrdersByEmail(user.email, user.id).catch(() => []);
     
     if (liveOrders && liveOrders.length > 0) {
       return NextResponse.json({
