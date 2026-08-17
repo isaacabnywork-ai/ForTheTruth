@@ -385,7 +385,7 @@ export function ProductDetail({ product, reviews = [] }: ProductDetailProps) {
                     </span>
                   </li>
                 )}
-                {product.attributes.map((attr) => {
+                {(product.attributes || []).map((attr) => {
                   // If we already show author near title, we can optionally skip it here. But standard WC shows it. 
                   // We'll show all attributes as requested by the user.
                   return (

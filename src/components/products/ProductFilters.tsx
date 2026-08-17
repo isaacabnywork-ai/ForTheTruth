@@ -20,8 +20,6 @@ const PRICES = [
   { value: "1000-", label: "₹1000+" },
 ] as const;
 
-const selectCls =
-  "w-full sm:w-auto truncate rounded-full border border-sand bg-white px-3 sm:px-4 py-2 text-xs sm:text-sm font-medium text-charcoal shadow-card transition-smooth hover:border-gold/50 focus:border-gold focus:outline-none focus:ring-2 focus:ring-gold/25";
 
 export function ProductFilters({ categories }: { categories: WCCategory[] }) {
   const router = useRouter();
