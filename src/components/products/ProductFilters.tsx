@@ -85,7 +85,7 @@ export function ProductFilters({ categories }: { categories: WCCategory[] }) {
       {/* Mobile/Tablet: Floating Hamburger Button */}
       <button
         onClick={() => setIsOpen(true)}
-        className="fixed top-[200px] left-4 z-50 flex h-12 w-12 items-center justify-center rounded-full bg-white text-gold border border-sand shadow-xl transition-transform hover:scale-105 active:scale-95 sm:top-[220px] sm:left-10 lg:hidden"
+        className="fixed bottom-24 left-1/2 -translate-x-1/2 z-50 flex h-12 w-12 items-center justify-center rounded-full bg-white text-gold border border-sand shadow-xl transition-transform hover:scale-105 active:scale-95 lg:hidden"
         aria-label="Open Filters"
       >
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
