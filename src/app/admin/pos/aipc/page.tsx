@@ -1,19 +1,24 @@
 import { PosTerminalClient } from "@/components/admin/pos/PosTerminalClient";
-import fs from "fs";
-import path from "path";
+import { supabase } from "@/lib/supabaseClient";
 import type { Product, WCCategory } from "@/types/product";
 import { getAllProducts } from "@/services/woocommerce";
 
-// Disable static rendering so it reads the fresh JSON stock every time
+// Disable static rendering so it reads the fresh stock every time
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
 export default async function AipcPosTerminalPage() {
-  const dataPath = path.join(process.cwd(), "src/data/aipc_books.json");
-  const fileContent = fs.readFileSync(dataPath, "utf8");
-  const aipcData = JSON.parse(fileContent);
+  // 1. Fetch from Supabase instead of local JSON
+  const { data: aipcData, error } = await supabase
+    .from("aipc_books")
+    .select("*")
+    .order("id", { ascending: true });
 
-  // Fetch all real products to grab their images and correct ISBNs
+  if (error || !aipcData) {
+    console.error("Failed to load AIPC stock from Supabase", error);
+  }
+
+  // 2. Fetch all real products to grab their images
   const mainProducts = await getAllProducts({ revalidate: 3600 });
   const mainProductMap = new Map<string, Product>();
   for (const p of mainProducts) {
@@ -22,26 +27,27 @@ export default async function AipcPosTerminalPage() {
     }
   }
 
-  const products: Product[] = aipcData.map((item: any, index: number) => {
-    // Treat invalid or empty MRPs as 0 to avoid NaN
-    const regularPrice = item.MRP ? String(item.MRP) : "0";
-    const salePrice = item["AIPC Special Price"] ? String(item["AIPC Special Price"]) : "0";
+  const products: Product[] = (aipcData || []).map((item: any) => {
+    const salePrice = item.PRICE ? String(item.PRICE) : "0";
+    const regularPrice = salePrice; // We didn't migrate MRP, so just match sale price
     const qty = typeof item["AIPC QTY"] === "number" ? item["AIPC QTY"] : 0;
-    const skuLower = (item.SKU || "").toLowerCase();
+    
+    // We stored the SKU inside the AUTHOR column temporarily during migration
+    const skuLower = (item.AUTHOR || "").toLowerCase();
     const realProduct = mainProductMap.get(skuLower);
     
     return {
-      id: 100000 + index, // Fake ID
-      name: item.Name || "Unknown Book",
+      id: item.id,
+      name: item.TITLE || "Unknown Book",
       slug: skuLower,
       permalink: "",
       description: "",
       short_description: "",
-      sku: item.SKU || "",
+      sku: item.AUTHOR || "", 
       price: salePrice,
       regular_price: regularPrice,
       sale_price: salePrice,
-      on_sale: parseFloat(regularPrice) > parseFloat(salePrice),
+      on_sale: false,
       stock_status: qty > 0 ? "instock" : "outofstock",
       stock_quantity: qty,
       average_rating: "0",
