@@ -1,93 +1,131 @@
 import { NextRequest, NextResponse } from "next/server";
-import fs from "fs";
-import path from "path";
 import { requireAdmin } from "@/lib/adminGuard";
+import { supabase } from "@/lib/supabaseClient";
 
-const DATA_PATH = () => path.join(process.cwd(), "src/data/aipc_books.json");
-
-function readBooks() {
-  return JSON.parse(fs.readFileSync(DATA_PATH(), "utf8"));
-}
-
-function writeBooks(books: any[]) {
-  fs.writeFileSync(DATA_PATH(), JSON.stringify(books, null, 2), "utf8");
-}
-
-// GET — return all AIPC books
-export async function GET() {
+export async function GET(req: NextRequest) {
   if (!(await requireAdmin())) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
-  return NextResponse.json(readBooks());
+
+  try {
+    const { data: books, error } = await supabase
+      .from("aipc_books")
+      .select("*")
+      .order("id", { ascending: true });
+
+    if (error) throw error;
+    return NextResponse.json(books || []);
+  } catch (error) {
+    console.error("Error reading AIPC stock from Supabase:", error);
+    return NextResponse.json({ error: "Failed to read stock data" }, { status: 500 });
+  }
 }
 
-// PATCH — update stock of an existing book by index
-export async function PATCH(req: NextRequest) {
-  if (!(await requireAdmin())) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
-  const { index, qty, name, mrp, aipcPrice, soldAdjust } = await req.json();
-  const books = readBooks();
-  if (index === undefined || !books[index]) {
-    return NextResponse.json({ error: "Book not found" }, { status: 404 });
-  }
-  if (typeof qty === "number") books[index]["AIPC QTY"] = Math.max(0, qty);
-  if (name) books[index]["Name"] = name;
-  if (typeof mrp === "number") books[index]["MRP"] = mrp;
-  if (typeof aipcPrice === "number") books[index]["AIPC Special Price"] = aipcPrice;
-
-  // Return / sold adjustment: soldAdjust = -1 means 1 book returned
-  if (typeof soldAdjust === "number") {
-    const currentSold = books[index]["AIPC Sold"] || 0;
-    const currentQty = books[index]["AIPC QTY"] || 0;
-    const newSold = Math.max(0, currentSold + soldAdjust);
-    const delta = currentSold - newSold; // how many were "un-sold"
-    books[index]["AIPC Sold"] = newSold;
-    books[index]["AIPC QTY"] = Math.max(0, currentQty + delta); // put them back in stock
-  }
-
-  writeBooks(books);
-  return NextResponse.json({ success: true, book: books[index] });
-}
-
-// POST — add a brand new book
 export async function POST(req: NextRequest) {
   if (!(await requireAdmin())) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
-  const { name, sku, isbn, mrp, salePrice, aipcPrice, qty } = await req.json();
-  if (!name) return NextResponse.json({ error: "Name is required" }, { status: 400 });
 
-  const books = readBooks();
-  const newBook = {
-    "S. No": books.length + 1,
-    "SKU": sku || "",
-    "Name": name,
-    "MRP": mrp || 0,
-    "ISBN": isbn || "",
-    "Sale Price": salePrice || 0,
-    "AIPC Special Price": aipcPrice || 0,
-    "AIPC QTY": qty || 0,
-    "AIPC Sold": 0,
-  };
-  books.push(newBook);
-  writeBooks(books);
-  return NextResponse.json({ success: true, book: newBook, index: books.length - 1 });
+  try {
+    const newBook = await req.json();
+    
+    // Generate a new ID (highest current ID + 1, or 100000)
+    const { data: highest } = await supabase
+      .from("aipc_books")
+      .select("id")
+      .order("id", { ascending: false })
+      .limit(1);
+    
+    let newId = 100000;
+    if (highest && highest.length > 0) {
+      newId = highest[0].id + 1;
+    }
+
+    const { data, error } = await supabase
+      .from("aipc_books")
+      .insert({
+        id: newId,
+        TITLE: newBook.TITLE || "",
+        "AIPC QTY": newBook["AIPC QTY"] || 0,
+        "AIPC Sold": newBook["AIPC Sold"] || 0,
+        ISBN: newBook.ISBN || "",
+        PRICE: newBook.PRICE || 0,
+        AUTHOR: newBook.AUTHOR || "",
+      })
+      .select()
+      .single();
+
+    if (error) throw error;
+    return NextResponse.json({ success: true, book: data });
+  } catch (error) {
+    console.error("Error adding book to Supabase:", error);
+    return NextResponse.json({ error: "Failed to add book" }, { status: 500 });
+  }
 }
 
-// DELETE — remove a book by index and re-number S. No
+export async function PATCH(req: NextRequest) {
+  if (!(await requireAdmin())) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  try {
+    const { index, field, value, soldAdjust } = await req.json();
+
+    // Since 'index' from frontend was based on array index (id = 100000 + index)
+    const bookId = 100000 + index;
+    
+    if (soldAdjust !== undefined) {
+      // Fetch current book
+      const { data: book } = await supabase.from("aipc_books").select("*").eq("id", bookId).single();
+      if (!book) throw new Error("Book not found");
+
+      const newSold = Math.max(0, (book["AIPC Sold"] || 0) + soldAdjust);
+      const newQty = Math.max(0, (book["AIPC QTY"] || 0) - soldAdjust);
+
+      const { error } = await supabase
+        .from("aipc_books")
+        .update({ "AIPC Sold": newSold, "AIPC QTY": newQty })
+        .eq("id", bookId);
+        
+      if (error) throw error;
+      return NextResponse.json({ success: true });
+    }
+
+    // Normal field update
+    const { error } = await supabase
+      .from("aipc_books")
+      .update({ [field]: value })
+      .eq("id", bookId);
+      
+    if (error) throw error;
+    return NextResponse.json({ success: true });
+  } catch (error) {
+    console.error("Error updating book in Supabase:", error);
+    return NextResponse.json({ error: "Failed to update book" }, { status: 500 });
+  }
+}
+
 export async function DELETE(req: NextRequest) {
   if (!(await requireAdmin())) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
-  const { index } = await req.json();
-  const books = readBooks();
-  if (index === undefined || !books[index]) {
-    return NextResponse.json({ error: "Book not found" }, { status: 404 });
+
+  try {
+    const { searchParams } = new URL(req.url);
+    const indexStr = searchParams.get("index");
+    if (indexStr === null) return NextResponse.json({ error: "Missing index" }, { status: 400 });
+
+    const bookId = 100000 + parseInt(indexStr);
+
+    const { error } = await supabase
+      .from("aipc_books")
+      .delete()
+      .eq("id", bookId);
+
+    if (error) throw error;
+    return NextResponse.json({ success: true });
+  } catch (error) {
+    console.error("Error deleting book in Supabase:", error);
+    return NextResponse.json({ error: "Failed to delete book" }, { status: 500 });
   }
-  books.splice(index, 1);
-  // Re-number S. No sequentially after deletion
-  books.forEach((b: any, i: number) => { b["S. No"] = i + 1; });
-  writeBooks(books);
-  return NextResponse.json({ success: true });
 }

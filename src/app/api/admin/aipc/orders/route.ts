@@ -1,9 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
-import fs from "fs";
-import path from "path";
 import { requireAdmin } from "@/lib/adminGuard";
-
-const ORDERS_PATH = () => path.join(process.cwd(), "src/data/aipc_orders.json");
+import { supabase } from "@/lib/supabaseClient";
 
 export async function GET(req: NextRequest) {
   if (!(await requireAdmin())) {
@@ -11,14 +8,15 @@ export async function GET(req: NextRequest) {
   }
 
   try {
-    if (!fs.existsSync(ORDERS_PATH())) {
-      return NextResponse.json([]);
-    }
-    const orders = JSON.parse(fs.readFileSync(ORDERS_PATH(), "utf8"));
-    // Return newest first
-    return NextResponse.json(orders.reverse());
+    const { data: orders, error } = await supabase
+      .from("aipc_orders")
+      .select("*")
+      .order("date", { ascending: false });
+
+    if (error) throw error;
+    return NextResponse.json(orders || []);
   } catch (error) {
-    return NextResponse.json({ error: "Failed to read orders" }, { status: 500 });
+    return NextResponse.json({ error: "Failed to read orders from Supabase" }, { status: 500 });
   }
 }
 
@@ -29,19 +27,17 @@ export async function PATCH(req: NextRequest) {
 
   try {
     const { orderId, action = "refund" } = await req.json();
-    const ordersPath = ORDERS_PATH();
-    if (!fs.existsSync(ordersPath)) {
-      return NextResponse.json({ error: "No orders found" }, { status: 404 });
-    }
 
-    const orders = JSON.parse(fs.readFileSync(ordersPath, "utf8"));
-    const orderIndex = orders.findIndex((o: any) => o.id === orderId);
-    
-    if (orderIndex === -1) {
+    const { data: order, error: fetchErr } = await supabase
+      .from("aipc_orders")
+      .select("*")
+      .eq("id", orderId)
+      .single();
+      
+    if (fetchErr || !order) {
       return NextResponse.json({ error: "Order not found" }, { status: 404 });
     }
 
-    const order = orders[orderIndex];
     if (order.refunded) {
       return NextResponse.json({ error: "Order already refunded" }, { status: 400 });
     }
@@ -68,33 +64,36 @@ export async function PATCH(req: NextRequest) {
 
       const rzpData = await rzpRes.json();
       if (!rzpRes.ok && rzpData.error?.code !== "BAD_REQUEST_ERROR") { 
-        // Ignore bad request only if it says already refunded, otherwise throw
-        // (For simplicity we throw on any hard Razorpay failure)
         throw new Error(`Razorpay Refund Failed: ${rzpData.error?.description || "Unknown error"}`);
       }
     }
 
-    // Update local stock to return items
-    const booksPath = path.join(process.cwd(), "src/data/aipc_books.json");
-    if (fs.existsSync(booksPath)) {
-      const books = JSON.parse(fs.readFileSync(booksPath, "utf8"));
-      for (const item of order.lineItems) {
-        const index = item.product_id - 100000;
-        if (books[index]) {
-          books[index]["AIPC QTY"] = (books[index]["AIPC QTY"] || 0) + item.quantity;
-          books[index]["AIPC Sold"] = Math.max(0, (books[index]["AIPC Sold"] || 0) - item.quantity);
-        }
+    // Update local stock to return items in Supabase
+    for (const item of (order.lineItems as any[])) {
+      const bookId = item.product_id;
+      const { data: book } = await supabase.from("aipc_books").select("*").eq("id", bookId).single();
+      if (book) {
+        const newQty = (book["AIPC QTY"] || 0) + item.quantity;
+        const newSold = Math.max(0, (book["AIPC Sold"] || 0) - item.quantity);
+        await supabase.from("aipc_books").update({ "AIPC QTY": newQty, "AIPC Sold": newSold }).eq("id", bookId);
       }
-      fs.writeFileSync(booksPath, JSON.stringify(books, null, 2), "utf8");
     }
 
     // Mark order as refunded / exchanged
-    orders[orderIndex].refunded = true;
-    orders[orderIndex].refundedAt = new Date().toISOString();
-    orders[orderIndex].refundType = action; // 'refund' or 'exchange'
-    fs.writeFileSync(ordersPath, JSON.stringify(orders, null, 2), "utf8");
+    const { error: updateErr, data: updatedOrder } = await supabase
+      .from("aipc_orders")
+      .update({
+        refunded: true,
+        refundedAt: new Date().toISOString(),
+        refundType: action
+      })
+      .eq("id", orderId)
+      .select()
+      .single();
 
-    return NextResponse.json({ success: true, order: orders[orderIndex] });
+    if (updateErr) throw updateErr;
+
+    return NextResponse.json({ success: true, order: updatedOrder });
   } catch (error: any) {
     console.error("Refund error:", error);
     return NextResponse.json({ error: error.message || "Failed to process refund" }, { status: 500 });

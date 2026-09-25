@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
-import fs from "fs";
-import path from "path";
 import { requireAdmin } from "@/lib/adminGuard";
+import { supabase } from "@/lib/supabaseClient";
 
 export async function POST(req: NextRequest) {
   if (!(await requireAdmin())) {
@@ -12,41 +11,41 @@ export async function POST(req: NextRequest) {
     const body = await req.json();
     const { lineItems } = body;
 
-    const dataPath = path.join(process.cwd(), "src/data/aipc_books.json");
-    const fileContent = fs.readFileSync(dataPath, "utf8");
-    const books = JSON.parse(fileContent);
-
-    // Update stock in the local JSON file
+    // 1. Update stock in Supabase
     for (const item of lineItems) {
-      const index = item.product_id - 100000; // Reverse mapped ID
-      if (books[index] && typeof books[index]["AIPC QTY"] === "number") {
-        books[index]["AIPC QTY"] = Math.max(0, books[index]["AIPC QTY"] - item.quantity);
-        books[index]["AIPC Sold"] = (books[index]["AIPC Sold"] || 0) + item.quantity;
+      const bookId = item.product_id;
+      // Fetch current stock
+      const { data: book } = await supabase.from("aipc_books").select("*").eq("id", bookId).single();
+      if (book) {
+        const newQty = Math.max(0, (book["AIPC QTY"] || 0) - item.quantity);
+        const newSold = (book["AIPC Sold"] || 0) + item.quantity;
+        await supabase.from("aipc_books").update({ "AIPC QTY": newQty, "AIPC Sold": newSold }).eq("id", bookId);
       }
     }
 
-    fs.writeFileSync(dataPath, JSON.stringify(books, null, 2), "utf8");
-
-    // Save order data to aipc_orders.json
-    const ordersPath = path.join(process.cwd(), "src/data/aipc_orders.json");
-    let orders = [];
-    if (fs.existsSync(ordersPath)) {
-      orders = JSON.parse(fs.readFileSync(ordersPath, "utf8"));
-    }
-
+    // 2. Save order to Supabase
     const orderId = Math.floor(100000 + Math.random() * 900000);
-    orders.push({
+    const { error: orderError } = await supabase.from("aipc_orders").insert({
       id: orderId,
       date: new Date().toISOString(),
-      ...body
+      lineItems: body.lineItems,
+      totalAmount: body.totalAmount,
+      discountAmount: body.discountAmount,
+      customerName: body.customerName || "",
+      customerPhone: body.customerPhone || "",
+      customerEmail: body.customerEmail || "",
+      notes: body.notes || "",
+      paymentMethod: body.paymentMethod || "",
+      refunded: false
     });
-    fs.writeFileSync(ordersPath, JSON.stringify(orders, null, 2), "utf8");
+
+    if (orderError) throw new Error("Failed to insert order: " + orderError.message);
     
     return NextResponse.json({ success: true, order: { id: orderId } });
   } catch (error: unknown) {
     console.error("AIPC checkout error:", error);
     return NextResponse.json(
-      { error: "Failed to process AIPC offline order and update local stock." },
+      { error: "Failed to process AIPC offline order and update Supabase." },
       { status: 500 }
     );
   }
