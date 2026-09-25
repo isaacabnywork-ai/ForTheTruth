@@ -30,24 +30,59 @@ export function PosProductGrid({ products, categories, onAddToCart }: PosProduct
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, []);
 
+  // Keys used in WooCommerce attributes or meta_data that may hold the ISBN/EAN barcode
+  const ISBN_ATTR_NAMES = ["isbn", "ean", "gtin", "barcode", "upc"];
+  const ISBN_META_KEYS  = ["isbn", "_isbn", "ean", "_ean", "gtin", "_gtin", "barcode", "_barcode", "upc", "_upc"];
+
+  /** Extract every ISBN/barcode value stored on a product (attributes + meta_data) */
+  const getIsbnValues = (p: Product): string[] => {
+    const vals: string[] = [];
+    // Check attributes (e.g. "ISBN" attribute in WooCommerce)
+    for (const attr of p.attributes ?? []) {
+      if (ISBN_ATTR_NAMES.includes(attr.name.toLowerCase())) {
+        vals.push(...attr.options.map((v) => String(v).replace(/[-\s]/g, "").toLowerCase()));
+      }
+    }
+    // Check meta_data (e.g. _isbn, isbn, barcode keys)
+    for (const meta of p.meta_data ?? []) {
+      if (ISBN_META_KEYS.includes(meta.key.toLowerCase())) {
+        const v = String(meta.value ?? "").replace(/[-\s]/g, "").toLowerCase();
+        if (v) vals.push(v);
+      }
+    }
+    return vals;
+  };
+
   // Handle barcode / ISBN direct press (Enter key in search bar)
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === "Enter" && search.trim()) {
-      const query = search.trim().toLowerCase();
+      const rawQuery = search.trim().toLowerCase();
+      const queryCleaned = rawQuery.replace(/[-\s]/g, "");
+
       const match = products.find(
         (p) =>
-          p.sku?.toLowerCase() === query ||
-          p.id.toString() === query ||
-          p.name.toLowerCase() === query
+          // 1. SKU exact match
+          p.sku?.toLowerCase() === rawQuery ||
+          // 2. WooCommerce product ID
+          p.id.toString() === rawQuery ||
+          // 3. Exact title match
+          p.name.toLowerCase() === rawQuery ||
+          // 4. ISBN / EAN / GTIN stored in attributes or meta_data
+          getIsbnValues(p).includes(queryCleaned)
       );
       if (match) {
         onAddToCart(match);
         setLastScanned(match.name);
         setSearch("");
         setTimeout(() => setLastScanned(null), 2500);
+      } else {
+        // No match found — flash the input red briefly
+        setLastScanned("__NOT_FOUND__");
+        setTimeout(() => setLastScanned(null), 2000);
       }
     }
   };
+
 
   const filteredProducts = useMemo(() => {
     return products.filter((p) => {
@@ -146,13 +181,20 @@ export function PosProductGrid({ products, categories, onAddToCart }: PosProduct
         </div>
       </div>
 
-      {/* Barcode Success Toast Alert */}
-      {lastScanned && (
+      {/* Barcode Scan Toast — green = found, red = not in catalog */}
+      {lastScanned && lastScanned !== "__NOT_FOUND__" && (
         <div className="flex items-center gap-2 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-2.5 text-sm font-bold text-emerald-800 shadow-sm animate-bounce">
           <span className="flex h-5 w-5 items-center justify-center rounded-full bg-emerald-600 text-white text-xs">✓</span>
           Scanned &amp; Added: <span className="underline">{lastScanned}</span>
         </div>
       )}
+      {lastScanned === "__NOT_FOUND__" && (
+        <div className="flex items-center gap-2 rounded-xl border border-rose-200 bg-rose-50 px-4 py-2.5 text-sm font-bold text-rose-800 shadow-sm animate-bounce">
+          <span className="flex h-5 w-5 items-center justify-center rounded-full bg-rose-600 text-white text-xs">✕</span>
+          ISBN / Barcode not found in catalog. Check WooCommerce product attributes or meta.
+        </div>
+      )}
+
 
       {/* Products Grid */}
       <div className="flex-1 overflow-y-auto pr-1">

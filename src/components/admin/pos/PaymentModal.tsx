@@ -13,6 +13,8 @@ interface PaymentModalProps {
   customer: PosCustomerDetails;
   onClose: () => void;
   onSuccessReset: () => void;
+  submitApiUrl?: string;
+  exchangeCredit?: { originalOrderId: number; amount: number } | null;
 }
 
 type PayMode = "Cash" | "UPI" | "Card";
@@ -24,23 +26,91 @@ export function PaymentModal({
   customer,
   onClose,
   onSuccessReset,
+  submitApiUrl = "/api/admin/pos-order",
+  exchangeCredit,
 }: PaymentModalProps) {
   const [mode, setMode] = useState<PayMode>("Cash");
-  const [cashTendered, setCashTendered] = useState(totalAmount > 0 ? totalAmount : 500);
+  
+  const creditAmt = exchangeCredit?.amount || 0;
+  const netDueFromCustomer = Math.max(0, totalAmount - creditAmt);
+  const refundDueToCustomer = Math.max(0, creditAmt - totalAmount);
+
+  const [cashTendered, setCashTendered] = useState(netDueFromCustomer > 0 ? netDueFromCustomer : 0);
   const [cardRef, setCardRef] = useState("");
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
   const [completedOrder, setCompletedOrder] = useState<WCOrder | null>(null);
   const [isSuccess, setIsSuccess] = useState(false);
+  const [razorpayStatus, setRazorpayStatus] = useState<"idle" | "loading" | "paid" | "failed">("idle");
 
   // Cash change calculation
-  const changeReturned = Math.max(0, cashTendered - totalAmount);
+  const changeReturned = Math.max(0, cashTendered - netDueFromCustomer) + refundDueToCustomer;
 
   const handleQuickCash = (amt: number) => {
     setCashTendered(amt);
   };
 
-  const handleCompleteTransaction = async () => {
+  const handleRazorpayPayment = async () => {
+    setRazorpayStatus("loading");
+    setErrorMsg("");
+    try {
+      // Step 1: Create a Razorpay order on server
+      const orderRes = await fetch("/api/admin/razorpay-order", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ amount: netDueFromCustomer }),
+      });
+      const orderData = await orderRes.json();
+      if (!orderRes.ok) throw new Error(orderData.error || "Failed to create payment order");
+
+      // Step 2: Open Razorpay checkout popup
+      const rzpKeyId = process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID || "";
+      const options = {
+        key: rzpKeyId,
+        amount: orderData.amount,
+        currency: "INR",
+        name: "For The Truth Bookstore",
+        description: `POS Sale — ${items.length} title(s)`,
+        order_id: orderData.orderId,
+        prefill: {
+          name: customer.name || "Walk-in Customer",
+          contact: customer.phone || "",
+          email: customer.email || "pos@forthetruth.in",
+        },
+        theme: { color: "#10324F" },
+        handler: async (response: any) => {
+          // Payment succeeded — proceed to record the order
+          setRazorpayStatus("paid");
+          await handleCompleteTransaction(`Razorpay ID: ${response.razorpay_payment_id}`);
+        },
+        modal: {
+          ondismiss: () => {
+            setRazorpayStatus("idle");
+          },
+        },
+      };
+
+      // Load Razorpay script if not already loaded
+      if (!(window as any).Razorpay) {
+        await new Promise<void>((resolve, reject) => {
+          const script = document.createElement("script");
+          script.src = "https://checkout.razorpay.com/v1/checkout.js";
+          script.onload = () => resolve();
+          script.onerror = () => reject(new Error("Failed to load Razorpay SDK"));
+          document.body.appendChild(script);
+        });
+      }
+
+      const rzp = new (window as any).Razorpay(options);
+      rzp.open();
+      setRazorpayStatus("idle");
+    } catch (err: unknown) {
+      setRazorpayStatus("failed");
+      setErrorMsg((err as Error).message || "Razorpay payment failed.");
+    }
+  };
+
+  const handleCompleteTransaction = async (extraNote = "") => {
     setLoading(true);
     setErrorMsg("");
     try {
@@ -56,10 +126,10 @@ export function PaymentModal({
         customerName: customer.name,
         customerPhone: customer.phone,
         customerEmail: customer.email,
-        notes: `${customer.notes} | Pay Mode: ${mode} ${mode === "Card" ? `Ref: ${cardRef}` : ""}`,
+        notes: `${customer.notes} | Pay Mode: ${mode} ${mode === "Card" ? `Ref: ${cardRef}` : ""} ${extraNote} ${exchangeCredit ? `| EXCHANGE against Order #${exchangeCredit.originalOrderId} (Credit ₹${creditAmt})` : ""}`.trim(),
       };
 
-      const res = await fetch("/api/admin/pos-order", {
+      const res = await fetch(submitApiUrl, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
@@ -112,9 +182,23 @@ export function PaymentModal({
             <h2 className="font-display text-xl font-black tracking-tight">
               Counter Settlement &amp; Checkout
             </h2>
-            <p className="text-xs text-white/60">
-              Net Payable: <span className="font-bold text-gold-light">₹{totalAmount}</span>
-            </p>
+            <div className="text-xs text-white/80 mt-1 space-y-0.5">
+              <p>Total Items Value: ₹{totalAmount}</p>
+              {exchangeCredit && (
+                <p className="text-amber-300 font-bold">
+                  − Prepaid Credit: ₹{creditAmt} (Order #{exchangeCredit.originalOrderId})
+                </p>
+              )}
+              <p className="font-bold text-base text-gold-light mt-1">
+                {netDueFromCustomer > 0 ? (
+                  `Customer Owes: ₹${netDueFromCustomer}`
+                ) : refundDueToCustomer > 0 ? (
+                  `Refund Cash to Customer: ₹${refundDueToCustomer}`
+                ) : (
+                  `Even Exchange (₹0 Due)`
+                )}
+              </p>
+            </div>
           </div>
           <button
             onClick={onClose}
@@ -166,47 +250,54 @@ export function PaymentModal({
                 </label>
                 <input
                   type="number"
-                  min={totalAmount}
+                  min={netDueFromCustomer}
                   value={cashTendered}
                   onChange={(e) => setCashTendered(Number(e.target.value) || 0)}
-                  className="w-full rounded-2xl border-2 border-slate-300 px-4 py-3 font-display text-2xl font-black text-navy outline-none transition-colors focus:border-gold focus:ring-4 focus:ring-gold/20"
+                  disabled={netDueFromCustomer === 0}
+                  className="w-full rounded-2xl border-2 border-slate-300 px-4 py-3 font-display text-2xl font-black text-navy outline-none transition-colors focus:border-gold focus:ring-4 focus:ring-gold/20 disabled:opacity-50 disabled:bg-slate-100"
                 />
               </div>
 
               {/* Quick Preset Notes */}
-              <div>
-                <p className="text-[11px] font-bold text-slate-400 uppercase mb-2">Quick Cash Note Buttons:</p>
-                <div className="flex flex-wrap gap-2">
-                  {[totalAmount, Math.ceil(totalAmount / 100) * 100, 500, 1000, 2000].map((amt, i, arr) => {
-                    // avoid duplicate buttons
-                    if (arr.indexOf(amt) !== i || amt < totalAmount) return null;
-                    return (
-                      <button
-                        key={amt}
-                        onClick={() => handleQuickCash(amt)}
-                        className="rounded-xl border border-slate-200 bg-slate-100 px-4 py-2 font-display text-xs font-bold text-charcoal hover:bg-slate-200 active:scale-95 transition-all"
-                      >
-                        ₹{amt} {amt === totalAmount ? "(Exact)" : ""}
-                      </button>
-                    );
-                  })}
+              {netDueFromCustomer > 0 && (
+                <div>
+                  <p className="text-[11px] font-bold text-slate-400 uppercase mb-2">Quick Cash Note Buttons:</p>
+                  <div className="flex flex-wrap gap-2">
+                    {[netDueFromCustomer, Math.ceil(netDueFromCustomer / 100) * 100, 500, 1000, 2000].map((amt, i, arr) => {
+                      // avoid duplicate buttons
+                      if (arr.indexOf(amt) !== i || amt < netDueFromCustomer || amt === 0) return null;
+                      return (
+                        <button
+                          key={amt}
+                          onClick={() => handleQuickCash(amt)}
+                          className="rounded-xl border border-slate-200 bg-slate-100 px-4 py-2 font-display text-xs font-bold text-charcoal hover:bg-slate-200 active:scale-95 transition-all"
+                        >
+                          ₹{amt} {amt === netDueFromCustomer ? "(Exact)" : ""}
+                        </button>
+                      );
+                    })}
+                  </div>
                 </div>
-              </div>
+              )}
 
               {/* Change Box */}
               <div className={`rounded-2xl p-5 border flex items-center justify-between transition-colors ${
-                cashTendered < totalAmount
+                cashTendered < netDueFromCustomer
                   ? "bg-amber-50 border-amber-200 text-amber-800"
                   : "bg-emerald-50 border-emerald-200 text-emerald-900"
               }`}>
                 <div>
                   <span className="text-xs font-extrabold uppercase block">
-                    {cashTendered < totalAmount ? "Insufficient Cash Tendered" : "Change to Return to Customer:"}
+                    {cashTendered < netDueFromCustomer 
+                      ? "Insufficient Cash Tendered" 
+                      : refundDueToCustomer > 0 
+                        ? "Amount to Refund (Cash Back):"
+                        : "Change to Return to Customer:"}
                   </span>
                   <p className="text-[11px] opacity-75 mt-0.5">
-                    {cashTendered < totalAmount
-                      ? `Need ₹${totalAmount - cashTendered} more to settle bill.`
-                      : "Hand over exact change and finalize transaction."}
+                    {cashTendered < netDueFromCustomer
+                      ? `Need ₹${netDueFromCustomer - cashTendered} more to settle bill.`
+                      : "Hand over cash and finalize transaction."}
                   </p>
                 </div>
                 <div className="font-display text-3xl font-black text-emerald-700">
@@ -217,21 +308,48 @@ export function PaymentModal({
           )}
 
           {mode === "UPI" && (
-            <div className="flex flex-col items-center justify-center py-4 text-center">
-              <div className="rounded-3xl border-4 border-navy p-3 bg-white shadow-xl mb-4 relative group">
-                <img src={qrImageUrl} alt="UPI QR Code" className="w-52 h-52 object-contain" />
-                <div className="absolute inset-x-0 -bottom-3 flex justify-center">
-                  <span className="rounded-full bg-cta px-3 py-0.5 text-[10px] font-extrabold tracking-wider text-white uppercase shadow-sm">
-                    SCAN TO PAY ₹{totalAmount}
-                  </span>
+            <div className="flex flex-col items-center justify-center py-6 text-center gap-5">
+              {netDueFromCustomer > 0 ? (
+                <>
+                  <div className="flex h-20 w-20 items-center justify-center rounded-3xl bg-[#072654] text-white shadow-xl">
+                    <svg viewBox="0 0 100 100" width="48" height="48" fill="none">
+                      <text x="10" y="70" fontSize="60" fill="white" fontWeight="bold">Rₚ</text>
+                    </svg>
+                  </div>
+                  <div>
+                    <h3 className="font-display text-lg font-black text-navy">Razorpay Checkout</h3>
+                    <p className="text-xs text-slate-500 max-w-xs mt-1">
+                      Opens a secure Razorpay popup. Customer can pay via UPI, NetBanking, Card, or Wallet.
+                    </p>
+                  </div>
+                  <div className="w-full rounded-2xl border border-slate-200 bg-slate-50 p-4 text-left">
+                    <p className="text-xs text-slate-500 mb-1">Amount to Collect via Razorpay</p>
+                    <p className="font-display text-3xl font-black text-navy">₹{netDueFromCustomer}</p>
+                  </div>
+                  {razorpayStatus === "paid" && (
+                    <div className="w-full rounded-xl bg-emerald-50 border border-emerald-200 px-4 py-3 text-sm font-bold text-emerald-700">
+                      ✅ Payment received! Recording order...
+                    </div>
+                  )}
+                  <button
+                    onClick={handleRazorpayPayment}
+                    disabled={razorpayStatus === "loading" || razorpayStatus === "paid" || loading}
+                    className="w-full rounded-2xl bg-[#072654] py-4 font-display text-sm font-black text-white shadow-lg transition-all hover:bg-[#0a3270] active:scale-[0.98] disabled:opacity-50"
+                  >
+                    {razorpayStatus === "loading" ? (
+                      <span className="flex items-center justify-center gap-2">
+                        <span className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
+                        Opening Razorpay...
+                      </span>
+                    ) : razorpayStatus === "paid" ? "✅ Payment Confirmed" : "🏦 Launch Razorpay Payment"}
+                  </button>
+                </>
+              ) : (
+                <div className="w-full rounded-2xl border border-amber-200 bg-amber-50 p-8 text-center text-amber-800">
+                  <p className="font-bold text-lg mb-2">No Razorpay Payment Needed</p>
+                  <p className="text-sm">The new total is covered by the exchange credit. Please switch to "Cash Counter" mode if you need to hand them cash back, and click Confirm.</p>
                 </div>
-              </div>
-              <h3 className="font-display text-base font-black text-navy mt-2">
-                Store UPI ID: forthetruth@sbi
-              </h3>
-              <p className="text-xs text-slate-500 max-w-sm mt-1">
-                Ask customer to scan using GPay, PhonePe, Paytm, or BHIM. Click Confirm once tone or screen confirms success!
-              </p>
+              )}
             </div>
           )}
 
@@ -243,7 +361,7 @@ export function PaymentModal({
                 </div>
                 <div>
                   <h4 className="font-display text-sm font-bold text-navy">POS Card Terminal Swiping</h4>
-                  <p className="text-xs text-slate-500">Swipe or insert Credit/Debit card on counter POS machine for ₹{totalAmount}.</p>
+                  <p className="text-xs text-slate-500">Swipe or insert Credit/Debit card on counter POS machine for ₹{netDueFromCustomer}.</p>
                 </div>
               </div>
               <div>
@@ -271,26 +389,28 @@ export function PaymentModal({
           >
             CANCEL
           </button>
-          <button
-            onClick={handleCompleteTransaction}
-            disabled={loading || (mode === "Cash" && cashTendered < totalAmount)}
-            className="flex items-center gap-2 rounded-xl bg-cta px-8 py-3 font-display text-sm font-black tracking-wide text-white shadow-lg shadow-cta/25 transition-all hover:bg-cta-dark active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50"
-          >
-            {loading ? (
-              <>
-                <span className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
-                <span>SYNCING INVENTORY...</span>
-              </>
-            ) : (
-              <>
-                <span>CONFIRM &amp; PRINT BILL</span>
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M5 12h14" />
-                  <path d="m12 5 7 7-7 7" />
-                </svg>
-              </>
-            )}
-          </button>
+          {mode !== "UPI" && (
+            <button
+              onClick={() => handleCompleteTransaction()}
+              disabled={loading || (mode === "Cash" && cashTendered < netDueFromCustomer)}
+              className="flex items-center gap-2 rounded-xl bg-cta px-8 py-3 font-display text-sm font-black tracking-wide text-white shadow-lg shadow-cta/25 transition-all hover:bg-cta-dark active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50"
+            >
+              {loading ? (
+                <>
+                  <span className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
+                  <span>SYNCING INVENTORY...</span>
+                </>
+              ) : (
+                <>
+                  <span>CONFIRM &amp; PRINT BILL</span>
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M5 12h14" />
+                    <path d="m12 5 7 7-7 7" />
+                  </svg>
+                </>
+              )}
+            </button>
+          )}
         </div>
       </div>
     </div>

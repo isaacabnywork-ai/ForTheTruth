@@ -23,6 +23,7 @@ interface PosCartTerminalProps {
   onUpdateQty: (productId: number, delta: number) => void;
   onRemoveItem: (productId: number) => void;
   onClear: () => void;
+  onHoldOrder: () => void;
   onProceedToPayment: (discountAmount: number, customer: PosCustomerDetails) => void;
 }
 
@@ -38,6 +39,7 @@ export function PosCartTerminal({
   onUpdateQty,
   onRemoveItem,
   onClear,
+  onHoldOrder,
   onProceedToPayment,
 }: PosCartTerminalProps) {
   const [discountPercent, setDiscountPercent] = useState(0);
@@ -87,12 +89,25 @@ export function PosCartTerminal({
           </div>
         </div>
         {items.length > 0 && (
-          <button
-            onClick={onClear}
-            className="rounded-lg bg-rose-500/10 px-2.5 py-1 text-xs font-bold text-rose-300 transition-colors hover:bg-rose-500/20"
-          >
-            Clear Cart
-          </button>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={onHoldOrder}
+              title="Hold this order and start a new one"
+              className="flex items-center gap-1.5 rounded-lg bg-amber-500/15 px-2.5 py-1 text-xs font-bold text-amber-300 transition-colors hover:bg-amber-500/25"
+            >
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <rect x="6" y="4" width="4" height="16"/>
+                <rect x="14" y="4" width="4" height="16"/>
+              </svg>
+              Hold
+            </button>
+            <button
+              onClick={onClear}
+              className="rounded-lg bg-rose-500/10 px-2.5 py-1 text-xs font-bold text-rose-300 transition-colors hover:bg-rose-500/20"
+            >
+              Clear Cart
+            </button>
+          </div>
         )}
       </div>
 
@@ -166,39 +181,18 @@ export function PosCartTerminal({
           className="flex w-full items-center justify-between text-xs font-bold text-navy hover:text-cta"
         >
           <span className="flex items-center gap-1.5">
-            👤 {customer.name || customer.phone ? `Customer: ${customer.name || customer.phone}` : "Attach Customer & Church Info (Optional)"}
+            👤 {customer.phone ? `Customer: ${customer.phone}` : "Attach Mobile Number (Optional)"}
           </span>
           <span>{showCustomerForm ? "▲" : "▼"}</span>
         </button>
         {showCustomerForm && (
-          <div className="mt-3 grid grid-cols-2 gap-2 text-xs">
-            <input
-              type="text"
-              placeholder="Full Name / Pastor"
-              value={customer.name}
-              onChange={(e) => setCustomer({ ...customer, name: e.target.value })}
-              className="rounded-lg border border-slate-200 bg-white px-2.5 py-1.5 outline-none focus:border-gold"
-            />
+          <div className="mt-3 grid grid-cols-1 gap-2 text-xs">
             <input
               type="tel"
-              placeholder="Phone Number"
+              placeholder="Mobile Number"
               value={customer.phone}
               onChange={(e) => setCustomer({ ...customer, phone: e.target.value })}
               className="rounded-lg border border-slate-200 bg-white px-2.5 py-1.5 outline-none focus:border-gold"
-            />
-            <input
-              type="email"
-              placeholder="Email (for electronic bill)"
-              value={customer.email}
-              onChange={(e) => setCustomer({ ...customer, email: e.target.value })}
-              className="col-span-2 rounded-lg border border-slate-200 bg-white px-2.5 py-1.5 outline-none focus:border-gold"
-            />
-            <input
-              type="text"
-              placeholder="Cashier notes / GST Billing info..."
-              value={customer.notes}
-              onChange={(e) => setCustomer({ ...customer, notes: e.target.value })}
-              className="col-span-2 rounded-lg border border-slate-200 bg-white px-2.5 py-1.5 outline-none focus:border-gold"
             />
           </div>
         )}

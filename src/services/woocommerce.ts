@@ -149,6 +149,57 @@ export async function getProductsPaged(
   };
 }
 
+const REQUIRED_FIELDS = "id,name,slug,permalink,description,short_description,sku,price,regular_price,sale_price,on_sale,stock_status,stock_quantity,average_rating,rating_count,images,categories,attributes,meta_data,weight,dimensions";
+
+const globalForCache = globalThis as unknown as {
+  _wcProductsCache?: { data: Product[]; time: number };
+};
+
+/**
+ * Fetches ALL products from WooCommerce by auto-paginating through every page
+ * (100 products per request — the WooCommerce API maximum).
+ * Use this whenever you need the complete catalog (e.g. POS terminal, admin stock manager).
+ */
+export async function getAllProducts(
+  q: Omit<ProductQuery, "page" | "perPage"> = {}
+): Promise<Product[]> {
+  const CACHE_TTL = (q.revalidate ?? 60) * 1000;
+  const now = Date.now();
+  if (globalForCache._wcProductsCache && (now - globalForCache._wcProductsCache.time < CACHE_TTL)) {
+    return globalForCache._wcProductsCache.data;
+  }
+
+  const PER_PAGE = 100;
+
+  // Fetch page 1 to discover totalPages
+  const firstRes = await wcFetchRaw("/products", {
+    searchParams: { ...productParams({ ...q, page: 1, perPage: PER_PAGE }), _fields: REQUIRED_FIELDS },
+    revalidate: q.revalidate ?? 60,
+  });
+  const firstBatch = (await firstRes.json()) as Product[];
+  const totalPages = parseInt(firstRes.headers.get("x-wp-totalpages") ?? "1", 10);
+
+  if (totalPages <= 1) {
+    globalForCache._wcProductsCache = { data: firstBatch, time: Date.now() };
+    return firstBatch;
+  }
+
+  // Fetch remaining pages in parallel
+  const pageNumbers = Array.from({ length: totalPages - 1 }, (_, i) => i + 2);
+  const rest = await Promise.all(
+    pageNumbers.map((page) =>
+      wcFetch<Product[]>("/products", {
+        searchParams: { ...productParams({ ...q, page, perPage: PER_PAGE }), _fields: REQUIRED_FIELDS },
+        revalidate: q.revalidate ?? 60,
+      })
+    )
+  );
+
+  const allProducts = [firstBatch, ...rest].flat();
+  globalForCache._wcProductsCache = { data: allProducts, time: Date.now() };
+  return allProducts;
+}
+
 export async function getProductBySlug(slug: string): Promise<Product | null> {
   const cleanSlug = decodeURIComponent(slug).toLowerCase().trim();
   let results = await wcFetch<Product[]>("/products", {

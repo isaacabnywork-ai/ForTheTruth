@@ -20,6 +20,12 @@ export interface WCAttribute {
   options: string[];
 }
 
+export interface WCMetaData {
+  id: number;
+  key: string;
+  value: string;
+}
+
 export interface Product {
   id: number;
   name: string;
@@ -39,6 +45,7 @@ export interface Product {
   images: WCImage[];
   categories: Pick<WCCategory, "id" | "name" | "slug">[];
   attributes: WCAttribute[];
+  meta_data: WCMetaData[];
   weight?: string;
   dimensions?: {
     length: string;

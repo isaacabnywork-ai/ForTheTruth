@@ -1,0 +1,52 @@
+[
+  {
+    "id": 240887,
+    "date": "2026-09-25T08:54:43.263Z",
+    "paymentMethod": "Cash",
+    "lineItems": [
+      {
+        "product_id": 100237,
+        "quantity": 1,
+        "total": "250"
+      },
+      {
+        "product_id": 100183,
+        "quantity": 1,
+        "total": "170"
+      }
+    ],
+    "totalAmount": 420,
+    "discountAmount": 0,
+    "customerName": "",
+    "customerPhone": "7571013028",
+    "customerEmail": "",
+    "notes": " | Pay Mode: Cash ",
+    "refunded": true,
+    "refundedAt": "2026-09-25T09:31:50.839Z"
+  },
+  {
+    "id": 978616,
+    "date": "2026-09-25T09:36:15.672Z",
+    "paymentMethod": "Cash",
+    "lineItems": [
+      {
+        "product_id": 100000,
+        "quantity": 1,
+        "total": "1500"
+      },
+      {
+        "product_id": 100001,
+        "quantity": 1,
+        "total": "800"
+      }
+    ],
+    "totalAmount": 2300,
+    "discountAmount": 0,
+    "customerName": "",
+    "customerPhone": "",
+    "customerEmail": "",
+    "notes": "| Pay Mode: Cash",
+    "refunded": true,
+    "refundedAt": "2026-09-25T09:36:29.450Z"
+  }
+]
