@@ -14,7 +14,21 @@ export async function GET(req: NextRequest) {
       .order("id", { ascending: true });
 
     if (error) throw error;
-    return NextResponse.json(books || []);
+    
+    // Map Supabase columns back to the frontend expected keys
+    const mappedBooks = (books || []).map((b, index) => ({
+      index,
+      "S. No": index + 1,
+      Name: b.TITLE || "",
+      SKU: b.AUTHOR || "", 
+      MRP: b.PRICE || 0, // We didn't migrate original MRP, using PRICE
+      "AIPC Special Price": b.PRICE || 0,
+      "AIPC QTY": b["AIPC QTY"] || 0,
+      "AIPC Sold": b["AIPC Sold"] || 0,
+      ISBN: b.ISBN || ""
+    }));
+
+    return NextResponse.json(mappedBooks);
   } catch (error) {
     console.error("Error reading AIPC stock from Supabase:", error);
     return NextResponse.json({ error: "Failed to read stock data" }, { status: 500 });
@@ -45,12 +59,12 @@ export async function POST(req: NextRequest) {
       .from("aipc_books")
       .insert({
         id: newId,
-        TITLE: newBook.TITLE || "",
-        "AIPC QTY": newBook["AIPC QTY"] || 0,
-        "AIPC Sold": newBook["AIPC Sold"] || 0,
-        ISBN: newBook.ISBN || "",
-        PRICE: newBook.PRICE || 0,
-        AUTHOR: newBook.AUTHOR || "",
+        TITLE: newBook.name || "",
+        "AIPC QTY": newBook.qty || 0,
+        "AIPC Sold": 0,
+        ISBN: newBook.isbn || "",
+        PRICE: newBook.aipcPrice || newBook.mrp || 0,
+        AUTHOR: newBook.sku || "",
       })
       .select()
       .single();
@@ -92,9 +106,15 @@ export async function PATCH(req: NextRequest) {
     }
 
     // Normal field update
+    let sbField = field;
+    if (field === "Name") sbField = "TITLE";
+    if (field === "AIPC Special Price") sbField = "PRICE";
+    if (field === "MRP") sbField = "PRICE"; // Just map to price
+    if (field === "SKU") sbField = "AUTHOR";
+
     const { error } = await supabase
       .from("aipc_books")
-      .update({ [field]: value })
+      .update({ [sbField]: value })
       .eq("id", bookId);
       
     if (error) throw error;
