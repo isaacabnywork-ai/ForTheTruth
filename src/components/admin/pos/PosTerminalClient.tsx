@@ -24,6 +24,7 @@ interface PosTerminalClientProps {
 }
 
 export function PosTerminalClient({ initialProducts, categories, submitApiUrl, showExportButton }: PosTerminalClientProps) {
+  const [products, setProducts] = useState<Product[]>(initialProducts);
   const [cart, setCart] = useState<PosCartItem[]>([]);
   const [heldOrders, setHeldOrders] = useState<HeldOrder[]>([]);
   const [showHeldPanel, setShowHeldPanel] = useState(false);
@@ -37,8 +38,33 @@ export function PosTerminalClient({ initialProducts, categories, submitApiUrl, s
   const [recentOrders, setRecentOrders] = useState<any[]>([]);
   const [loadingOrders, setLoadingOrders] = useState(false);
   const [refundingId, setRefundingId] = useState<number | null>(null);
-  
+
   const [exchangeCredit, setExchangeCredit] = useState<{ originalOrderId: number; amount: number } | null>(null);
+
+  // Load book cover images asynchronously after POS opens — doesn't block render
+  useEffect(() => {
+    async function loadImages() {
+      try {
+        const res = await fetch("/api/admin/aipc/images", { cache: "no-store" });
+        if (!res.ok) return;
+        const { images } = await res.json() as { images: Record<string, string> };
+        if (!images || Object.keys(images).length === 0) return;
+
+        setProducts((prev) =>
+          prev.map((p) => {
+            const imgUrl = images[p.sku?.toLowerCase() ?? ""];
+            if (imgUrl && (!p.images || p.images.length === 0)) {
+              return { ...p, images: [{ id: 0, src: imgUrl, alt: p.name }] };
+            }
+            return p;
+          })
+        );
+      } catch {
+        // Images are cosmetic — silently fail
+      }
+    }
+    void loadImages();
+  }, []);
 
   const fetchOrders = async () => {
     setLoadingOrders(true);
@@ -222,7 +248,7 @@ export function PosTerminalClient({ initialProducts, categories, submitApiUrl, s
             REGISTER OPEN
           </span>
           <span className="rounded-xl border border-slate-200 bg-white px-3 py-1 font-mono text-xs font-bold text-slate-600 shadow-xs">
-            {initialProducts.length} Titles Loaded
+            {products.length} Titles Loaded
           </span>
 
           {/* Held Orders Badge */}
@@ -286,7 +312,7 @@ export function PosTerminalClient({ initialProducts, categories, submitApiUrl, s
       <div className="flex flex-1 flex-col gap-6 lg:flex-row overflow-hidden">
         <div className="flex-1 min-w-0 h-full overflow-hidden">
           <PosProductGrid
-            products={initialProducts}
+            products={products}
             categories={categories}
             onAddToCart={handleAddToCart}
           />
