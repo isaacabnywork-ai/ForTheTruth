@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 const NAV_ITEMS = [
   {
@@ -111,36 +111,195 @@ const NAV_ITEMS = [
   },
 ];
 
+const NavLink = ({
+  item,
+  active,
+  onClick,
+}: {
+  item: (typeof NAV_ITEMS)[0];
+  active: boolean;
+  onClick: () => void;
+}) => (
+  <Link
+    href={item.href}
+    onClick={onClick}
+    className={`group flex items-center justify-between rounded-xl px-3.5 py-3 text-sm font-semibold transition-all duration-200 ${
+      active
+        ? "bg-gradient-to-r from-gold/25 to-gold/10 text-gold-light shadow-[inset_4px_0_0_0_#C89B3C]"
+        : "text-white/70 hover:bg-white/5 hover:text-white"
+    }`}
+  >
+    <div className="flex items-center gap-3">
+      <span className={`shrink-0 transition-transform duration-200 group-hover:scale-110 ${active ? "text-gold-light" : "text-white/50"}`}>
+        {item.icon}
+      </span>
+      <span>{item.label}</span>
+    </div>
+    {item.badge && (
+      <span className="rounded-full bg-cta px-2 py-0.5 text-[10px] font-bold tracking-wider text-white shadow-sm">
+        {item.badge}
+      </span>
+    )}
+  </Link>
+);
+
 export function AdminSidebar({ onLock }: { onLock: () => void }) {
   const pathname = usePathname();
   const [mobileOpen, setMobileOpen] = useState(false);
 
+  // Close dropdown on route change
+  useEffect(() => {
+    setMobileOpen(false);
+  }, [pathname]);
+
+  // Close on Escape key
+  useEffect(() => {
+    const handleKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setMobileOpen(false);
+    };
+    document.addEventListener("keydown", handleKey);
+    return () => document.removeEventListener("keydown", handleKey);
+  }, []);
+
+  const close = () => setMobileOpen(false);
+
   return (
     <>
-      {/* Mobile Header Toggle */}
-      <div className="flex items-center justify-between border-b border-navy-light/20 bg-navy px-4 py-3 text-white lg:hidden">
-        <div className="flex items-center gap-2">
-          <span className="font-display text-xl font-bold tracking-tight text-white">
-            ABNY <span className="text-gold-light">POS &amp; Admin</span>
-          </span>
-        </div>
+      {/* ── Mobile / Tablet Top Bar (hidden on xl+) ─────────────────────── */}
+      <div className="sticky top-0 z-50 flex items-center justify-between border-b border-white/10 bg-navy px-4 py-3 text-white xl:hidden">
+        <Link href="/admin/pos" className="flex items-center gap-2.5">
+          <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-gradient-to-tr from-gold-dark to-gold-light font-display text-base font-black text-navy shadow">
+            A
+          </div>
+          <div>
+            <p className="font-display text-sm font-bold tracking-tight text-white">
+              ABNY <span className="text-gold-light">Admin</span>
+            </p>
+            <p className="text-[9px] uppercase tracking-widest text-white/50">
+              Retail Command Hub
+            </p>
+          </div>
+        </Link>
+
         <button
           onClick={() => setMobileOpen((p) => !p)}
-          className="rounded-lg bg-white/10 p-2 text-white hover:bg-white/20"
+          className="flex items-center gap-2 rounded-xl border border-white/20 bg-white/10 px-3 py-2 text-xs font-bold text-white transition-colors hover:bg-white/20"
           aria-label="Toggle admin menu"
+          aria-expanded={mobileOpen}
         >
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-            {mobileOpen ? <path d="M18 6 6 18M6 6l12 12" /> : <path d="M4 6h16M4 12h16M4 18h16" />}
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+            {mobileOpen
+              ? <path d="M18 6 6 18M6 6l12 12" />
+              : <path d="M4 6h16M4 12h16M4 18h16" />}
           </svg>
+          <span>{mobileOpen ? "Close" : "Menu"}</span>
         </button>
       </div>
 
-      {/* Sidebar Rail */}
-      <aside
-        className={`fixed inset-y-0 left-0 z-50 flex w-[260px] shrink-0 flex-col bg-navy text-white transition-transform duration-300 ease-out lg:static lg:translate-x-0 ${
-          mobileOpen ? "translate-x-0 shadow-2xl" : "-translate-x-full"
-        }`}
-      >
+      {/* ── Mobile / Tablet Dropdown Panel ──────────────────────────────── */}
+      {mobileOpen && (
+        <>
+          {/* Backdrop */}
+          <div
+            className="fixed inset-0 z-40 bg-black/50 backdrop-blur-sm xl:hidden"
+            onClick={close}
+            aria-hidden="true"
+          />
+
+          {/* Dropdown panel — slides down from top bar */}
+          <div className="fixed left-0 right-0 top-[57px] z-50 max-h-[calc(100dvh-57px)] overflow-y-auto bg-navy shadow-2xl xl:hidden">
+            <div className="px-4 py-4">
+              {/* Operations */}
+              <p className="mb-2 px-2 text-[10px] font-bold uppercase tracking-[0.2em] text-gold-light/70">
+                Operations
+              </p>
+              <nav className="space-y-1">
+                {NAV_ITEMS.map((item) => {
+                  const active =
+                    item.href === "/admin/pos"
+                      ? pathname === "/admin/pos"
+                      : pathname.startsWith(item.href);
+                  return (
+                    <NavLink key={item.href} item={item} active={active} onClick={close} />
+                  );
+                })}
+              </nav>
+
+              <div className="my-4 border-t border-white/10" />
+
+              {/* Store & Security */}
+              <p className="mb-2 px-2 text-[10px] font-bold uppercase tracking-[0.2em] text-white/40">
+                Store &amp; Security
+              </p>
+              <ul className="space-y-1">
+                <li>
+                  <Link
+                    href="/admin/staff"
+                    onClick={close}
+                    className={`group flex items-center gap-3 rounded-xl px-3.5 py-3 text-sm font-semibold transition-colors ${
+                      pathname.startsWith("/admin/staff")
+                        ? "bg-gradient-to-r from-gold/25 to-gold/10 text-gold-light shadow-[inset_4px_0_0_0_#C89B3C]"
+                        : "text-white/60 hover:bg-white/5 hover:text-white"
+                    }`}
+                  >
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="shrink-0 text-white/40 group-hover:text-white/70">
+                      <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
+                      <circle cx="9" cy="7" r="4" />
+                      <path d="M22 21v-2a4 4 0 0 0-3-3.87" />
+                      <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+                      <line x1="19" y1="8" x2="19" y2="14" />
+                      <line x1="22" y1="11" x2="16" y2="11" />
+                    </svg>
+                    Staff &amp; Access
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    href="/"
+                    target="_blank"
+                    onClick={close}
+                    className="flex items-center gap-3 rounded-xl px-3.5 py-3 text-sm font-semibold text-white/60 transition-colors hover:bg-white/5 hover:text-white"
+                  >
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-white/40">
+                      <path d="M15 3h6v6" />
+                      <path d="M10 14 21 3" />
+                      <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
+                    </svg>
+                    View Live Storefront
+                  </Link>
+                </li>
+                <li>
+                  <button
+                    onClick={() => { close(); onLock(); }}
+                    className="flex w-full items-center gap-3 rounded-xl px-3.5 py-3 text-sm font-semibold text-rose-300/80 transition-colors hover:bg-rose-500/10 hover:text-rose-200"
+                  >
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <rect width="18" height="11" x="3" y="11" rx="2" ry="2" />
+                      <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+                    </svg>
+                    Lock POS Station
+                  </button>
+                </li>
+              </ul>
+
+              {/* Terminal Status */}
+              <div className="mt-4 rounded-xl bg-white/5 p-3">
+                <div className="flex items-center justify-between text-xs font-medium text-white/80">
+                  <span>Terminal Status</span>
+                  <span className="flex items-center gap-1.5 font-bold text-emerald-400">
+                    <span className="h-2 w-2 animate-pulse rounded-full bg-emerald-400" />
+                    Online &amp; Synced
+                  </span>
+                </div>
+                <p className="mt-1 text-[11px] text-white/45">WooCommerce Backend Active</p>
+              </div>
+            </div>
+          </div>
+        </>
+      )}
+
+      {/* ── Desktop Sidebar (xl+ only) ──────────────────────────────────── */}
+      <aside className="hidden xl:flex xl:h-[100dvh] xl:w-[260px] xl:shrink-0 xl:flex-col xl:bg-navy xl:text-white">
         {/* Brand Header */}
         <div className="flex h-[72px] items-center justify-between border-b border-white/10 px-6">
           <Link href="/admin/pos" className="flex items-center gap-2.5">
@@ -156,47 +315,21 @@ export function AdminSidebar({ onLock }: { onLock: () => void }) {
               </p>
             </div>
           </Link>
-          <button
-            onClick={() => setMobileOpen(false)}
-            className="text-white/50 hover:text-white lg:hidden"
-          >
-            ✕
-          </button>
         </div>
 
-        {/* Navigation Section */}
+        {/* Navigation */}
         <div className="flex-1 overflow-y-auto px-4 py-6 scrollbar-hide">
           <div className="mb-2 px-2 text-[10px] font-bold uppercase tracking-[0.2em] text-gold-light/70">
             Operations
           </div>
           <nav className="space-y-1.5">
             {NAV_ITEMS.map((item) => {
-              const active = item.href === "/admin/pos" 
-                ? pathname === "/admin/pos" 
-                : pathname.startsWith(item.href);
+              const active =
+                item.href === "/admin/pos"
+                  ? pathname === "/admin/pos"
+                  : pathname.startsWith(item.href);
               return (
-                <Link
-                  key={item.href}
-                  href={item.href}
-                  onClick={() => setMobileOpen(false)}
-                  className={`group flex items-center justify-between rounded-xl px-3.5 py-3 text-sm font-semibold transition-all duration-200 ${
-                    active
-                      ? "bg-gradient-to-r from-gold/25 to-gold/10 text-gold-light shadow-[inset_4px_0_0_0_#C89B3C]"
-                      : "text-white/70 hover:bg-white/5 hover:text-white"
-                  }`}
-                >
-                  <div className="flex items-center gap-3">
-                    <span className={`shrink-0 transition-transform duration-200 group-hover:scale-110 ${active ? "text-gold-light" : "text-white/50"}`}>
-                      {item.icon}
-                    </span>
-                    <span>{item.label}</span>
-                  </div>
-                  {item.badge && (
-                    <span className="rounded-full bg-cta px-2 py-0.5 text-[10px] font-bold tracking-wider text-white shadow-sm">
-                      {item.badge}
-                    </span>
-                  )}
-                </Link>
+                <NavLink key={item.href} item={item} active={active} onClick={() => {}} />
               );
             })}
           </nav>
@@ -210,7 +343,6 @@ export function AdminSidebar({ onLock }: { onLock: () => void }) {
             <li>
               <Link
                 href="/admin/staff"
-                onClick={() => setMobileOpen(false)}
                 className={`group flex items-center gap-3 rounded-xl px-3.5 py-2.5 text-sm font-semibold transition-colors ${
                   pathname.startsWith("/admin/staff")
                     ? "bg-gradient-to-r from-gold/25 to-gold/10 text-gold-light shadow-[inset_4px_0_0_0_#C89B3C]"
@@ -257,7 +389,7 @@ export function AdminSidebar({ onLock }: { onLock: () => void }) {
           </ul>
         </div>
 
-        {/* Footer Station Info */}
+        {/* Footer */}
         <div className="border-t border-white/10 p-4">
           <div className="rounded-xl bg-white/5 p-3">
             <div className="flex items-center justify-between text-xs font-medium text-white/80">
@@ -267,20 +399,10 @@ export function AdminSidebar({ onLock }: { onLock: () => void }) {
                 Online &amp; Synced
               </span>
             </div>
-            <p className="mt-1 text-[11px] text-white/45">
-              WooCommerce Backend Active
-            </p>
+            <p className="mt-1 text-[11px] text-white/45">WooCommerce Backend Active</p>
           </div>
         </div>
       </aside>
-
-      {/* Backdrop for mobile */}
-      {mobileOpen && (
-        <div
-          onClick={() => setMobileOpen(false)}
-          className="fixed inset-0 z-40 bg-black/60 backdrop-blur-sm lg:hidden"
-        />
-      )}
     </>
   );
 }
