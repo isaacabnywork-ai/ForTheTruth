@@ -64,7 +64,10 @@ export function PaymentModal({
       if (!orderRes.ok) throw new Error(orderData.error || "Failed to create payment order");
 
       // Step 2: Open Razorpay checkout popup
-      const rzpKeyId = process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID || "";
+      const rzpKeyId = orderData.keyId || process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID || "";
+      if (!rzpKeyId) {
+        throw new Error("Razorpay Key ID is missing. Please verify server environment configuration.");
+      }
       const options = {
         key: rzpKeyId,
         amount: orderData.amount,

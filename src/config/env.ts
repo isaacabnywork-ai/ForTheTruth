@@ -6,7 +6,7 @@ import { z } from "zod";
  * WordPress/WooCommerce API calls are bypassed immediately with zero network latency.
  * Offline services, Supabase database, and AIPC POS continue working smoothly.
  */
-export const WOOCOMMERCE_MAINTENANCE_MODE = true;
+export const WOOCOMMERCE_MAINTENANCE_MODE = false;
 
 /**
  * Server-side env validation. Import ONLY from server code
