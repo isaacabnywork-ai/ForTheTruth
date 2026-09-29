@@ -6,7 +6,6 @@ const wpHost = process.env.NEXT_PUBLIC_WORDPRESS_URL
 
 const nextConfig: NextConfig = {
   output: process.env.DOCKER_BUILD === "1" ? "standalone" : undefined,
-  staticPageGenerationTimeout: 120,
   compress: true,
   poweredByHeader: false,
   images: {

@@ -31,10 +31,14 @@ async function wcFetchRaw(
   ).toString("base64");
   const isGet = (opts.method ?? "GET") === "GET";
 
+  const isBuild = process.env.NEXT_PHASE === "phase-production-build";
+  const maxAttempts = isBuild ? 0 : MAX_RETRIES;
+  const timeoutMs = isBuild ? 4000 : 8000;
+
   let lastError: unknown;
-  for (let attempt = 0; attempt <= MAX_RETRIES; attempt++) {
+  for (let attempt = 0; attempt <= maxAttempts; attempt++) {
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 8000); // 8s hard timeout
+    const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
 
     try {
       const res = await fetch(url, {
@@ -59,7 +63,7 @@ async function wcFetchRaw(
       clearTimeout(timeoutId);
       lastError = err;
       if (err instanceof WCApiError) throw err; // don't retry client errors
-      if (attempt < MAX_RETRIES) {
+      if (attempt < maxAttempts) {
         await new Promise((r) => setTimeout(r, 300 * (attempt + 1)));
       }
     }
@@ -164,6 +168,7 @@ const REQUIRED_FIELDS = "id,name,slug,permalink,description,short_description,sk
 
 const globalForCache = globalThis as unknown as {
   _wcProductsCache?: { data: Product[]; time: number };
+  _wcCategoriesCache?: { data: WCCategory[]; time: number };
 };
 
 /**
@@ -235,14 +240,24 @@ export async function getProduct(id: number): Promise<Product> {
 // ---------- Categories ----------
 
 export async function getCategories(): Promise<WCCategory[]> {
+  const CACHE_TTL = 3600 * 1000;
+  const now = Date.now();
+  if (globalForCache._wcCategoriesCache && (now - globalForCache._wcCategoriesCache.time < CACHE_TTL)) {
+    return globalForCache._wcCategoriesCache.data;
+  }
+
   try {
-    return await wcFetch<WCCategory[]>("/products/categories", {
+    const data = await wcFetch<WCCategory[]>("/products/categories", {
       searchParams: { per_page: 100, hide_empty: true },
       revalidate: 86400,
     });
+    if (data && data.length > 0) {
+      globalForCache._wcCategoriesCache = { data, time: now };
+    }
+    return data;
   } catch (err) {
     console.error("Failed to fetch WooCommerce categories:", err);
-    return [];
+    return globalForCache._wcCategoriesCache?.data || [];
   }
 }
 
