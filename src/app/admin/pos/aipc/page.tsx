@@ -35,16 +35,21 @@ export default async function AipcPosTerminalPage() {
   const products: Product[] = aipcData.map((item: any) => {
     const salePrice = item.PRICE ? String(item.PRICE) : "0";
     const qty = typeof item["AIPC QTY"] === "number" ? item["AIPC QTY"] : 0;
-    const skuLower = (item.AUTHOR || "").toLowerCase();
+    const rawSku = String(item.AUTHOR || "").trim();
+    const skuLower = rawSku.toLowerCase();
+    const rawIsbn = String(item.ISBN || "").trim();
+    const cleanIsbn = rawIsbn.replace(/[^0-9a-zA-Z]/g, "");
+
+    const isbnOptions = Array.from(new Set([rawIsbn, cleanIsbn].filter(Boolean)));
 
     return {
       id: item.id,
       name: item.TITLE || "Unknown Book",
-      slug: skuLower,
+      slug: (skuLower || String(item.id)),
       permalink: "",
       description: "",
       short_description: "",
-      sku: item.AUTHOR || "",
+      sku: rawSku,
       price: salePrice,
       regular_price: salePrice,
       sale_price: salePrice,
@@ -55,8 +60,17 @@ export default async function AipcPosTerminalPage() {
       rating_count: 0,
       images: [],
       categories: [{ id: 999, name: "AIPC Conference", slug: "aipc" }],
-      attributes: [{ id: 1, name: "ISBN", options: [String(item.ISBN || "")] }],
-      meta_data: [],
+      attributes: [
+        { id: 1, name: "ISBN", options: isbnOptions },
+        { id: 2, name: "ean", options: isbnOptions },
+        { id: 3, name: "barcode", options: isbnOptions },
+      ],
+      meta_data: [
+        { id: 1, key: "isbn", value: cleanIsbn },
+        { id: 2, key: "_isbn", value: cleanIsbn },
+        { id: 3, key: "barcode", value: cleanIsbn },
+        { id: 4, key: "raw_isbn", value: rawIsbn },
+      ],
     };
   });
 

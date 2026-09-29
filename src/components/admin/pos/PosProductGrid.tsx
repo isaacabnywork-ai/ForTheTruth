@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo, useRef, useEffect } from "react";
+import { useState, useMemo, useRef, useEffect, useCallback } from "react";
 import { getAuthor, type Product, type WCCategory } from "@/types/product";
 import { formatPrice } from "@/utils/currency";
 
@@ -96,8 +96,28 @@ export function PosProductGrid({ products, categories, onAddToCart }: PosProduct
   const [lastScanned, setLastScanned] = useState<string | null>(null);
   const barcodeInputRef = useRef<HTMLInputElement>(null);
 
-  // Focus search/barcode input on Cmd+K or Ctrl+K
+  // Play crisp audio feedback on barcode scan
+  const playBeep = useCallback((success = true) => {
+    try {
+      const AudioCtx = window.AudioContext || (window as any).webkitAudioContext;
+      if (!AudioCtx) return;
+      const ctx = new AudioCtx();
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.type = "sine";
+      osc.frequency.setValueAtTime(success ? 880 : 260, ctx.currentTime);
+      gain.gain.setValueAtTime(0.12, ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + (success ? 0.12 : 0.25));
+      osc.start();
+      osc.stop(ctx.currentTime + (success ? 0.12 : 0.25));
+    } catch {}
+  }, []);
+
+  // Auto-focus search/barcode input on mount and on Cmd+K or Ctrl+K
   useEffect(() => {
+    barcodeInputRef.current?.focus();
     const handleKeyDown = (e: KeyboardEvent) => {
       if ((e.metaKey || e.ctrlKey) && e.key === "k") {
         e.preventDefault();
@@ -108,88 +128,196 @@ export function PosProductGrid({ products, categories, onAddToCart }: PosProduct
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, []);
 
-  // Keys used in WooCommerce attributes or meta_data that may hold the ISBN/EAN barcode
+  // Keys used in attributes or meta_data that may hold the ISBN/EAN barcode
   const ISBN_ATTR_NAMES = ["isbn", "ean", "gtin", "barcode", "upc"];
-  const ISBN_META_KEYS  = ["isbn", "_isbn", "ean", "_ean", "gtin", "_gtin", "barcode", "_barcode", "upc", "_upc"];
+  const ISBN_META_KEYS  = ["isbn", "_isbn", "ean", "_ean", "gtin", "_gtin", "barcode", "_barcode", "upc", "_upc", "raw_isbn"];
 
   /** Extract every ISBN/barcode value stored on a product (attributes + meta_data) */
-  const getIsbnValues = (p: Product): string[] => {
+  const getIsbnValues = useCallback((p: Product): string[] => {
     const vals: string[] = [];
-    // Check attributes (e.g. "ISBN" attribute in WooCommerce)
+    // Check attributes
     for (const attr of p.attributes ?? []) {
       if (ISBN_ATTR_NAMES.includes(attr.name.toLowerCase())) {
-        vals.push(...attr.options.map((v) => String(v).replace(/[-\s]/g, "").toLowerCase()));
+        for (const opt of attr.options ?? []) {
+          const clean = String(opt).replace(/[^0-9a-zA-Z]/g, "").toLowerCase();
+          if (clean) vals.push(clean);
+        }
       }
     }
-    // Check meta_data (e.g. _isbn, isbn, barcode keys)
+    // Check meta_data
     for (const meta of p.meta_data ?? []) {
       if (ISBN_META_KEYS.includes(meta.key.toLowerCase())) {
-        const v = String(meta.value ?? "").replace(/[-\s]/g, "").toLowerCase();
-        if (v) vals.push(v);
+        const clean = String(meta.value ?? "").replace(/[^0-9a-zA-Z]/g, "").toLowerCase();
+        if (clean) vals.push(clean);
       }
     }
-    return vals;
-  };
+    // Direct properties if any
+    const anyP = p as any;
+    if (anyP.isbn) vals.push(String(anyP.isbn).replace(/[^0-9a-zA-Z]/g, "").toLowerCase());
+    if (anyP.ISBN) vals.push(String(anyP.ISBN).replace(/[^0-9a-zA-Z]/g, "").toLowerCase());
+    return Array.from(new Set(vals.filter(Boolean)));
+  }, []);
 
-  // Handle barcode / ISBN direct press (Enter key in search bar)
-  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === "Enter" && search.trim()) {
-      const rawQuery = search.trim().toLowerCase();
-      const queryCleaned = rawQuery.replace(/[-\s]/g, "");
+  /** Match a product by exact or normalized barcode, ISBN, SKU, ID, or title */
+  const findProductByQuery = useCallback((query: string, allowPartial = true) => {
+    const rawQuery = query.trim().toLowerCase();
+    const queryCleaned = rawQuery.replace(/[^0-9a-zA-Z]/g, "");
+    if (!rawQuery && !queryCleaned) return { match: null, multiple: false };
 
-      // ── 1. Exact match: SKU / ID / full title / ISBN attribute ───────────
-      const exactMatch = products.find(
-        (p) =>
-          p.sku?.toLowerCase() === rawQuery ||
-          p.id.toString() === rawQuery ||
-          p.name.toLowerCase() === rawQuery ||
-          getIsbnValues(p).includes(queryCleaned)
-      );
+    const queryNoLeadingZero = queryCleaned.replace(/^0+/, "");
+    const queryCore9 = queryCleaned.length === 13 && (queryCleaned.startsWith("978") || queryCleaned.startsWith("979"))
+      ? queryCleaned.slice(3, 12)
+      : queryCleaned.length === 10
+      ? queryCleaned.slice(0, 9)
+      : "";
 
-      if (exactMatch) {
-        onAddToCart(exactMatch);
-        setLastScanned(exactMatch.name);
-        setSearch("");
-        setTimeout(() => setLastScanned(null), 2500);
-        return;
+    // 1. Exact Match: SKU, ID, exact Title, or ISBN/Barcode
+    const exact = products.find((p) => {
+      const pSkuRaw = (p.sku || "").toLowerCase().trim();
+      const pSkuClean = pSkuRaw.replace(/[^0-9a-zA-Z]/g, "");
+      if (pSkuRaw && (pSkuRaw === rawQuery || pSkuClean === queryCleaned)) return true;
+      if (p.id.toString() === rawQuery) return true;
+      if (p.name.toLowerCase().trim() === rawQuery) return true;
+
+      const isbns = getIsbnValues(p);
+      for (const isbn of isbns) {
+        if (isbn === queryCleaned) return true;
+        if (queryNoLeadingZero && isbn.replace(/^0+/, "") === queryNoLeadingZero) return true;
+        if (queryCore9 && isbn.length >= 9) {
+          const isbnCore9 = isbn.length === 13 ? isbn.slice(3, 12) : isbn.slice(0, 9);
+          if (isbnCore9 === queryCore9) return true;
+        }
+        if (queryCleaned.length >= 12 && isbn.length >= 12) {
+          if (queryCleaned.endsWith(isbn) || isbn.endsWith(queryCleaned)) return true;
+        }
       }
+      return false;
+    });
 
-      // ── 2. Fallback: partial title / SKU / author match ──────────────────
-      // Handles cases where ISBN in database is a placeholder and doesn't
-      // match the real barcode on the physical book.
-      const partialMatches = products.filter((p) => {
-        const stockOk =
-          p.stock_status !== "outofstock" &&
-          (typeof p.stock_quantity !== "number" || p.stock_quantity > 0);
-        if (!stockOk) return false;
+    if (exact) return { match: exact, multiple: false };
 
-        const titleMatch = (p.name || "").toLowerCase().includes(rawQuery);
-        const skuMatch   = (p.sku  || "").toLowerCase().includes(rawQuery);
-        const isbnPrefix = getIsbnValues(p).some(
-          (v) => v.startsWith(queryCleaned) || queryCleaned.startsWith(v)
-        );
-        return titleMatch || skuMatch || isbnPrefix;
-      });
+    if (!allowPartial || rawQuery.length < 3) return { match: null, multiple: false };
 
-      if (partialMatches.length === 1) {
-        // Exactly one result — auto-add it
-        onAddToCart(partialMatches[0]);
-        setLastScanned(partialMatches[0].name);
-        setSearch("");
-        setTimeout(() => setLastScanned(null), 2500);
-      } else if (partialMatches.length > 1) {
-        // Multiple matches — keep text in box so the filtered grid shows them,
-        // and the cashier can tap the correct one
+    // 2. Fallback: single partial match on title, SKU, or ISBN
+    const partials = products.filter((p) => {
+      const titleMatch = (p.name || "").toLowerCase().includes(rawQuery);
+      const skuMatch = (p.sku || "").toLowerCase().includes(rawQuery);
+      const authorMatch = (getAuthor(p) || "").toLowerCase().includes(rawQuery);
+      const isbns = getIsbnValues(p);
+      const isbnMatch = queryCleaned.length >= 4 && isbns.some((v: string) => v.includes(queryCleaned) || queryCleaned.includes(v));
+      return titleMatch || skuMatch || authorMatch || isbnMatch;
+    });
+
+    if (partials.length === 1) return { match: partials[0], multiple: false };
+    return { match: null, multiple: partials.length > 1 };
+  }, [products, getIsbnValues]);
+
+  /** Helper to add matched product and show visual/audio notification */
+  const addScannedBook = useCallback((product: Product) => {
+    onAddToCart(product);
+    playBeep(true);
+    setLastScanned(product.name);
+    setSearch("");
+    setTimeout(() => setLastScanned(null), 2500);
+    setTimeout(() => barcodeInputRef.current?.focus(), 60);
+  }, [onAddToCart, playBeep]);
+
+  // Handle direct barcode scan or Enter in the search input
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if ((e.key === "Enter" || e.key === "Tab") && search.trim()) {
+      e.preventDefault();
+      const { match, multiple } = findProductByQuery(search, true);
+      if (match) {
+        addScannedBook(match);
+      } else if (multiple) {
+        playBeep(false);
         setLastScanned("__MULTI__");
         setTimeout(() => setLastScanned(null), 3000);
       } else {
-        // Nothing found at all
+        playBeep(false);
         setLastScanned("__NOT_FOUND__");
         setTimeout(() => setLastScanned(null), 2500);
       }
     }
   };
 
+  // Instant scanner detection via onChange (for scanners that type without Enter)
+  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const val = e.target.value;
+    setSearch(val);
+    const clean = val.trim().replace(/[^0-9a-zA-Z]/g, "");
+    // Check if an exact complete ISBN/barcode (>= 10 chars) was entered
+    if (clean.length >= 10) {
+      const { match } = findProductByQuery(val, false);
+      if (match) {
+        addScannedBook(match);
+      }
+    }
+  };
+
+  // Global Hardware Barcode Scanner Listener:
+  // Catches scanner keystrokes regardless of where cursor focus is on the page
+  useEffect(() => {
+    let buffer = "";
+    let lastKeyTime = Date.now();
+
+    const handleGlobalKeyDown = (e: KeyboardEvent) => {
+      const target = e.target as HTMLElement | null;
+      const isSearch = target === barcodeInputRef.current;
+      const isOtherInput =
+        target &&
+        !isSearch &&
+        (target.tagName === "INPUT" || target.tagName === "TEXTAREA" || target.isContentEditable);
+
+      const now = Date.now();
+      const diff = now - lastKeyTime;
+      lastKeyTime = now;
+
+      // Ignore normal slow typing in non-search inputs
+      if (isOtherInput && diff > 60) {
+        buffer = "";
+        return;
+      }
+
+      // If more than 120ms between keys and not focused in search, reset buffer
+      if (diff > 120 && !isSearch) {
+        buffer = "";
+      }
+
+      if (e.key === "Enter" || e.key === "Tab") {
+        const queryToProcess = (isSearch ? search : buffer).trim();
+        if (queryToProcess) {
+          const { match } = findProductByQuery(queryToProcess, true);
+          if (match) {
+            e.preventDefault();
+            e.stopPropagation();
+            addScannedBook(match);
+            buffer = "";
+            return;
+          }
+        }
+        buffer = "";
+        return;
+      }
+
+      if (e.key.length === 1) {
+        buffer += e.key;
+        const clean = buffer.trim().replace(/[^0-9a-zA-Z]/g, "");
+        if (clean.length >= 10) {
+          const { match } = findProductByQuery(clean, false);
+          if (match) {
+            e.preventDefault();
+            e.stopPropagation();
+            addScannedBook(match);
+            buffer = "";
+          }
+        }
+      }
+    };
+
+    window.addEventListener("keydown", handleGlobalKeyDown, true);
+    return () => window.removeEventListener("keydown", handleGlobalKeyDown, true);
+  }, [products, search, findProductByQuery, addScannedBook]);
 
   const filteredProducts = useMemo(() => {
     return products.filter((p) => {
@@ -203,18 +331,23 @@ export function PosProductGrid({ products, categories, onAddToCart }: PosProduct
         const inCat = p.categories?.some((c) => c.id === selectedCat);
         if (!inCat) return false;
       }
-      // Search text (title, author, SKU, or ID)
+      // Search text (title, author, SKU, ID, or ISBN/barcode)
       if (search.trim()) {
-        const q = search.toLowerCase();
+        const q = search.toLowerCase().trim();
+        const qClean = q.replace(/[^0-9a-zA-Z]/g, "");
         const titleMatch = (p.name || "").toLowerCase().includes(q);
         const authorMatch = (getAuthor(p) || "").toLowerCase().includes(q);
         const skuMatch = (p.sku || "").toLowerCase().includes(q);
         const idMatch = p.id.toString().includes(q);
-        return titleMatch || authorMatch || skuMatch || idMatch;
+        const isbns = getIsbnValues(p);
+        const isbnMatch =
+          qClean.length >= 3 &&
+          isbns.some((v: string) => v.includes(qClean) || qClean.includes(v));
+        return titleMatch || authorMatch || skuMatch || idMatch || isbnMatch;
       }
       return true;
     });
-  }, [products, search, selectedCat, inStockOnly]);
+  }, [products, search, selectedCat, inStockOnly, getIsbnValues]);
 
   return (
     <div className="flex h-full flex-col gap-4">
@@ -232,10 +365,10 @@ export function PosProductGrid({ products, categories, onAddToCart }: PosProduct
               ref={barcodeInputRef}
               type="text"
               value={search}
-              onChange={(e) => setSearch(e.target.value)}
+              onChange={handleSearchChange}
               onKeyDown={handleKeyDown}
-              placeholder="Scan ISBN Barcode or Search Title, Author, SKU... (Press Enter to auto-add)"
-              className="w-full rounded-xl border border-slate-200 bg-slate-50 py-2.5 pl-10 pr-24 text-sm text-charcoal outline-none transition-all focus:border-gold focus:bg-white focus:ring-2 focus:ring-gold/20"
+              placeholder="Scan ISBN Barcode or Search Title, Author, SKU... (Auto-adds on scan)"
+              className="w-full rounded-xl border-2 border-slate-200 bg-slate-50 py-2.5 pl-10 pr-24 text-sm text-charcoal outline-none transition-all focus:border-cta focus:bg-white focus:ring-2 focus:ring-cta/20"
             />
             <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 rounded-md border border-slate-200 bg-white px-2 py-0.5 text-[10px] font-bold tracking-wider text-slate-400 shadow-xs">
               ⌘K / ISBN
