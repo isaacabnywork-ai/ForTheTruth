@@ -137,7 +137,10 @@ export function PosProductGrid({ products, categories, onAddToCart }: PosProduct
     const vals: string[] = [];
     // Check attributes
     for (const attr of p.attributes ?? []) {
-      if (ISBN_ATTR_NAMES.includes(attr.name.toLowerCase())) {
+      const nameLower = (attr.name || "").toLowerCase().trim();
+      const slugLower = ((attr as any).slug || "").toLowerCase().trim();
+      const isIsbnAttr = ISBN_ATTR_NAMES.some((k) => nameLower.includes(k) || slugLower.includes(k));
+      if (isIsbnAttr) {
         for (const opt of attr.options ?? []) {
           const clean = String(opt).replace(/[^0-9a-zA-Z]/g, "").toLowerCase();
           if (clean) vals.push(clean);
@@ -146,8 +149,10 @@ export function PosProductGrid({ products, categories, onAddToCart }: PosProduct
     }
     // Check meta_data
     for (const meta of p.meta_data ?? []) {
-      if (ISBN_META_KEYS.includes(meta.key.toLowerCase())) {
-        const clean = String(meta.value ?? "").replace(/[^0-9a-zA-Z]/g, "").toLowerCase();
+      const keyLower = (meta.key || "").toLowerCase().trim();
+      const isIsbnMeta = ISBN_META_KEYS.some((k) => keyLower.includes(k));
+      if (isIsbnMeta && meta.value) {
+        const clean = String(meta.value).replace(/[^0-9a-zA-Z]/g, "").toLowerCase();
         if (clean) vals.push(clean);
       }
     }
@@ -164,11 +169,14 @@ export function PosProductGrid({ products, categories, onAddToCart }: PosProduct
     const queryCleaned = rawQuery.replace(/[^0-9a-zA-Z]/g, "");
     if (!rawQuery && !queryCleaned) return { match: null, multiple: false };
 
+    const queryDigits = rawQuery.replace(/\D/g, "");
     const queryNoLeadingZero = queryCleaned.replace(/^0+/, "");
-    const queryCore9 = queryCleaned.length === 13 && (queryCleaned.startsWith("978") || queryCleaned.startsWith("979"))
-      ? queryCleaned.slice(3, 12)
-      : queryCleaned.length === 10
-      ? queryCleaned.slice(0, 9)
+    const queryDigitsNoZero = queryDigits.replace(/^0+/, "");
+
+    const queryCore9 = (queryDigits.length === 13 && (queryDigits.startsWith("978") || queryDigits.startsWith("979")))
+      ? queryDigits.slice(3, 12)
+      : queryDigits.length === 10
+      ? queryDigits.slice(0, 9)
       : "";
 
     // 1. Exact Match: SKU, ID, exact Title, or ISBN/Barcode
@@ -181,14 +189,25 @@ export function PosProductGrid({ products, categories, onAddToCart }: PosProduct
 
       const isbns = getIsbnValues(p);
       for (const isbn of isbns) {
-        if (isbn === queryCleaned) return true;
-        if (queryNoLeadingZero && isbn.replace(/^0+/, "") === queryNoLeadingZero) return true;
-        if (queryCore9 && isbn.length >= 9) {
-          const isbnCore9 = isbn.length === 13 ? isbn.slice(3, 12) : isbn.slice(0, 9);
-          if (isbnCore9 === queryCore9) return true;
+        const isbnClean = isbn.toLowerCase().replace(/[^0-9a-zA-Z]/g, "");
+        const isbnDigits = isbn.replace(/\D/g, "");
+
+        if (isbnClean === queryCleaned) return true;
+        if (queryDigits && isbnDigits && isbnDigits === queryDigits) return true;
+        if (queryNoLeadingZero && isbnClean.replace(/^0+/, "") === queryNoLeadingZero) return true;
+        if (queryDigitsNoZero && isbnDigits.replace(/^0+/, "") === queryDigitsNoZero) return true;
+
+        if (queryCore9 && isbnDigits) {
+          const isbnCore9 = (isbnDigits.length === 13 && (isbnDigits.startsWith("978") || isbnDigits.startsWith("979")))
+            ? isbnDigits.slice(3, 12)
+            : isbnDigits.length === 10
+            ? isbnDigits.slice(0, 9)
+            : "";
+          if (isbnCore9 && isbnCore9 === queryCore9) return true;
         }
-        if (queryCleaned.length >= 12 && isbn.length >= 12) {
-          if (queryCleaned.endsWith(isbn) || isbn.endsWith(queryCleaned)) return true;
+
+        if (queryDigits.length >= 12 && isbnDigits.length >= 12) {
+          if (queryDigits.endsWith(isbnDigits) || isbnDigits.endsWith(queryDigits)) return true;
         }
       }
       return false;
@@ -218,25 +237,31 @@ export function PosProductGrid({ products, categories, onAddToCart }: PosProduct
     playBeep(true);
     setLastScanned(product.name);
     setSearch("");
+    if (barcodeInputRef.current) {
+      barcodeInputRef.current.value = "";
+    }
     setTimeout(() => setLastScanned(null), 2500);
     setTimeout(() => barcodeInputRef.current?.focus(), 60);
   }, [onAddToCart, playBeep]);
 
   // Handle direct barcode scan or Enter in the search input
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if ((e.key === "Enter" || e.key === "Tab") && search.trim()) {
-      e.preventDefault();
-      const { match, multiple } = findProductByQuery(search, true);
-      if (match) {
-        addScannedBook(match);
-      } else if (multiple) {
-        playBeep(false);
-        setLastScanned("__MULTI__");
-        setTimeout(() => setLastScanned(null), 3000);
-      } else {
-        playBeep(false);
-        setLastScanned("__NOT_FOUND__");
-        setTimeout(() => setLastScanned(null), 2500);
+    if (e.key === "Enter" || e.key === "Tab") {
+      const queryVal = (e.currentTarget.value || search).trim();
+      if (queryVal) {
+        e.preventDefault();
+        const { match, multiple } = findProductByQuery(queryVal, true);
+        if (match) {
+          addScannedBook(match);
+        } else if (multiple) {
+          playBeep(false);
+          setLastScanned("__MULTI__");
+          setTimeout(() => setLastScanned(null), 3000);
+        } else {
+          playBeep(false);
+          setLastScanned("__NOT_FOUND__");
+          setTimeout(() => setLastScanned(null), 2500);
+        }
       }
     }
   };
@@ -255,12 +280,13 @@ export function PosProductGrid({ products, categories, onAddToCart }: PosProduct
     }
   };
 
+  // Ref buffer to prevent event listener churn and dropped keystrokes
+  const scannerBufferRef = useRef("");
+  const lastKeyTimeRef = useRef(0);
+
   // Global Hardware Barcode Scanner Listener:
   // Catches scanner keystrokes regardless of where cursor focus is on the page
   useEffect(() => {
-    let buffer = "";
-    let lastKeyTime = Date.now();
-
     const handleGlobalKeyDown = (e: KeyboardEvent) => {
       const target = e.target as HTMLElement | null;
       const isSearch = target === barcodeInputRef.current;
@@ -270,46 +296,46 @@ export function PosProductGrid({ products, categories, onAddToCart }: PosProduct
         (target.tagName === "INPUT" || target.tagName === "TEXTAREA" || target.isContentEditable);
 
       const now = Date.now();
-      const diff = now - lastKeyTime;
-      lastKeyTime = now;
+      const diff = now - lastKeyTimeRef.current;
+      lastKeyTimeRef.current = now;
 
       // Ignore normal slow typing in non-search inputs
-      if (isOtherInput && diff > 60) {
-        buffer = "";
+      if (isOtherInput && diff > 70) {
+        scannerBufferRef.current = "";
         return;
       }
 
-      // If more than 120ms between keys and not focused in search, reset buffer
-      if (diff > 120 && !isSearch) {
-        buffer = "";
+      // If more than 150ms between keys and not focused in search, reset buffer
+      if (diff > 150 && !isSearch) {
+        scannerBufferRef.current = "";
       }
 
       if (e.key === "Enter" || e.key === "Tab") {
-        const queryToProcess = (isSearch ? search : buffer).trim();
+        const queryToProcess = (isSearch ? (barcodeInputRef.current?.value || search) : scannerBufferRef.current).trim();
         if (queryToProcess) {
           const { match } = findProductByQuery(queryToProcess, true);
           if (match) {
             e.preventDefault();
             e.stopPropagation();
             addScannedBook(match);
-            buffer = "";
+            scannerBufferRef.current = "";
             return;
           }
         }
-        buffer = "";
+        scannerBufferRef.current = "";
         return;
       }
 
       if (e.key.length === 1) {
-        buffer += e.key;
-        const clean = buffer.trim().replace(/[^0-9a-zA-Z]/g, "");
+        scannerBufferRef.current += e.key;
+        const clean = scannerBufferRef.current.trim().replace(/[^0-9a-zA-Z]/g, "");
         if (clean.length >= 10) {
           const { match } = findProductByQuery(clean, false);
           if (match) {
             e.preventDefault();
             e.stopPropagation();
             addScannedBook(match);
-            buffer = "";
+            scannerBufferRef.current = "";
           }
         }
       }

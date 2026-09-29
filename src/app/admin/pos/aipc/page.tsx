@@ -71,7 +71,8 @@ export default async function AipcPosTerminalPage() {
         { id: 3, key: "barcode", value: cleanIsbn },
         { id: 4, key: "raw_isbn", value: rawIsbn },
       ],
-    };
+      isbn: cleanIsbn,
+    } as any;
   });
 
   const categories: WCCategory[] = [
