@@ -59,26 +59,55 @@ export function PosProductGrid({ products, categories, onAddToCart }: PosProduct
       const rawQuery = search.trim().toLowerCase();
       const queryCleaned = rawQuery.replace(/[-\s]/g, "");
 
-      const match = products.find(
+      // ── 1. Exact match: SKU / ID / full title / ISBN attribute ───────────
+      const exactMatch = products.find(
         (p) =>
-          // 1. SKU exact match
           p.sku?.toLowerCase() === rawQuery ||
-          // 2. WooCommerce product ID
           p.id.toString() === rawQuery ||
-          // 3. Exact title match
           p.name.toLowerCase() === rawQuery ||
-          // 4. ISBN / EAN / GTIN stored in attributes or meta_data
           getIsbnValues(p).includes(queryCleaned)
       );
-      if (match) {
-        onAddToCart(match);
-        setLastScanned(match.name);
+
+      if (exactMatch) {
+        onAddToCart(exactMatch);
+        setLastScanned(exactMatch.name);
         setSearch("");
         setTimeout(() => setLastScanned(null), 2500);
+        return;
+      }
+
+      // ── 2. Fallback: partial title / SKU / author match ──────────────────
+      // Handles cases where ISBN in database is a placeholder and doesn't
+      // match the real barcode on the physical book.
+      const partialMatches = products.filter((p) => {
+        const stockOk =
+          p.stock_status !== "outofstock" &&
+          (typeof p.stock_quantity !== "number" || p.stock_quantity > 0);
+        if (!stockOk) return false;
+
+        const titleMatch = (p.name || "").toLowerCase().includes(rawQuery);
+        const skuMatch   = (p.sku  || "").toLowerCase().includes(rawQuery);
+        const isbnPrefix = getIsbnValues(p).some(
+          (v) => v.startsWith(queryCleaned) || queryCleaned.startsWith(v)
+        );
+        return titleMatch || skuMatch || isbnPrefix;
+      });
+
+      if (partialMatches.length === 1) {
+        // Exactly one result — auto-add it
+        onAddToCart(partialMatches[0]);
+        setLastScanned(partialMatches[0].name);
+        setSearch("");
+        setTimeout(() => setLastScanned(null), 2500);
+      } else if (partialMatches.length > 1) {
+        // Multiple matches — keep text in box so the filtered grid shows them,
+        // and the cashier can tap the correct one
+        setLastScanned("__MULTI__");
+        setTimeout(() => setLastScanned(null), 3000);
       } else {
-        // No match found — flash the input red briefly
+        // Nothing found at all
         setLastScanned("__NOT_FOUND__");
-        setTimeout(() => setLastScanned(null), 2000);
+        setTimeout(() => setLastScanned(null), 2500);
       }
     }
   };
@@ -191,7 +220,13 @@ export function PosProductGrid({ products, categories, onAddToCart }: PosProduct
       {lastScanned === "__NOT_FOUND__" && (
         <div className="flex items-center gap-2 rounded-xl border border-rose-200 bg-rose-50 px-4 py-2.5 text-sm font-bold text-rose-800 shadow-sm animate-bounce">
           <span className="flex h-5 w-5 items-center justify-center rounded-full bg-rose-600 text-white text-xs">✕</span>
-          ISBN / Barcode not found in catalog. Check WooCommerce product attributes or meta.
+          Barcode not found — try searching by title instead.
+        </div>
+      )}
+      {lastScanned === "__MULTI__" && (
+        <div className="flex items-center gap-2 rounded-xl border border-amber-200 bg-amber-50 px-4 py-2.5 text-sm font-bold text-amber-800 shadow-sm animate-bounce">
+          <span className="flex h-5 w-5 items-center justify-center rounded-full bg-amber-500 text-white text-xs">?</span>
+          Multiple books matched — tap the correct one below to add it.
         </div>
       )}
 
