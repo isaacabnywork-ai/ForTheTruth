@@ -6,7 +6,8 @@ frontend:
         - npm ci
     build:
       commands:
-        - env | grep -e WOOCOMMERCE -e NEXT_PUBLIC -e RAZORPAY -e ADMIN >> .env.production
+        - (env | grep -e WOOCOMMERCE -e NEXT_PUBLIC -e RAZORPAY -e ADMIN -e BREVO -e SUPABASE >> .env.production) || true
+        - (env | grep -e WOOCOMMERCE -e NEXT_PUBLIC -e RAZORPAY -e ADMIN -e BREVO -e SUPABASE >> .env.local) || true
         - npm run build
   artifacts:
     baseDirectory: .next
