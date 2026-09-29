@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
 
 interface AipcBook {
+  id?: number;
   index: number;
   "S. No": number;
   SKU: string;
@@ -20,6 +21,7 @@ export default function AipcStockManagerPage() {
   const [books, setBooks] = useState<AipcBook[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState<number | null>(null);
+  const [isAddingBook, setIsAddingBook] = useState(false);
   const [search, setSearch] = useState("");
   const [showAddForm, setShowAddForm] = useState(false);
   const [toast, setToast] = useState<{ msg: string; type: "success" | "error" } | null>(null);
@@ -34,15 +36,22 @@ export default function AipcStockManagerPage() {
 
   const showToast = (msg: string, type: "success" | "error" = "success") => {
     setToast({ msg, type });
-    setTimeout(() => setToast(null), 3000);
+    setTimeout(() => setToast(null), 3500);
   };
 
   const fetchBooks = useCallback(async () => {
     setLoading(true);
-    const res = await fetch("/api/admin/aipc/stock");
-    const data = await res.json();
-    setBooks(data.map((b: any, i: number) => ({ ...b, index: i })));
-    setLoading(false);
+    try {
+      const res = await fetch("/api/admin/aipc/stock");
+      if (res.ok) {
+        const data = await res.json();
+        setBooks(data.map((b: any, i: number) => ({ ...b, index: i, id: b.id })));
+      }
+    } catch {
+      showToast("Could not load inventory", "error");
+    } finally {
+      setLoading(false);
+    }
   }, []);
 
   useEffect(() => { fetchBooks(); }, [fetchBooks]);
@@ -55,85 +64,114 @@ export default function AipcStockManagerPage() {
   };
 
   const handleSave = async (index: number) => {
+    const book = books.find(b => b.index === index);
     setSaving(index);
     const edits = editValues[index] || {};
-    const payload: any = { index };
+    const payload: any = { index, id: book?.id };
     if (edits["AIPC QTY"] !== undefined) payload.qty = Number(edits["AIPC QTY"]);
     if (edits["Name"]) payload.name = edits["Name"];
     if (edits["MRP"] !== undefined) payload.mrp = Number(edits["MRP"]);
     if (edits["AIPC Special Price"] !== undefined) payload.aipcPrice = Number(edits["AIPC Special Price"]);
 
-    const res = await fetch("/api/admin/aipc/stock", {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(payload),
-    });
-    setSaving(null);
-    if (res.ok) {
-      showToast("Stock updated successfully!");
-      setEditValues(prev => { const n = { ...prev }; delete n[index]; return n; });
-      fetchBooks();
-    } else {
-      showToast("Failed to update stock.", "error");
+    try {
+      const res = await fetch("/api/admin/aipc/stock", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (res.ok) {
+        showToast("Stock updated successfully!");
+        setEditValues(prev => { const n = { ...prev }; delete n[index]; return n; });
+        fetchBooks();
+      } else {
+        showToast(data.error || "Failed to update stock.", "error");
+      }
+    } catch (e: any) {
+      showToast(e.message || "Network error.", "error");
+    } finally {
+      setSaving(null);
     }
   };
 
   const handleReturn = async (index: number, direction: 1 | -1) => {
     // direction: -1 = return (undo a sale), +1 = re-sell (undo a return)
+    const book = books.find(b => b.index === index);
     setSaving(index);
-    const res = await fetch("/api/admin/aipc/stock", {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ index, soldAdjust: direction }),
-    });
-    setSaving(null);
-    if (res.ok) {
-      showToast(direction === -1 ? "↩ Return recorded — stock restored!" : "↪ Re-sale recorded!");
-      fetchBooks();
-    } else {
-      showToast("Failed to update.", "error");
+    try {
+      const res = await fetch("/api/admin/aipc/stock", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ index, id: book?.id, soldAdjust: direction }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (res.ok) {
+        showToast(direction === -1 ? "↩ Return recorded — stock restored!" : "↪ Re-sale recorded!");
+        fetchBooks();
+      } else {
+        showToast(data.error || "Failed to update.", "error");
+      }
+    } catch (e: any) {
+      showToast(e.message || "Network error.", "error");
+    } finally {
+      setSaving(null);
     }
   };
 
   const handleDelete = async (index: number, name: string) => {
+    const book = books.find(b => b.index === index);
     if (!confirm(`Delete "${name}" from the AIPC inventory?\n\nThis cannot be undone.`)) return;
     setSaving(index);
-    const res = await fetch("/api/admin/aipc/stock", {
-      method: "DELETE",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ index }),
-    });
-    setSaving(null);
-    if (res.ok) {
-      showToast(`"${name}" deleted from inventory.`);
-      fetchBooks();
-    } else {
-      showToast("Failed to delete book.", "error");
+    try {
+      const res = await fetch("/api/admin/aipc/stock", {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ index, id: book?.id }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (res.ok) {
+        showToast(`"${name}" deleted from inventory.`);
+        fetchBooks();
+      } else {
+        showToast(data.error || "Failed to delete book.", "error");
+      }
+    } catch (e: any) {
+      showToast(e.message || "Network error.", "error");
+    } finally {
+      setSaving(null);
     }
   };
 
   const handleAddBook = async () => {
-    if (!newBook.name.trim()) { showToast("Book name is required.", "error"); return; }
-    const res = await fetch("/api/admin/aipc/stock", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        name: newBook.name,
-        sku: newBook.sku,
-        isbn: newBook.isbn,
-        mrp: Number(newBook.mrp) || 0,
-        salePrice: Number(newBook.salePrice) || 0,
-        aipcPrice: Number(newBook.aipcPrice) || 0,
-        qty: Number(newBook.qty) || 0,
-      }),
-    });
-    if (res.ok) {
-      showToast("New book added successfully!");
-      setNewBook({ name: "", sku: "", isbn: "", mrp: "", salePrice: "", aipcPrice: "", qty: "" });
-      setShowAddForm(false);
-      fetchBooks();
-    } else {
-      showToast("Failed to add book.", "error");
+    if (!newBook.name.trim()) { showToast("Book title is required.", "error"); return; }
+    setIsAddingBook(true);
+    try {
+      const res = await fetch("/api/admin/aipc/stock", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: newBook.name.trim(),
+          sku: newBook.sku.trim(),
+          isbn: newBook.isbn.trim(),
+          mrp: Number(newBook.mrp) || 0,
+          salePrice: Number(newBook.salePrice) || 0,
+          aipcPrice: Number(newBook.aipcPrice) || 0,
+          qty: Number(newBook.qty) || 0,
+        }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (res.ok) {
+        showToast("New book added successfully!");
+        setNewBook({ name: "", sku: "", isbn: "", mrp: "", salePrice: "", aipcPrice: "", qty: "" });
+        setShowAddForm(false);
+        fetchBooks();
+      } else {
+        showToast(data.error || "Failed to add book.", "error");
+      }
+    } catch (e: any) {
+      showToast(e.message || "Network error.", "error");
+    } finally {
+      setIsAddingBook(false);
     }
   };
 
@@ -202,8 +240,12 @@ export default function AipcStockManagerPage() {
             ))}
           </div>
           <div className="mt-4 flex gap-3">
-            <button onClick={handleAddBook} className="rounded-xl bg-emerald-600 px-6 py-2 text-sm font-bold text-white transition-colors hover:bg-emerald-700">
-              Add Book
+            <button
+              onClick={handleAddBook}
+              disabled={isAddingBook}
+              className="rounded-xl bg-emerald-600 px-6 py-2 text-sm font-bold text-white transition-colors hover:bg-emerald-700 disabled:opacity-50"
+            >
+              {isAddingBook ? "Adding Book..." : "Add Book"}
             </button>
             <button onClick={() => setShowAddForm(false)} className="rounded-xl border border-slate-200 bg-white px-6 py-2 text-sm font-bold text-slate-600 transition-colors hover:bg-slate-100">
               Cancel

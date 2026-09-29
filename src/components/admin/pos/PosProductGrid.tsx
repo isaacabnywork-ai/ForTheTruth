@@ -11,6 +11,85 @@ interface PosProductGridProps {
   onAddToCart: (product: Product) => void;
 }
 
+function PosBookCover({ product }: { product: Product }) {
+  const [imgError, setImgError] = useState(false);
+  const src = product.images?.[0]?.src;
+
+  // Curated palette of rich book-cloth gradients
+  const palettes = [
+    "from-[#16324F] via-[#1D4068] to-[#112438] text-amber-200 border-navy-light/40",
+    "from-[#1F2937] via-[#374151] to-[#111827] text-[#E8C547] border-slate-600/40",
+    "from-[#0F172A] via-[#1E293B] to-[#020617] text-sky-200 border-sky-800/40",
+    "from-[#2B1B17] via-[#3E2723] to-[#1B100E] text-amber-100 border-amber-900/40",
+    "from-[#064E3B] via-[#065F46] to-[#022C22] text-emerald-200 border-emerald-800/40",
+    "from-[#4A044E] via-[#581C87] to-[#2E1065] text-fuchsia-200 border-purple-800/40",
+  ];
+
+  let hash = 0;
+  for (let i = 0; i < product.name.length; i++) {
+    hash = (hash + product.name.charCodeAt(i) * 19) % palettes.length;
+  }
+  const palette = palettes[hash];
+
+  if (!src || imgError) {
+    const author = getAuthor(product);
+    return (
+      <div
+        className={`relative mx-auto mb-3 flex h-40 w-full select-none flex-col justify-between overflow-hidden rounded-xl border bg-gradient-to-br ${palette} p-3 shadow-inner`}
+      >
+        {/* Book spine simulation stripe */}
+        <div className="absolute inset-y-0 left-0 w-2 bg-black/25 border-r border-white/10" />
+
+        {/* Top header */}
+        <div className="pl-2 flex items-center justify-between text-[9px] font-bold uppercase tracking-wider opacity-70">
+          <span>FTT Book</span>
+          {product.sku && <span className="font-mono text-[8px] truncate max-w-[80px]">{product.sku}</span>}
+        </div>
+
+        {/* Title & Accent */}
+        <div className="my-auto pl-2">
+          <p className="line-clamp-3 font-serif text-xs font-bold leading-snug tracking-wide text-white drop-shadow-sm">
+            {product.name}
+          </p>
+          <div className="mt-1.5 h-0.5 w-6 bg-gold/80 rounded-full" />
+        </div>
+
+        {/* Bottom meta */}
+        <div className="pl-2 flex items-center justify-between text-[9px] font-medium opacity-80 text-white">
+          <span className="truncate mr-1 max-w-[95px]">{author || "Conference Edition"}</span>
+          <svg
+            width="12"
+            height="12"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2.5"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            className="shrink-0 opacity-70"
+          >
+            <path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1 0-5H20" />
+            <path d="M6.5 2v20" />
+          </svg>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="relative mx-auto mb-3 h-40 w-full overflow-hidden rounded-xl bg-slate-100 flex items-center justify-center">
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img
+        src={src}
+        alt={product.name}
+        onError={() => setImgError(true)}
+        className="h-full w-full object-contain p-2 transition-transform duration-300 group-hover:scale-105"
+        loading="lazy"
+      />
+    </div>
+  );
+}
+
 export function PosProductGrid({ products, categories, onAddToCart }: PosProductGridProps) {
   const [search, setSearch] = useState("");
   const [selectedCat, setSelectedCat] = useState<number | null>(null);
@@ -253,8 +332,6 @@ export function PosProductGrid({ products, categories, onAddToCart }: PosProduct
               const stockQty = typeof product.stock_quantity === "number" ? product.stock_quantity : null;
               const isOut = product.stock_status === "outofstock" || (stockQty !== null && stockQty <= 0);
               const isLow = !isOut && stockQty !== null && stockQty <= 5;
-              const imageUrl = product.images?.[0]?.src || "/images/placeholder.jpg";
-
               return (
                 <div
                   key={product.id}
@@ -286,15 +363,7 @@ export function PosProductGrid({ products, categories, onAddToCart }: PosProduct
 
                   {/* Thumbnail & Info */}
                   <div>
-                    <div className="relative mx-auto h-40 w-full overflow-hidden rounded-xl bg-slate-100 mb-3">
-                      <Image
-                        src={imageUrl}
-                        alt={product.name}
-                        fill
-                        sizes="(max-width: 768px) 50vw, 20vw"
-                        className="object-contain p-2 transition-transform duration-300 group-hover:scale-105"
-                      />
-                    </div>
+                    <PosBookCover product={product} />
                     <h3 className="line-clamp-2 font-display text-xs font-bold text-charcoal group-hover:text-navy">
                       {product.name}
                     </h3>

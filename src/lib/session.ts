@@ -98,9 +98,12 @@ export async function getSessionUser(): Promise<SessionUser & { role?: string } 
       const role = parts[5] || "customer";
       const avatarUrl = parts[6] || `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(email)}`;
 
-      // Resolve real WooCommerce customer ID by email if available
+      // Resolve real WooCommerce customer ID by email if available (with fast timeout so it never blocks admin)
       try {
-        const wcCustomer = await getCustomerByEmail(email);
+        const wcCustomer = await Promise.race([
+          getCustomerByEmail(email),
+          new Promise<null>((resolve) => setTimeout(() => resolve(null), 1500)),
+        ]);
         if (wcCustomer?.id) {
           id = wcCustomer.id;
         }

@@ -52,7 +52,10 @@ export function PosTerminalClient({ initialProducts, categories, submitApiUrl, s
 
         setProducts((prev) =>
           prev.map((p) => {
-            const imgUrl = images[p.sku?.toLowerCase() ?? ""];
+            const skuKey = p.sku?.toLowerCase().trim() ?? "";
+            const nameKey = p.name?.toLowerCase().trim() ?? "";
+            const cleanKey = p.name?.toLowerCase().replace(/[^a-z0-9]/g, "") ?? "";
+            const imgUrl = images[skuKey] || images[nameKey] || images[cleanKey];
             if (imgUrl && (!p.images || p.images.length === 0)) {
               return { ...p, images: [{ id: 0, src: imgUrl, alt: p.name }] };
             }
