@@ -33,6 +33,9 @@ async function wcFetchRaw(
 
   let lastError: unknown;
   for (let attempt = 0; attempt <= MAX_RETRIES; attempt++) {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 8000); // 8s hard timeout
+
     try {
       const res = await fetch(url, {
         method: opts.method ?? "GET",
@@ -41,9 +44,11 @@ async function wcFetchRaw(
           "Content-Type": "application/json",
         },
         body: opts.body ? JSON.stringify(opts.body) : undefined,
+        signal: controller.signal,
         next: isGet ? { revalidate: opts.revalidate ?? 3600 } : undefined,
         cache: isGet ? undefined : "no-store",
       });
+      clearTimeout(timeoutId);
       if (!res.ok) {
         const text = await res.text().catch(() => "");
         console.error(`WooCommerce API Error (${res.status}):`, text);
@@ -51,6 +56,7 @@ async function wcFetchRaw(
       }
       return res;
     } catch (err) {
+      clearTimeout(timeoutId);
       lastError = err;
       if (err instanceof WCApiError) throw err; // don't retry client errors
       if (attempt < MAX_RETRIES) {
@@ -123,10 +129,15 @@ function productParams(q: ProductQuery = {}) {
 }
 
 export async function getProducts(q: ProductQuery = {}): Promise<Product[]> {
-  return wcFetch<Product[]>("/products", {
-    searchParams: productParams(q),
-    revalidate: q.revalidate,
-  });
+  try {
+    return await wcFetch<Product[]>("/products", {
+      searchParams: productParams(q),
+      revalidate: q.revalidate,
+    });
+  } catch (err) {
+    console.error("Failed to fetch WooCommerce products:", err);
+    return [];
+  }
 }
 
 export interface PagedProducts {
@@ -224,10 +235,15 @@ export async function getProduct(id: number): Promise<Product> {
 // ---------- Categories ----------
 
 export async function getCategories(): Promise<WCCategory[]> {
-  return wcFetch<WCCategory[]>("/products/categories", {
-    searchParams: { per_page: 100, hide_empty: true },
-    revalidate: 86400,
-  });
+  try {
+    return await wcFetch<WCCategory[]>("/products/categories", {
+      searchParams: { per_page: 100, hide_empty: true },
+      revalidate: 86400,
+    });
+  } catch (err) {
+    console.error("Failed to fetch WooCommerce categories:", err);
+    return [];
+  }
 }
 
 export async function getCategoryBySlug(

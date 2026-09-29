@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useMemo, useRef, useEffect } from "react";
-import Image from "next/image";
 import { getAuthor, type Product, type WCCategory } from "@/types/product";
 import { formatPrice } from "@/utils/currency";
 

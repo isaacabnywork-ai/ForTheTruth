@@ -63,7 +63,10 @@ export default async function RootLayout({
   let categories: WCCategory[] = [];
   if (isWooConfigured()) {
     try {
-      categories = await getCategories();
+      categories = await Promise.race([
+        getCategories(),
+        new Promise<WCCategory[]>((resolve) => setTimeout(() => resolve([]), 5000)),
+      ]);
     } catch (err) {
       console.error("Layout: failed to fetch categories", err);
     }
