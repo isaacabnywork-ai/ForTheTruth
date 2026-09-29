@@ -92,6 +92,14 @@ export default async function RootLayout({
 
           {/* Main content column */}
           <div className="flex min-h-screen w-full min-w-0 flex-1 flex-col">
+            {!isWooConfigured() && (
+              <div className="bg-amber-700 text-white text-xs font-medium py-2 px-4 text-center tracking-wide flex items-center justify-center gap-2 shadow-sm z-50">
+                <span>⚠️ Note: Online bookstore catalog is temporarily in maintenance mode. AIPC POS is live.</span>
+                <a href="/admin/pos/aipc" className="underline font-bold hover:text-amber-200">
+                  Open AIPC POS &rarr;
+                </a>
+              </div>
+            )}
             <Header categories={categories} />
             {/* bottom padding so the docked mobile bar never covers content */}
             <main className="flex-1 w-full max-w-full pb-28 lg:pb-0">{children}</main>

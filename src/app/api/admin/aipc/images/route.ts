@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { requireAdmin } from "@/lib/adminGuard";
+import { isWooConfigured } from "@/config/env";
 
 // In-memory cache across serverless executions
 let memoryCache: { data: Record<string, string>; expiresAt: number } | null = null;
@@ -13,6 +14,10 @@ let memoryCache: { data: Record<string, string>; expiresAt: number } | null = nu
 export async function GET() {
   if (!(await requireAdmin())) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  if (!isWooConfigured()) {
+    return NextResponse.json({ images: {} });
   }
 
   // Return memory cache if fresh (1 hour)

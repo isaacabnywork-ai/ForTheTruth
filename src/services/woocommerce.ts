@@ -2,7 +2,7 @@
  * WooCommerce REST API client — SERVER-SIDE ONLY.
  * Never import this from a "use client" component: it holds API secrets.
  */
-import { getServerEnv } from "@/config/env";
+import { getServerEnv, isWooConfigured } from "@/config/env";
 import type { Product, ProductReview, WCCategory } from "@/types/product";
 
 const API_BASE = "/wp-json/wc/v3";
@@ -20,6 +20,9 @@ async function wcFetchRaw(
   path: string,
   opts: FetchOptions = {}
 ): Promise<Response> {
+  if (!isWooConfigured()) {
+    throw new WCApiError(503, "WooCommerce API is temporarily disabled for maintenance");
+  }
   const env = getServerEnv();
   const url = new URL(`${env.NEXT_PUBLIC_WORDPRESS_URL}${API_BASE}${path}`);
   for (const [k, v] of Object.entries(opts.searchParams ?? {})) {
@@ -133,6 +136,7 @@ function productParams(q: ProductQuery = {}) {
 }
 
 export async function getProducts(q: ProductQuery = {}): Promise<Product[]> {
+  if (!isWooConfigured()) return [];
   try {
     return await wcFetch<Product[]>("/products", {
       searchParams: productParams(q),
@@ -153,15 +157,23 @@ export interface PagedProducts {
 export async function getProductsPaged(
   q: ProductQuery = {}
 ): Promise<PagedProducts> {
-  const res = await wcFetchRaw("/products", {
-    searchParams: productParams(q),
-    revalidate: q.revalidate ?? 600,
-  });
-  return {
-    products: (await res.json()) as Product[],
-    total: parseInt(res.headers.get("x-wp-total") ?? "0", 10),
-    totalPages: parseInt(res.headers.get("x-wp-totalpages") ?? "1", 10),
-  };
+  if (!isWooConfigured()) {
+    return { products: [], total: 0, totalPages: 1 };
+  }
+  try {
+    const res = await wcFetchRaw("/products", {
+      searchParams: productParams(q),
+      revalidate: q.revalidate ?? 600,
+    });
+    return {
+      products: (await res.json()) as Product[],
+      total: parseInt(res.headers.get("x-wp-total") ?? "0", 10),
+      totalPages: parseInt(res.headers.get("x-wp-totalpages") ?? "1", 10),
+    };
+  } catch (err) {
+    console.error("Failed to fetch paged products:", err);
+    return { products: [], total: 0, totalPages: 1 };
+  }
 }
 
 const REQUIRED_FIELDS = "id,name,slug,permalink,description,short_description,sku,price,regular_price,sale_price,on_sale,stock_status,stock_quantity,average_rating,rating_count,images,categories,attributes,meta_data,weight,dimensions";
@@ -179,6 +191,7 @@ const globalForCache = globalThis as unknown as {
 export async function getAllProducts(
   q: Omit<ProductQuery, "page" | "perPage"> = {}
 ): Promise<Product[]> {
+  if (!isWooConfigured()) return [];
   const CACHE_TTL = (q.revalidate ?? 60) * 1000;
   const now = Date.now();
   if (globalForCache._wcProductsCache && (now - globalForCache._wcProductsCache.time < CACHE_TTL)) {
@@ -187,59 +200,71 @@ export async function getAllProducts(
 
   const PER_PAGE = 100;
 
-  // Fetch page 1 to discover totalPages
-  const firstRes = await wcFetchRaw("/products", {
-    searchParams: { ...productParams({ ...q, page: 1, perPage: PER_PAGE }), _fields: REQUIRED_FIELDS },
-    revalidate: q.revalidate ?? 60,
-  });
-  const firstBatch = (await firstRes.json()) as Product[];
-  const totalPages = parseInt(firstRes.headers.get("x-wp-totalpages") ?? "1", 10);
+  try {
+    // Fetch page 1 to discover totalPages
+    const firstRes = await wcFetchRaw("/products", {
+      searchParams: { ...productParams({ ...q, page: 1, perPage: PER_PAGE }), _fields: REQUIRED_FIELDS },
+      revalidate: q.revalidate ?? 60,
+    });
+    const firstBatch = (await firstRes.json()) as Product[];
+    const totalPages = parseInt(firstRes.headers.get("x-wp-totalpages") ?? "1", 10);
 
-  if (totalPages <= 1) {
-    globalForCache._wcProductsCache = { data: firstBatch, time: Date.now() };
-    return firstBatch;
+    if (totalPages <= 1) {
+      globalForCache._wcProductsCache = { data: firstBatch, time: Date.now() };
+      return firstBatch;
+    }
+
+    // Fetch remaining pages in parallel
+    const pageNumbers = Array.from({ length: totalPages - 1 }, (_, i) => i + 2);
+    const rest = await Promise.all(
+      pageNumbers.map((page) =>
+        wcFetch<Product[]>("/products", {
+          searchParams: { ...productParams({ ...q, page, perPage: PER_PAGE }), _fields: REQUIRED_FIELDS },
+          revalidate: q.revalidate ?? 60,
+        })
+      )
+    );
+
+    const allProducts = [firstBatch, ...rest].flat();
+    globalForCache._wcProductsCache = { data: allProducts, time: Date.now() };
+    return allProducts;
+  } catch (err) {
+    console.error("Failed to fetch all products:", err);
+    return [];
   }
-
-  // Fetch remaining pages in parallel
-  const pageNumbers = Array.from({ length: totalPages - 1 }, (_, i) => i + 2);
-  const rest = await Promise.all(
-    pageNumbers.map((page) =>
-      wcFetch<Product[]>("/products", {
-        searchParams: { ...productParams({ ...q, page, perPage: PER_PAGE }), _fields: REQUIRED_FIELDS },
-        revalidate: q.revalidate ?? 60,
-      })
-    )
-  );
-
-  const allProducts = [firstBatch, ...rest].flat();
-  globalForCache._wcProductsCache = { data: allProducts, time: Date.now() };
-  return allProducts;
 }
 
 export async function getProductBySlug(slug: string): Promise<Product | null> {
-  const cleanSlug = decodeURIComponent(slug).toLowerCase().trim();
-  let results = await wcFetch<Product[]>("/products", {
-    searchParams: { slug: cleanSlug, status: "publish" },
-    revalidate: 600,
-  });
-  if (results.length > 0) return results[0];
+  if (!isWooConfigured()) return null;
+  try {
+    const cleanSlug = decodeURIComponent(slug).toLowerCase().trim();
+    let results = await wcFetch<Product[]>("/products", {
+      searchParams: { slug: cleanSlug, status: "publish" },
+      revalidate: 600,
+    });
+    if (results.length > 0) return results[0];
 
-  // Fallback: If exact slug lookup returns empty (due to WordPress SEO plugins or encoding differences), search by title/keywords
-  const keyword = cleanSlug.replace(/-/g, " ");
-  results = await wcFetch<Product[]>("/products", {
-    searchParams: { search: keyword, status: "publish", per_page: 5 },
-    revalidate: 600,
-  });
-  return results.find((p) => decodeURIComponent(p.slug).toLowerCase() === cleanSlug) ?? results[0] ?? null;
+    // Fallback: If exact slug lookup returns empty (due to WordPress SEO plugins or encoding differences), search by title/keywords
+    const keyword = cleanSlug.replace(/-/g, " ");
+    results = await wcFetch<Product[]>("/products", {
+      searchParams: { search: keyword, status: "publish", per_page: 5 },
+      revalidate: 600,
+    });
+    return results.find((p) => decodeURIComponent(p.slug).toLowerCase() === cleanSlug) ?? results[0] ?? null;
+  } catch {
+    return null;
+  }
 }
 
 export async function getProduct(id: number): Promise<Product> {
+  if (!isWooConfigured()) throw new WCApiError(503, "Catalog is undergoing maintenance");
   return wcFetch<Product>(`/products/${id}`);
 }
 
 // ---------- Categories ----------
 
 export async function getCategories(): Promise<WCCategory[]> {
+  if (!isWooConfigured()) return [];
   const CACHE_TTL = 3600 * 1000;
   const now = Date.now();
   if (globalForCache._wcCategoriesCache && (now - globalForCache._wcCategoriesCache.time < CACHE_TTL)) {
@@ -274,10 +299,15 @@ export async function getCategoryBySlug(
 export async function getProductReviews(
   productId: number
 ): Promise<ProductReview[]> {
-  return wcFetch<ProductReview[]>("/products/reviews", {
-    searchParams: { product: productId, per_page: 20 },
-    revalidate: 600,
-  });
+  if (!isWooConfigured()) return [];
+  try {
+    return await wcFetch<ProductReview[]>("/products/reviews", {
+      searchParams: { product: productId, per_page: 20 },
+      revalidate: 600,
+    });
+  } catch {
+    return [];
+  }
 }
 
 export async function createReview(data: {
@@ -287,6 +317,7 @@ export async function createReview(data: {
   reviewer_email: string;
   rating: number;
 }): Promise<ProductReview> {
+  if (!isWooConfigured()) throw new WCApiError(503, "Reviews temporarily unavailable");
   return wcFetch<ProductReview>("/products/reviews", {
     method: "POST",
     body: data,
@@ -311,23 +342,30 @@ export async function createCustomer(data: {
   last_name: string;
   password: string;
 }): Promise<WCCustomer> {
+  if (!isWooConfigured()) throw new WCApiError(503, "Registration is temporarily disabled for maintenance");
   return wcFetch<WCCustomer>("/customers", { method: "POST", body: data });
 }
 
 export async function getCustomerByEmail(
   email: string
 ): Promise<WCCustomer | null> {
-  const res = await wcFetch<WCCustomer[]>("/customers", {
-    searchParams: { email, per_page: 1, role: "all" },
-    revalidate: 0,
-  });
-  return res[0] ?? null;
+  if (!isWooConfigured()) return null;
+  try {
+    const res = await wcFetch<WCCustomer[]>("/customers", {
+      searchParams: { email, per_page: 1, role: "all" },
+      revalidate: 0,
+    });
+    return res[0] ?? null;
+  } catch {
+    return null;
+  }
 }
 
 export async function updateCustomer(
   id: number,
   data: Partial<WCCustomer>
 ): Promise<WCCustomer> {
+  if (!isWooConfigured()) throw new WCApiError(503, "Customer updates temporarily unavailable");
   return wcFetch<WCCustomer>(`/customers/${id}`, { method: "PUT", body: data });
 }
 
@@ -358,6 +396,7 @@ export interface WCOrder {
 }
 
 export async function createOrder(data: unknown): Promise<WCOrder> {
+  if (!isWooConfigured()) throw new WCApiError(503, "Checkout is temporarily disabled for maintenance");
   return wcFetch<WCOrder>("/orders", { method: "POST", body: data });
 }
 
@@ -365,54 +404,66 @@ export async function updateOrder(
   id: number,
   data: unknown
 ): Promise<WCOrder> {
+  if (!isWooConfigured()) throw new WCApiError(503, "Orders temporarily unavailable");
   return wcFetch<WCOrder>(`/orders/${id}`, { method: "PUT", body: data });
 }
 
 export async function getOrder(id: number): Promise<WCOrder> {
+  if (!isWooConfigured()) throw new WCApiError(503, "Orders temporarily unavailable");
   return wcFetch<WCOrder>(`/orders/${id}`, { revalidate: 0 });
 }
 
 export async function getOrdersByCustomer(
   customerId: number
 ): Promise<WCOrder[]> {
-  return wcFetch<WCOrder[]>("/orders", {
-    searchParams: { customer: customerId, per_page: 50, orderby: "date", order: "desc" },
-    revalidate: 0,
-  });
+  if (!isWooConfigured()) return [];
+  try {
+    return await wcFetch<WCOrder[]>("/orders", {
+      searchParams: { customer: customerId, per_page: 50, orderby: "date", order: "desc" },
+      revalidate: 0,
+    });
+  } catch {
+    return [];
+  }
 }
 
 export async function getOrdersByEmail(
   email: string,
   customerId?: number
 ): Promise<WCOrder[]> {
-  // Fetch by billing email (catches guest orders)
-  const emailOrders = await wcFetch<WCOrder[]>("/orders", {
-    searchParams: { search: email, per_page: 50, orderby: "date", order: "desc" },
-    revalidate: 0,
-  });
+  if (!isWooConfigured()) return [];
+  try {
+    // Fetch by billing email (catches guest orders)
+    const emailOrders = await wcFetch<WCOrder[]>("/orders", {
+      searchParams: { search: email, per_page: 50, orderby: "date", order: "desc" },
+      revalidate: 0,
+    });
 
-  // Fetch by customer ID (catches logged-in orders)
-  let idOrders: WCOrder[] = [];
-  if (customerId) {
-    idOrders = await getOrdersByCustomer(customerId).catch(() => []);
-  }
-
-  // Deduplicate and strictly filter
-  const map = new Map<number, WCOrder>();
-  
-  for (const o of [...emailOrders, ...idOrders]) {
-    const isOwner =
-      o.customer_id === customerId ||
-      o.billing?.email?.toLowerCase() === email.toLowerCase();
-      
-    if (isOwner) {
-      map.set(o.id, o);
+    // Fetch by customer ID (catches logged-in orders)
+    let idOrders: WCOrder[] = [];
+    if (customerId) {
+      idOrders = await getOrdersByCustomer(customerId).catch(() => []);
     }
-  }
 
-  return Array.from(map.values()).sort(
-    (a, b) => new Date(b.date_created).getTime() - new Date(a.date_created).getTime()
-  );
+    // Deduplicate and strictly filter
+    const map = new Map<number, WCOrder>();
+    
+    for (const o of [...emailOrders, ...idOrders]) {
+      const isOwner =
+        o.customer_id === customerId ||
+        o.billing?.email?.toLowerCase() === email.toLowerCase();
+        
+      if (isOwner) {
+        map.set(o.id, o);
+      }
+    }
+
+    return Array.from(map.values()).sort(
+      (a, b) => new Date(b.date_created).getTime() - new Date(a.date_created).getTime()
+    );
+  } catch {
+    return [];
+  }
 }
 
 // ---------- Analytics & Reports ----------
@@ -444,10 +495,15 @@ export interface WCSalesReport {
 export async function getSalesReports(
   period: "week" | "month" | "year" | "last_month" = "month"
 ): Promise<WCSalesReport[]> {
-  return wcFetch<WCSalesReport[]>("/reports/sales", {
-    searchParams: { period },
-    revalidate: 60, // 1 minute cache for admin dashboard
-  });
+  if (!isWooConfigured()) return [];
+  try {
+    return await wcFetch<WCSalesReport[]>("/reports/sales", {
+      searchParams: { period },
+      revalidate: 60, // 1 minute cache for admin dashboard
+    });
+  } catch {
+    return [];
+  }
 }
 
 export interface WCTopSeller {
@@ -457,10 +513,15 @@ export interface WCTopSeller {
 }
 
 export async function getTopSellersReport(): Promise<WCTopSeller[]> {
-  return wcFetch<WCTopSeller[]>("/reports/top_sellers", {
-    searchParams: { period: "year" },
-    revalidate: 3600,
-  });
+  if (!isWooConfigured()) return [];
+  try {
+    return await wcFetch<WCTopSeller[]>("/reports/top_sellers", {
+      searchParams: { period: "year" },
+      revalidate: 3600,
+    });
+  } catch {
+    return [];
+  }
 }
 
 // ---------- Extended Customers ----------
@@ -469,19 +530,24 @@ export async function getAllCustomersPaged(
   page: number = 1,
   search?: string
 ): Promise<{ customers: WCCustomer[]; total: number; totalPages: number }> {
-  const searchParams: Record<string, string | number> = { per_page: 20, page, role: "all" };
-  if (search) searchParams.search = search;
+  if (!isWooConfigured()) return { customers: [], total: 0, totalPages: 1 };
+  try {
+    const searchParams: Record<string, string | number> = { per_page: 20, page, role: "all" };
+    if (search) searchParams.search = search;
 
-  const res = await wcFetchRaw("/customers", {
-    searchParams,
-    revalidate: 60,
-  });
-  
-  return {
-    customers: (await res.json()) as WCCustomer[],
-    total: parseInt(res.headers.get("x-wp-total") ?? "0", 10),
-    totalPages: parseInt(res.headers.get("x-wp-totalpages") ?? "1", 10),
-  };
+    const res = await wcFetchRaw("/customers", {
+      searchParams,
+      revalidate: 60,
+    });
+    
+    return {
+      customers: (await res.json()) as WCCustomer[],
+      total: parseInt(res.headers.get("x-wp-total") ?? "0", 10),
+      totalPages: parseInt(res.headers.get("x-wp-totalpages") ?? "1", 10),
+    };
+  } catch {
+    return { customers: [], total: 0, totalPages: 1 };
+  }
 }
 
 // ─── Free E-Books ──────────────────────────────────────────────────────────────
@@ -501,24 +567,34 @@ export interface WCDownloadLink {
 
 /** Fetch all free downloadable products from WooCommerce */
 export async function getFreeEbooks(): Promise<Product[]> {
-  return wcFetch<Product[]>("/products", {
-    searchParams: {
-      downloadable: true,
-      virtual: true,
-      status: "publish",
-      per_page: 100,
-      orderby: "date",
-      order: "desc",
-    },
-    revalidate: 3600,
-  }).then((products) => products.filter((p) => parseFloat(p.price ?? "1") === 0));
+  if (!isWooConfigured()) return [];
+  try {
+    return await wcFetch<Product[]>("/products", {
+      searchParams: {
+        downloadable: true,
+        virtual: true,
+        status: "publish",
+        per_page: 100,
+        orderby: "date",
+        order: "desc",
+      },
+      revalidate: 3600,
+    }).then((products) => products.filter((p) => parseFloat(p.price ?? "1") === 0));
+  } catch {
+    return [];
+  }
 }
 
 /** Fetch all downloads available to a customer */
 export async function getCustomerDownloads(customerId: number): Promise<WCDownloadLink[]> {
-  return wcFetch<WCDownloadLink[]>(`/customers/${customerId}/downloads`, {
-    revalidate: 0,
-  });
+  if (!isWooConfigured()) return [];
+  try {
+    return await wcFetch<WCDownloadLink[]>(`/customers/${customerId}/downloads`, {
+      revalidate: 0,
+    });
+  } catch {
+    return [];
+  }
 }
 
 /** Create a free order for a downloadable product (sets status=completed so download is available immediately) */

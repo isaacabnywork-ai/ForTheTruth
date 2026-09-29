@@ -5,7 +5,7 @@
  * SERVER-SIDE ONLY.
  */
 import { cookies } from "next/headers";
-import { getServerEnv } from "@/config/env";
+import { getServerEnv, isWooConfigured } from "@/config/env";
 import { getCustomerByEmail, type WCCustomer } from "@/services/woocommerce";
 
 export const SESSION_COOKIE = "ftt_token";
@@ -32,23 +32,37 @@ export async function wpLogin(
   username: string,
   password: string
 ): Promise<WPTokenResponse> {
-  const env = getServerEnv();
-  const res = await fetch(
-    `${env.NEXT_PUBLIC_WORDPRESS_URL}/wp-json/jwt-auth/v1/token`,
-    {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ username, password }),
-      cache: "no-store",
-    }
-  );
-  const data = await res.json();
-  if (!res.ok || !data.token) {
+  if (!isWooConfigured()) {
     throw new Error(
-      data?.message?.replace(/<[^>]+>/g, "") || "Invalid email or password"
+      "Online store login is temporarily disabled while under maintenance. Admin staff PIN access remains active."
     );
   }
-  return data as WPTokenResponse;
+  const env = getServerEnv();
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 4000);
+  try {
+    const res = await fetch(
+      `${env.NEXT_PUBLIC_WORDPRESS_URL}/wp-json/jwt-auth/v1/token`,
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ username, password }),
+        cache: "no-store",
+        signal: controller.signal,
+      }
+    );
+    clearTimeout(timeoutId);
+    const data = await res.json();
+    if (!res.ok || !data.token) {
+      throw new Error(
+        data?.message?.replace(/<[^>]+>/g, "") || "Invalid email or password"
+      );
+    }
+    return data as WPTokenResponse;
+  } catch (err) {
+    clearTimeout(timeoutId);
+    throw err;
+  }
 }
 
 interface WPUser {
@@ -61,16 +75,26 @@ interface WPUser {
 
 /** Fetch the WP user for a token. Returns null if the token is invalid. */
 async function wpGetUser(token: string): Promise<WPUser | null> {
+  if (!isWooConfigured()) return null;
   const env = getServerEnv();
-  const res = await fetch(
-    `${env.NEXT_PUBLIC_WORDPRESS_URL}/wp-json/wp/v2/users/me?context=edit`,
-    {
-      headers: { Authorization: `Bearer ${token}` },
-      cache: "no-store",
-    }
-  );
-  if (!res.ok) return null;
-  return (await res.json()) as WPUser;
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 3000);
+  try {
+    const res = await fetch(
+      `${env.NEXT_PUBLIC_WORDPRESS_URL}/wp-json/wp/v2/users/me?context=edit`,
+      {
+        headers: { Authorization: `Bearer ${token}` },
+        cache: "no-store",
+        signal: controller.signal,
+      }
+    );
+    clearTimeout(timeoutId);
+    if (!res.ok) return null;
+    return (await res.json()) as WPUser;
+  } catch {
+    clearTimeout(timeoutId);
+    return null;
+  }
 }
 
 export async function getSessionToken(): Promise<string | null> {

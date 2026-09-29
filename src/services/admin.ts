@@ -1,6 +1,7 @@
 import { wcFetch } from "./woocommerce";
 import type { WCOrder } from "./woocommerce";
 import type { Product } from "@/types/product";
+import { isWooConfigured } from "@/config/env";
 
 export interface AdminStatsSnapshot {
   totalRevenue: number;
@@ -15,11 +16,26 @@ export interface AdminStatsSnapshot {
 }
 
 export async function getAdminOverview(): Promise<AdminStatsSnapshot> {
-  // Fetch latest 50 orders — cache for 30 seconds to reduce WooCommerce load
-  const orders = await wcFetch<WCOrder[]>("/orders", {
-    searchParams: { per_page: 50, orderby: "date", order: "desc" },
-    revalidate: 30,
-  });
+  if (!isWooConfigured()) {
+    return {
+      totalRevenue: 0,
+      totalOrders: 0,
+      posRevenue: 0,
+      posOrderCount: 0,
+      onlineRevenue: 0,
+      onlineOrderCount: 0,
+      lowStockCount: 0,
+      recentOrders: [],
+      lowStockProducts: [],
+    };
+  }
+
+  try {
+    // Fetch latest 50 orders — cache for 30 seconds to reduce WooCommerce load
+    const orders = await wcFetch<WCOrder[]>("/orders", {
+      searchParams: { per_page: 50, orderby: "date", order: "desc" },
+      revalidate: 30,
+    });
 
   // Fetch products — cache for 60 seconds (stock changes less frequently)
   const products = await wcFetch<Product[]>("/products", {
@@ -57,17 +73,31 @@ export async function getAdminOverview(): Promise<AdminStatsSnapshot> {
     return p.stock_status === "outofstock" || p.stock_status === "onbackorder";
   });
 
-  return {
-    totalRevenue,
-    totalOrders: orders.length,
-    posRevenue,
-    posOrderCount,
-    onlineRevenue,
-    onlineOrderCount,
-    lowStockCount: lowStockProducts.length,
-    recentOrders: orders.slice(0, 10),
-    lowStockProducts: lowStockProducts.slice(0, 6),
-  };
+    return {
+      totalRevenue,
+      totalOrders: orders.length,
+      posRevenue,
+      posOrderCount,
+      onlineRevenue,
+      onlineOrderCount,
+      lowStockCount: lowStockProducts.length,
+      recentOrders: orders.slice(0, 10),
+      lowStockProducts: lowStockProducts.slice(0, 6),
+    };
+  } catch (err) {
+    console.error("Failed to load admin overview:", err);
+    return {
+      totalRevenue: 0,
+      totalOrders: 0,
+      posRevenue: 0,
+      posOrderCount: 0,
+      onlineRevenue: 0,
+      onlineOrderCount: 0,
+      lowStockCount: 0,
+      recentOrders: [],
+      lowStockProducts: [],
+    };
+  }
 }
 
 export interface CreatePosOrderInput {
@@ -131,12 +161,17 @@ export async function updateProductInventory(
 }
 
 export async function fetchAllOrders(status?: string): Promise<WCOrder[]> {
-  const params: Record<string, string | number> = { per_page: 50, orderby: "date", order: "desc" };
-  if (status && status !== "all") {
-    params.status = status;
+  if (!isWooConfigured()) return [];
+  try {
+    const params: Record<string, string | number> = { per_page: 50, orderby: "date", order: "desc" };
+    if (status && status !== "all") {
+      params.status = status;
+    }
+    return await wcFetch<WCOrder[]>("/orders", {
+      searchParams: params,
+      revalidate: 30,
+    });
+  } catch {
+    return [];
   }
-  return wcFetch<WCOrder[]>("/orders", {
-    searchParams: params,
-    revalidate: 30,
-  });
 }
