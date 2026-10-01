@@ -187,6 +187,11 @@ export function PaymentModal({
             </h2>
             <div className="text-xs text-white/80 mt-1 space-y-0.5">
               <p>Total Items Value: ₹{totalAmount}</p>
+              {(customer.name || customer.phone) && (
+                <p className="text-amber-200 font-semibold">
+                  👤 Customer: {customer.name || "Customer"}{customer.phone ? ` (${customer.phone})` : ""}
+                </p>
+              )}
               {exchangeCredit && (
                 <p className="text-amber-300 font-bold">
                   − Prepaid Credit: ₹{creditAmt} (Order #{exchangeCredit.originalOrderId})

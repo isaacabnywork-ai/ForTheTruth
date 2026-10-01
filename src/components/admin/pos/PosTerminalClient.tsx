@@ -40,6 +40,7 @@ export function PosTerminalClient({ initialProducts, categories, submitApiUrl, s
   const [refundingId, setRefundingId] = useState<number | null>(null);
 
   const [exchangeCredit, setExchangeCredit] = useState<{ originalOrderId: number; amount: number } | null>(null);
+  const [sessionKey, setSessionKey] = useState(0);
 
   // Load book cover images asynchronously after POS opens — doesn't block render
   useEffect(() => {
@@ -191,6 +192,7 @@ export function PosTerminalClient({ initialProducts, categories, submitApiUrl, s
     if (confirm("Are you sure you want to clear the entire billing register?")) {
       setCart([]);
       setExchangeCredit(null);
+      setSessionKey((k) => k + 1);
     }
   };
 
@@ -231,6 +233,7 @@ export function PosTerminalClient({ initialProducts, categories, submitApiUrl, s
     setCart([]);
     setActivePayment(null);
     setExchangeCredit(null);
+    setSessionKey((k) => k + 1);
   };
 
   return (
@@ -322,6 +325,7 @@ export function PosTerminalClient({ initialProducts, categories, submitApiUrl, s
         </div>
         <div className="h-full">
           <PosCartTerminal
+            key={sessionKey}
             items={cart}
             onUpdateQty={handleUpdateQty}
             onRemoveItem={handleRemoveItem}

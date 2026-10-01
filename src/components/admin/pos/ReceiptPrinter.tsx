@@ -102,10 +102,12 @@ export function ReceiptPrinter({
             <span className="text-slate-500">Payment Mode:</span>
             <span className="font-bold uppercase text-navy">{paymentMethod}</span>
           </div>
-          {customer.name && (
+          {(customer.name || customer.phone) && (
             <div className="flex justify-between">
               <span className="text-slate-500">Customer:</span>
-              <span className="font-semibold">{customer.name} ({customer.phone})</span>
+              <span className="font-semibold">
+                {customer.name || "Customer"}{customer.phone ? ` (${customer.phone})` : ""}
+              </span>
             </div>
           )}
         </div>

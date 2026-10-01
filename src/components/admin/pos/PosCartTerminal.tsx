@@ -177,23 +177,51 @@ export function PosCartTerminal({
       {/* Customer Information Drawer */}
       <div className="border-t border-slate-200 bg-slate-50/70 p-3">
         <button
+          type="button"
           onClick={() => setShowCustomerForm((p) => !p)}
-          className="flex w-full items-center justify-between text-xs font-bold text-navy hover:text-cta"
+          className="flex w-full items-center justify-between text-xs font-bold text-navy hover:text-cta transition-colors"
         >
-          <span className="flex items-center gap-1.5">
-            👤 {customer.phone ? `Customer: ${customer.phone}` : "Attach Mobile Number (Optional)"}
+          <span className="flex items-center gap-1.5 truncate">
+            <span>👤</span>
+            {customer.name || customer.phone ? (
+              <span className="truncate">
+                Customer: <span className="text-cta font-extrabold">{customer.name || "Customer"}</span>
+                {customer.phone && <span className="text-slate-500 font-normal"> ({customer.phone})</span>}
+              </span>
+            ) : (
+              <span>Attach Customer Details (Optional)</span>
+            )}
           </span>
-          <span>{showCustomerForm ? "▲" : "▼"}</span>
+          <span className="ml-2 shrink-0 text-[10px] font-bold text-slate-500">
+            {showCustomerForm ? "▲ HIDE" : "▼ ADD"}
+          </span>
         </button>
         {showCustomerForm && (
-          <div className="mt-3 grid grid-cols-1 gap-2 text-xs">
-            <input
-              type="tel"
-              placeholder="Mobile Number"
-              value={customer.phone}
-              onChange={(e) => setCustomer({ ...customer, phone: e.target.value })}
-              className="rounded-lg border border-slate-200 bg-white px-2.5 py-1.5 outline-none focus:border-gold"
-            />
+          <div className="mt-3 grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
+            <div>
+              <label className="text-[10px] font-bold uppercase tracking-wider text-slate-500 block mb-1">
+                Customer Name
+              </label>
+              <input
+                type="text"
+                placeholder="Full Name"
+                value={customer.name}
+                onChange={(e) => setCustomer({ ...customer, name: e.target.value })}
+                className="w-full rounded-lg border border-slate-200 bg-white px-2.5 py-1.5 outline-none focus:border-gold transition-colors text-charcoal font-medium"
+              />
+            </div>
+            <div>
+              <label className="text-[10px] font-bold uppercase tracking-wider text-slate-500 block mb-1">
+                Mobile Number
+              </label>
+              <input
+                type="tel"
+                placeholder="Mobile Number"
+                value={customer.phone}
+                onChange={(e) => setCustomer({ ...customer, phone: e.target.value })}
+                className="w-full rounded-lg border border-slate-200 bg-white px-2.5 py-1.5 outline-none focus:border-gold transition-colors text-charcoal font-medium"
+              />
+            </div>
           </div>
         )}
       </div>
