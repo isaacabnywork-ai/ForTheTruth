@@ -81,7 +81,7 @@ export function ReceiptPrinter({
             Christian Literature &amp; Resource Center
           </p>
           <p className="text-[10px] text-slate-400 mt-0.5">
-            https://forthetruth.in | Support: +91 98765 43210
+            https://forthetruth.in | Support: +91 86046 85533
           </p>
           <p className="mt-2 text-xs font-bold text-navy bg-slate-100 py-1 rounded-md">
             CASH MEMO / RETAIL INVOICE
