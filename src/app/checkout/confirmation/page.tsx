@@ -6,14 +6,7 @@ import { Suspense, useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { formatPrice } from "@/utils/currency";
 
-interface OrderDetail {
-  id: number;
-  total: string;
-  billing: Record<string, string>;
-  line_items: { id: number; name: string; quantity: number; total: string; product_id?: number }[];
-  payment_method_title?: string;
-  date_created?: string;
-}
+import { InvoiceCard, type OrderInvoiceData } from "@/components/checkout/InvoiceCard";
 
 interface DownloadLink {
   download_url: string;
@@ -27,15 +20,37 @@ function Confirmation() {
   const orderId = searchParams.get("order");
   const orderKey = searchParams.get("key");
   const isFree = searchParams.get("free") === "1";
-  const [order, setOrder] = useState<OrderDetail | null>(null);
+  const [order, setOrder] = useState<OrderInvoiceData | null>(null);
   const [downloads, setDownloads] = useState<DownloadLink[]>([]);
   const [loadingDownloads, setLoadingDownloads] = useState(isFree);
 
   useEffect(() => {
+    // 1. Immediately read cached order details for instant 0ms invoice render
+    try {
+      const cached = sessionStorage.getItem("ftt_latest_order");
+      if (cached) {
+        const parsed = JSON.parse(cached);
+        if (!orderId || String(parsed.id) === String(orderId)) {
+          setOrder(parsed);
+        }
+      }
+    } catch {}
+
+    // 2. Fetch fresh order from API to synchronize latest status from WooCommerce
     if (!orderId) return;
     fetch(`/api/orders/${orderId}${orderKey ? `?key=${orderKey}` : ""}`)
       .then((r) => (r.ok ? r.json() : null))
-      .then((d) => d && setOrder(d.order))
+      .then((d) => {
+        if (d?.order) {
+          setOrder((prev) => ({
+            ...(prev || {}),
+            ...d.order,
+            // Preserve shipping total if available
+            shipping_total: d.order.shipping_total ?? prev?.shipping_total,
+            shipping_lines: d.order.shipping_lines ?? prev?.shipping_lines,
+          }));
+        }
+      })
       .catch(() => {});
   }, [orderId, orderKey]);
 
@@ -60,7 +75,7 @@ function Confirmation() {
         initial={{ opacity: 0, y: 30 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
-        className="mx-auto max-w-2xl"
+        className="mx-auto max-w-3xl"
       >
         {/* Success Icon */}
         <div className="flex flex-col items-center text-center">
@@ -167,59 +182,21 @@ function Confirmation() {
           </motion.div>
         )}
 
-        {/* Order Summary Card */}
+        {/* Official Tax Invoice & Order Summary */}
         {order ? (
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.4, duration: 0.5 }}
-            className="mt-8 overflow-hidden rounded-3xl border border-sand bg-white shadow-card"
+            className="mt-8"
           >
-            <div className="border-b border-sand bg-cream/50 px-6 py-4">
-              <h2 className="font-display text-lg font-bold text-charcoal">Order Summary</h2>
-              {order.billing?.first_name && (
-                <p className="mt-0.5 text-sm text-charcoal/55">
-                  {isFreeOrder ? "Registered to" : "Shipping to"} {order.billing.first_name} {order.billing.last_name}
-                  {order.billing.city ? `, ${order.billing.city}` : ""}
-                </p>
-              )}
-            </div>
-            <div className="p-6">
-              <ul className="space-y-3">
-                {order.line_items.map((li) => (
-                  <li key={li.id} className="flex items-center justify-between gap-4 text-sm">
-                    <span className="flex items-center gap-3">
-                      <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-cream font-bold text-xs text-charcoal">
-                        ×{li.quantity}
-                      </span>
-                      <span className="text-charcoal/80">{li.name}</span>
-                    </span>
-                    <span className="shrink-0 font-semibold text-charcoal">
-                      {parseFloat(li.total) === 0 ? <span className="text-emerald-600 font-bold">FREE</span> : formatPrice(li.total)}
-                    </span>
-                  </li>
-                ))}
-              </ul>
-
-              <div className={`mt-5 flex items-center justify-between rounded-2xl px-5 py-4 ${isFreeOrder ? "bg-emerald-500" : "bg-gold-gradient"}`}>
-                <span className="font-display font-bold text-white">{isFreeOrder ? "Total" : "Total Paid"}</span>
-                <span className="font-display text-xl font-black text-white">
-                  {isFreeOrder ? "FREE" : formatPrice(order.total)}
-                </span>
-              </div>
-
-              {order.payment_method_title && (
-                <p className="mt-3 text-center text-xs text-charcoal/45">
-                  {isFreeOrder ? "✓ No payment required" : `Paid via ${order.payment_method_title}`}
-                </p>
-              )}
-            </div>
+            <InvoiceCard order={order} isFree={Boolean(isFreeOrder)} />
           </motion.div>
         ) : orderId ? (
           <div className="mt-10 animate-pulse rounded-3xl border border-sand bg-white p-6 shadow-card">
             <div className="mb-4 h-5 w-1/3 rounded-full bg-sand" />
             <div className="space-y-3">
-              {[1, 2].map((i) => (
+              {[1, 2, 3].map((i) => (
                 <div key={i} className="flex justify-between">
                   <div className="h-4 w-1/2 rounded-full bg-sand/60" />
                   <div className="h-4 w-16 rounded-full bg-sand/60" />

@@ -56,6 +56,7 @@ export function ProductDetail({ product, reviews = [] }: ProductDetailProps) {
         price: parseFloat(product.price),
         image: currentImage.src,
         isVirtual: product.categories.some((c) => c.slug === "e-books"),
+        weight: product.weight ? parseFloat(product.weight) : 0.4,
       },
       qty
     );
@@ -284,7 +285,7 @@ export function ProductDetail({ product, reviews = [] }: ProductDetailProps) {
             <div className="mt-5 grid grid-cols-2 gap-3 text-xs text-charcoal/70 bg-sand/20 rounded-2xl p-3.5 border border-sand/50">
               <div className="flex items-center gap-2 font-semibold">
                 <span className="flex h-6 w-6 items-center justify-center rounded-full bg-gold/20 text-gold-dark text-sm">🚚</span>
-                <span>Free shipping over ₹499</span>
+                <span>Standard Shipping from ₹100</span>
               </div>
               <div className="flex items-center gap-2 font-semibold">
                 <span className="flex h-6 w-6 items-center justify-center rounded-full bg-navy/10 text-navy text-sm">🔒</span>

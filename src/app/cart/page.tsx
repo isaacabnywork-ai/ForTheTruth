@@ -6,8 +6,7 @@ import { useEffect, useState } from "react";
 import { useCartStore } from "@/store/cartStore";
 import { formatPrice } from "@/utils/currency";
 
-const FREE_SHIPPING_THRESHOLD = 499;
-const FLAT_SHIPPING = 49;
+import { calculateShipping, calculateTotalWeight } from "@/utils/shipping";
 
 export default function CartPage() {
   const { items, updateQuantity, removeFromCart } = useCartStore();
@@ -23,7 +22,13 @@ export default function CartPage() {
   }
 
   const subtotal = items.reduce((sum, i) => sum + i.price * i.quantity, 0);
-  const shipping = subtotal >= FREE_SHIPPING_THRESHOLD || subtotal === 0 ? 0 : FLAT_SHIPPING;
+  const totalWeight = calculateTotalWeight(items);
+  const shippingInfo = calculateShipping({
+    destinationCountry: "IN",
+    items,
+    subtotal,
+  });
+  const shipping = shippingInfo.cost;
 
   if (items.length === 0) {
     return (
@@ -126,7 +131,11 @@ export default function CartPage() {
               <dd className="font-semibold">{formatPrice(subtotal)}</dd>
             </div>
             <div className="flex justify-between">
-              <dt className="text-charcoal/55">Shipping</dt>
+              <dt className="text-charcoal/55">Est. Weight</dt>
+              <dd className="font-semibold text-charcoal/70">{totalWeight.toFixed(2)} kg</dd>
+            </div>
+            <div className="flex justify-between">
+              <dt className="text-charcoal/55">Shipping (India)</dt>
               <dd className="font-semibold">
                 {shipping === 0 ? (
                   <span className="text-gold-deep">Free</span>
@@ -135,15 +144,9 @@ export default function CartPage() {
                 )}
               </dd>
             </div>
-            {shipping > 0 ? (
-              <p className="rounded-lg bg-gold/10 px-3 py-2 text-xs text-gold-deep">
-                Add {formatPrice(FREE_SHIPPING_THRESHOLD - subtotal)} more for free delivery, or select <strong>Store Pickup (Free)</strong> at checkout.
-              </p>
-            ) : (
-              <p className="rounded-lg bg-emerald-50 px-3 py-2 text-xs font-semibold text-emerald-700">
-                ✓ Free Shipping applied! Or select Store Pickup at checkout.
-              </p>
-            )}
+            <p className="rounded-lg bg-gold/10 px-3 py-2 text-xs text-gold-deep leading-relaxed">
+              📦 <strong>Shipping Rule:</strong> {shippingInfo.breakdown}. International &amp; In-Store pickup calculated at checkout.
+            </p>
             <div className="flex justify-between border-t border-sand pt-4">
               <dt className="font-bold">Total</dt>
               <dd className="font-display text-xl font-bold text-gold-dark">

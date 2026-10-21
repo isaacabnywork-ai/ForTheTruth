@@ -7,6 +7,7 @@ import { AddressForm } from "@/components/checkout/AddressForm";
 import { useAuth } from "@/hooks/useAuth";
 import { useCartStore } from "@/store/cartStore";
 import { formatPrice } from "@/utils/currency";
+import { calculateShipping } from "@/utils/shipping";
 
 declare global {
   interface Window {
@@ -71,10 +72,70 @@ export default function CheckoutPage() {
 
   const requiresShipping = items.some((i) => !i.isVirtual);
   const subtotal = items.reduce((sum, i) => sum + i.price * i.quantity, 0);
-  const estShipping = requiresShipping 
-    ? (shippingMethod === "pickup" ? 0 : (subtotal >= 499 || subtotal === 0 ? 0 : 49))
-    : 0;
+
+  const shippingInfo = calculateShipping({
+    destinationCountry: shipping.country,
+    items,
+    shippingMethod,
+    subtotal,
+  });
+
+  const estShipping = requiresShipping ? shippingInfo.cost : 0;
   const isFreeOrder = subtotal === 0 || (subtotal + estShipping === 0);
+
+  const saveOrderForConfirmation = (orderId: number, orderKey?: string, extra?: Record<string, unknown>) => {
+    try {
+      const bill = billingSame ? shipping : billing;
+      const orderSnapshot = {
+        id: orderId,
+        order_key: orderKey || "",
+        total: (subtotal + estShipping).toString(),
+        subtotal: subtotal.toString(),
+        shipping_total: estShipping.toString(),
+        shipping_lines: [
+          {
+            method_title: shippingMethod === "pickup" ? "Store Pickup" : shippingInfo.label,
+            total: estShipping.toString(),
+          },
+        ],
+        billing: {
+          first_name: bill.firstName,
+          last_name: bill.lastName,
+          email: bill.email,
+          phone: bill.phone,
+          address_1: bill.address1,
+          city: bill.city,
+          state: bill.state,
+          postcode: bill.postcode,
+          country: bill.country,
+        },
+        shipping: {
+          first_name: shipping.firstName,
+          last_name: shipping.lastName,
+          address_1: shippingMethod === "pickup" ? "Store Pickup (In-Store)" : shipping.address1,
+          city: shippingMethod === "pickup" ? "Store Location" : shipping.city,
+          state: shippingMethod === "pickup" ? "" : shipping.state,
+          postcode: shippingMethod === "pickup" ? "" : shipping.postcode,
+          country: shipping.country,
+        },
+        line_items: items.map((i) => ({
+          id: i.productId,
+          product_id: i.productId,
+          name: i.name,
+          quantity: i.quantity,
+          price: i.price,
+          total: (i.price * i.quantity).toString(),
+        })),
+        payment_method_title: isFreeOrder ? "Free Order" : "Razorpay (Online Payment)",
+        date_created: new Date().toISOString(),
+        total_weight_kg: shippingInfo.totalWeightKg,
+        ...extra,
+      };
+      sessionStorage.setItem("ftt_latest_order", JSON.stringify(orderSnapshot));
+    } catch (e) {
+      console.warn("sessionStorage order cache error:", e);
+    }
+  };
 
   if (mounted && items.length === 0 && !busy) {
     return (
@@ -115,6 +176,10 @@ export default function CheckoutPage() {
 
       // Free order (₹0 total) — no payment needed, redirect straight to confirmation
       if (data.freeOrder) {
+        saveOrderForConfirmation(data.wcOrderId, data.orderKey, {
+          payment_method_title: "Free Download",
+          total: "0",
+        });
         clearCart();
         router.push(`/checkout/confirmation?order=${data.wcOrderId}&key=${data.orderKey ?? ""}&free=1`);
         return;
@@ -171,6 +236,10 @@ export default function CheckoutPage() {
             }),
           });
           if (verify.ok) {
+            saveOrderForConfirmation(data.wcOrderId, data.orderKey, {
+              transaction_id: response.razorpay_payment_id,
+              payment_method_title: "Razorpay (Online Payment)",
+            });
             clearCart();
             router.push(
               `/checkout/confirmation?order=${data.wcOrderId}&key=${data.orderKey ?? ""}`
@@ -219,17 +288,19 @@ export default function CheckoutPage() {
                 />
                 <div className="flex-1">
                   <div className="flex items-center justify-between">
-                    <p className="font-bold text-charcoal text-sm">Standard Delivery</p>
+                    <p className="font-bold text-charcoal text-sm">{shippingInfo.label}</p>
                     <span className="font-bold text-xs">
-                      {subtotal >= 499 || subtotal === 0 ? (
+                      {estShipping === 0 ? (
                         <span className="text-emerald-600">FREE</span>
                       ) : (
-                        formatPrice(49)
+                        formatPrice(estShipping)
                       )}
                     </span>
                   </div>
                   <p className="mt-1 text-xs text-charcoal/60 leading-relaxed">
-                    Delivery within 5–7 business days across India.
+                    {shippingInfo.isInternational
+                      ? "International air courier (outside India)"
+                      : "Delivery across India within 4–7 business days"} · {shippingInfo.breakdown}
                   </p>
                 </div>
               </label>
@@ -335,12 +406,23 @@ export default function CheckoutPage() {
               <dd className="font-semibold">{formatPrice(subtotal)}</dd>
             </div>
             {requiresShipping && (
-            <div className="flex justify-between">
-              <dt className="text-charcoal/55">Shipping</dt>
-              <dd className="font-semibold">
-                {estShipping === 0 ? "Free" : formatPrice(estShipping)}
-              </dd>
-            </div>
+            <>
+              <div className="flex justify-between">
+                <dt className="text-charcoal/55">Est. Weight</dt>
+                <dd className="font-semibold text-charcoal/70">{shippingInfo.totalWeightKg.toFixed(2)} kg</dd>
+              </div>
+              <div className="flex justify-between">
+                <dt className="text-charcoal/55">{shippingMethod === "pickup" ? "Store Pickup" : shippingInfo.label}</dt>
+                <dd className="font-semibold">
+                  {estShipping === 0 ? <span className="text-emerald-600 font-bold">Free</span> : formatPrice(estShipping)}
+                </dd>
+              </div>
+              {estShipping > 0 && (
+                <p className="text-[11px] text-charcoal/50 bg-cream/70 rounded-lg p-2 leading-relaxed">
+                  📦 {shippingInfo.breakdown}
+                </p>
+              )}
+            </>
             )}
             <div className="flex justify-between border-t border-sand pt-3">
               <dt className="font-bold">Total</dt>
@@ -429,6 +511,10 @@ export default function CheckoutPage() {
                     }),
                   });
                   if (verify.ok) {
+                    saveOrderForConfirmation(mockPaymentModal.wcOrderId, mockPaymentModal.orderKey, {
+                      transaction_id: `pay_mock_${Date.now()}`,
+                      payment_method_title: "Razorpay (Test Sandbox)",
+                    });
                     clearCart();
                     router.push(
                       `/checkout/confirmation?order=${mockPaymentModal.wcOrderId}&key=${mockPaymentModal.orderKey ?? ""}`

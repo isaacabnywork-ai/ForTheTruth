@@ -115,3 +115,30 @@
     @apply animate-shimmer;
   }
 }
+
+@media print {
+  body * {
+    visibility: hidden;
+  }
+  #order-invoice,
+  #order-invoice * {
+    visibility: visible;
+  }
+  #order-invoice {
+    position: absolute !important;
+    left: 0 !important;
+    top: 0 !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    margin: 0 !important;
+    padding: 24px !important;
+    border: none !important;
+    box-shadow: none !important;
+    background: #ffffff !important;
+    color: #1a1a1a !important;
+    font-size: 12px !important;
+  }
+  .print-hide {
+    display: none !important;
+  }
+}

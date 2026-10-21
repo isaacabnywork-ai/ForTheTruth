@@ -3,6 +3,7 @@ import { z } from "zod";
 import { getSessionUser } from "@/lib/session";
 import { createRazorpayOrder } from "@/services/razorpay";
 import { createOrder, getProducts } from "@/services/woocommerce";
+import { calculateShipping } from "@/utils/shipping";
 
 const addressSchema = z.object({
   firstName: z.string().min(1),
@@ -34,9 +35,6 @@ const schema = z.object({
   shippingMethod: z.enum(["delivery", "pickup"]).optional().default("delivery"),
 });
 
-const FREE_SHIPPING_THRESHOLD = 499;
-const FLAT_SHIPPING = 49;
-
 export async function POST(req: NextRequest) {
   const parsed = schema.safeParse(await req.json().catch(() => null));
   if (!parsed.success) {
@@ -63,7 +61,7 @@ export async function POST(req: NextRequest) {
     }
 
     let subtotal = 0;
-    const lineItems = items.map((item) => {
+    const shippingItems = items.map((item) => {
       const product = products.find((p) => p.id === item.productId)!;
       if (
         product.stock_status === "outofstock" ||
@@ -73,20 +71,34 @@ export async function POST(req: NextRequest) {
         throw new StockError(product.name);
       }
       subtotal += parseFloat(product.price) * item.quantity;
-      return { product_id: item.productId, quantity: item.quantity };
+      const isVirtual = product.categories?.some((c) => c.slug === "e-books") || false;
+      const weight = product.weight ? parseFloat(product.weight) : undefined;
+      return {
+        quantity: item.quantity,
+        weight,
+        isVirtual,
+      };
     });
 
-    const shippingCost =
-      shippingMethod === "pickup"
-        ? 0
-        : subtotal >= FREE_SHIPPING_THRESHOLD || subtotal === 0
-        ? 0
-        : FLAT_SHIPPING;
+    const lineItems = items.map((item) => ({
+      product_id: item.productId,
+      quantity: item.quantity,
+    }));
 
     const bill = billing || shipping;
     if (!bill) {
       return NextResponse.json({ error: "Billing address is required" }, { status: 400 });
     }
+
+    const destinationCountry = shipping?.country || bill?.country || "IN";
+    const shippingCalc = calculateShipping({
+      destinationCountry,
+      items: shippingItems,
+      shippingMethod,
+      subtotal,
+    });
+    const shippingCost = shippingCalc.cost;
+
     const user = await getSessionUser().catch(() => null);
 
     // 2. Create the WooCommerce order (pending payment).
@@ -132,8 +144,8 @@ export async function POST(req: NextRequest) {
             : shippingCost > 0
             ? [
                 {
-                  method_id: "flat_rate",
-                  method_title: "Standard Shipping",
+                  method_id: shippingCalc.isInternational ? "international_delivery" : "flat_rate",
+                  method_title: shippingCalc.label,
                   total: String(shippingCost),
                 },
               ]
@@ -182,6 +194,13 @@ export async function POST(req: NextRequest) {
           id: Math.floor(80000 + Math.random() * 19999),
           order_key: `wc_order_sim_${Date.now()}`,
           total: simulatedTotal.toString(),
+          shipping_total: shippingCost.toString(),
+          shipping_lines: [
+            {
+              method_title: shippingCalc.label,
+              total: shippingCost.toString(),
+            },
+          ],
         };
         console.info(`Stage 3 Activated: Created fallback sandbox order #${order.id} (₹${order.total}) for uninterrupted testing.`);
       }
@@ -202,6 +221,8 @@ export async function POST(req: NextRequest) {
         orderKey: order.order_key,
         freeOrder: true,
         amount: 0,
+        shippingCost: 0,
+        shippingTitle: "Free",
       });
     }
 
@@ -214,6 +235,9 @@ export async function POST(req: NextRequest) {
       amount: rzpOrder.amount, // paise
       currency: rzpOrder.currency,
       keyId: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID,
+      shippingCost,
+      shippingTitle: shippingCalc.label,
+      totalWeightKg: shippingCalc.totalWeightKg,
     });
 
   } catch (err) {

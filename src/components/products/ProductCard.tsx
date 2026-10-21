@@ -53,6 +53,7 @@ export function ProductCard({
       price,
       image: image?.src,
       isVirtual: product.categories.some((c) => c.slug === "e-books"),
+      weight: product.weight ? parseFloat(product.weight) : 0.4,
     });
     setAdded(true);
     setTimeout(() => setAdded(false), 1800);

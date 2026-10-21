@@ -7,6 +7,7 @@ export interface CartItem {
   image?: string;
   quantity: number;
   isVirtual?: boolean;
+  weight?: number; // in kilograms
 }
 
 export interface User {

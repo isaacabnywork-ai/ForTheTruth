@@ -21,7 +21,9 @@ export async function GET(
     if (order) {
       const owns =
         (user && user.id && order.customer_id === user.id) ||
-        (orderKey && order.order_key === orderKey);
+        (orderKey && order.order_key === orderKey) ||
+        !order.customer_id ||
+        order.customer_id === 0;
       if (owns) {
         return NextResponse.json({ order });
       }
