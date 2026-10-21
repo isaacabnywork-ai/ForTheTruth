@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Image from "next/image";
 import { getAuthor, type Product } from "@/types/product";
 import { formatPrice } from "@/utils/currency";
@@ -13,6 +13,34 @@ export function ProductManagerClient({ initialProducts }: { initialProducts: Pro
   const [priceVal, setPriceVal] = useState("");
   const [saving, setSaving] = useState(false);
   const [toastMsg, setToastMsg] = useState("");
+  const [syncing, setSyncing] = useState(false);
+
+  const syncCatalog = async (forceRefresh = false) => {
+    setSyncing(true);
+    try {
+      const url = `/api/admin/products${forceRefresh ? "?refresh=true" : ""}`;
+      const res = await fetch(url, { cache: "no-store" });
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const data = await res.json();
+      if (Array.isArray(data.products) && data.products.length > 0) {
+        setProducts(data.products);
+        setToastMsg(`Successfully synchronized ${data.products.length} titles from WooCommerce!`);
+        setTimeout(() => setToastMsg(""), 3500);
+      }
+    } catch (err: unknown) {
+      console.error("Failed to sync catalog:", err);
+      setToastMsg("Sync failed. Check WooCommerce connection.");
+      setTimeout(() => setToastMsg(""), 4000);
+    } finally {
+      setSyncing(false);
+    }
+  };
+
+  useEffect(() => {
+    if (products.length === 0) {
+      void syncCatalog(false);
+    }
+  }, []);
 
   const filtered = products.filter((p) => {
     if (!search.trim()) return true;
@@ -76,14 +104,37 @@ export function ProductManagerClient({ initialProducts }: { initialProducts: Pro
             Inline update of physical retail unit stock counts and pricing without WordPress admin.
           </p>
         </div>
-        <div className="w-full md:w-80">
-          <input
-            type="text"
-            placeholder="Search titles, authors, SKUs..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            className="w-full rounded-2xl border border-slate-300 bg-white px-4 py-2.5 text-sm outline-none focus:border-gold shadow-xs"
-          />
+        <div className="flex flex-col sm:flex-row items-center gap-3 w-full md:w-auto">
+          <button
+            type="button"
+            onClick={() => void syncCatalog(true)}
+            disabled={syncing}
+            className="flex items-center gap-2 rounded-2xl border border-slate-200 bg-white px-4 py-2.5 text-xs font-bold text-navy shadow-xs transition-all hover:bg-slate-50 hover:border-cta active:scale-95 disabled:opacity-60 cursor-pointer shrink-0"
+          >
+            <svg
+              width="14"
+              height="14"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2.5"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              className={syncing ? "animate-spin text-cta" : "text-slate-400"}
+            >
+              <path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67" />
+            </svg>
+            <span>{syncing ? "Syncing..." : `Refresh (${products.length} Titles)`}</span>
+          </button>
+          <div className="w-full sm:w-80">
+            <input
+              type="text"
+              placeholder="Search titles, authors, SKUs..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className="w-full rounded-2xl border border-slate-300 bg-white px-4 py-2.5 text-sm outline-none focus:border-gold shadow-xs"
+            />
+          </div>
         </div>
       </div>
 
@@ -108,10 +159,43 @@ export function ProductManagerClient({ initialProducts }: { initialProducts: Pro
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100 font-medium">
-              {filtered.length === 0 ? (
+              {products.length === 0 && syncing ? (
+                <tr>
+                  <td colSpan={6} className="py-20 text-center">
+                    <div className="inline-flex flex-col items-center justify-center">
+                      <svg
+                        className="h-8 w-8 animate-spin text-cta mb-3"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2.5"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      >
+                        <path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67" />
+                      </svg>
+                      <p className="font-display text-sm font-bold text-navy">Connecting to WooCommerce API...</p>
+                      <p className="text-xs text-slate-400 mt-0.5">Fetching live store products and real-time inventory counts.</p>
+                    </div>
+                  </td>
+                </tr>
+              ) : filtered.length === 0 ? (
                 <tr>
                   <td colSpan={6} className="py-16 text-center text-slate-400">
-                    No books matching your query.
+                    {products.length === 0 ? (
+                      <div className="inline-flex flex-col items-center">
+                        <p className="font-bold text-slate-600 mb-2">No catalog titles found in memory.</p>
+                        <button
+                          type="button"
+                          onClick={() => void syncCatalog(true)}
+                          className="rounded-xl bg-navy px-4 py-2 text-xs font-bold text-white hover:bg-navy/90"
+                        >
+                          Fetch from WooCommerce
+                        </button>
+                      </div>
+                    ) : (
+                      "No books matching your query."
+                    )}
                   </td>
                 </tr>
               ) : (

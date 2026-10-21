@@ -35,13 +35,19 @@ export async function getAdminOverview(): Promise<AdminStatsSnapshot> {
     const orders = await wcFetch<WCOrder[]>("/orders", {
       searchParams: { per_page: 50, orderby: "date", order: "desc" },
       revalidate: 30,
+      timeout: 25000,
     });
 
-  // Fetch products — cache for 60 seconds (stock changes less frequently)
-  const products = await wcFetch<Product[]>("/products", {
-    searchParams: { per_page: 100, status: "publish" },
-    revalidate: 60,
-  });
+    // Fetch products — cache for 60 seconds using lean fields for instant stock check
+    const products = await wcFetch<Product[]>("/products", {
+      searchParams: {
+        per_page: 100,
+        status: "publish",
+        _fields: "id,name,stock_quantity,stock_status,price,regular_price,images",
+      },
+      revalidate: 60,
+      timeout: 25000,
+    });
 
   let totalRevenue = 0;
   let posRevenue = 0;
@@ -170,6 +176,7 @@ export async function fetchAllOrders(status?: string): Promise<WCOrder[]> {
     return await wcFetch<WCOrder[]>("/orders", {
       searchParams: params,
       revalidate: 30,
+      timeout: 25000,
     });
   } catch {
     return [];

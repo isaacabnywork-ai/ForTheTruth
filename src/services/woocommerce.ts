@@ -14,6 +14,7 @@ interface FetchOptions {
   /** ISR revalidation window in seconds. Default 1 hour. GET only. */
   revalidate?: number;
   searchParams?: Record<string, string | number | boolean | undefined>;
+  timeout?: number;
 }
 
 async function wcFetchRaw(
@@ -36,7 +37,7 @@ async function wcFetchRaw(
 
   const isBuild = process.env.NEXT_PHASE === "phase-production-build";
   const maxAttempts = isBuild ? 0 : MAX_RETRIES;
-  const timeoutMs = isBuild ? 4000 : 8000;
+  const timeoutMs = opts.timeout ?? (isBuild ? 8000 : 25000);
 
   let lastError: unknown;
   for (let attempt = 0; attempt <= maxAttempts; attempt++) {
@@ -176,7 +177,11 @@ export async function getProductsPaged(
   }
 }
 
-const REQUIRED_FIELDS = "id,name,slug,permalink,description,short_description,sku,price,regular_price,sale_price,on_sale,stock_status,stock_quantity,average_rating,rating_count,images,categories,attributes,meta_data,weight,dimensions";
+export const CATALOG_FIELDS =
+  "id,name,slug,permalink,sku,price,regular_price,sale_price,on_sale,stock_status,stock_quantity,average_rating,rating_count,images,categories,attributes,meta_data,weight,dimensions";
+
+const REQUIRED_FIELDS =
+  "id,name,slug,permalink,description,short_description,sku,price,regular_price,sale_price,on_sale,stock_status,stock_quantity,average_rating,rating_count,images,categories,attributes,meta_data,weight,dimensions";
 
 const globalForCache = globalThis as unknown as {
   _wcProductsCache?: { data: Product[]; time: number };
@@ -186,51 +191,75 @@ const globalForCache = globalThis as unknown as {
 /**
  * Fetches ALL products from WooCommerce by auto-paginating through every page
  * (100 products per request — the WooCommerce API maximum).
- * Use this whenever you need the complete catalog (e.g. POS terminal, admin stock manager).
+ * Uses lean CATALOG_FIELDS and controlled chunking to keep response times under 3s.
+ * Results are cached in-memory with a 5-minute TTL.
  */
 export async function getAllProducts(
-  q: Omit<ProductQuery, "page" | "perPage"> = {}
+  q: Omit<ProductQuery, "page" | "perPage"> & { forceRefresh?: boolean } = {}
 ): Promise<Product[]> {
   if (!isWooConfigured()) return [];
-  const CACHE_TTL = (q.revalidate ?? 60) * 1000;
+  const CACHE_TTL = (q.revalidate ?? 300) * 1000;
   const now = Date.now();
-  if (globalForCache._wcProductsCache && (now - globalForCache._wcProductsCache.time < CACHE_TTL)) {
+  if (
+    !q.forceRefresh &&
+    globalForCache._wcProductsCache &&
+    now - globalForCache._wcProductsCache.time < CACHE_TTL
+  ) {
     return globalForCache._wcProductsCache.data;
   }
 
   const PER_PAGE = 100;
 
   try {
-    // Fetch page 1 to discover totalPages
+    // Fetch page 1 to discover totalPages with lean catalog fields
     const firstRes = await wcFetchRaw("/products", {
-      searchParams: { ...productParams({ ...q, page: 1, perPage: PER_PAGE }), _fields: REQUIRED_FIELDS },
-      revalidate: q.revalidate ?? 60,
+      searchParams: {
+        ...productParams({ ...q, page: 1, perPage: PER_PAGE }),
+        _fields: CATALOG_FIELDS,
+      },
+      revalidate: q.revalidate ?? 300,
+      timeout: 30000,
     });
     const firstBatch = (await firstRes.json()) as Product[];
     const totalPages = parseInt(firstRes.headers.get("x-wp-totalpages") ?? "1", 10);
 
     if (totalPages <= 1) {
-      globalForCache._wcProductsCache = { data: firstBatch, time: Date.now() };
+      if (firstBatch.length > 0) {
+        globalForCache._wcProductsCache = { data: firstBatch, time: Date.now() };
+      }
       return firstBatch;
     }
 
-    // Fetch remaining pages in parallel
+    // Fetch remaining pages in controlled chunks of 2 to avoid WordPress PHP exhaustion
     const pageNumbers = Array.from({ length: totalPages - 1 }, (_, i) => i + 2);
-    const rest = await Promise.all(
-      pageNumbers.map((page) =>
-        wcFetch<Product[]>("/products", {
-          searchParams: { ...productParams({ ...q, page, perPage: PER_PAGE }), _fields: REQUIRED_FIELDS },
-          revalidate: q.revalidate ?? 60,
-        })
-      )
-    );
+    const rest: Product[][] = [];
+    const CHUNK_SIZE = 2;
+
+    for (let i = 0; i < pageNumbers.length; i += CHUNK_SIZE) {
+      const chunk = pageNumbers.slice(i, i + CHUNK_SIZE);
+      const chunkResults = await Promise.all(
+        chunk.map((page) =>
+          wcFetch<Product[]>("/products", {
+            searchParams: {
+              ...productParams({ ...q, page, perPage: PER_PAGE }),
+              _fields: CATALOG_FIELDS,
+            },
+            revalidate: q.revalidate ?? 300,
+            timeout: 30000,
+          })
+        )
+      );
+      rest.push(...chunkResults);
+    }
 
     const allProducts = [firstBatch, ...rest].flat();
-    globalForCache._wcProductsCache = { data: allProducts, time: Date.now() };
+    if (allProducts.length > 0) {
+      globalForCache._wcProductsCache = { data: allProducts, time: Date.now() };
+    }
     return allProducts;
   } catch (err) {
     console.error("Failed to fetch all products:", err);
-    return [];
+    return globalForCache._wcProductsCache?.data ?? [];
   }
 }
 

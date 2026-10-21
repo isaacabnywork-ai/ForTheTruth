@@ -8,6 +8,8 @@ interface PosProductGridProps {
   products: Product[];
   categories: WCCategory[];
   onAddToCart: (product: Product) => void;
+  syncing?: boolean;
+  onSync?: () => void;
 }
 
 function PosBookCover({ product }: { product: Product }) {
@@ -89,7 +91,13 @@ function PosBookCover({ product }: { product: Product }) {
   );
 }
 
-export function PosProductGrid({ products, categories, onAddToCart }: PosProductGridProps) {
+export function PosProductGrid({
+  products,
+  categories,
+  onAddToCart,
+  syncing = false,
+  onSync,
+}: PosProductGridProps) {
   const [search, setSearch] = useState("");
   const [selectedCat, setSelectedCat] = useState<number | null>(null);
   const [inStockOnly, setInStockOnly] = useState(true);
@@ -470,14 +478,56 @@ export function PosProductGrid({ products, categories, onAddToCart }: PosProduct
 
       {/* Products Grid */}
       <div className="flex-1 overflow-y-auto pr-1">
-        {filteredProducts.length === 0 ? (
+        {products.length === 0 && syncing ? (
+          <div className="flex h-72 flex-col items-center justify-center rounded-2xl border border-dashed border-slate-300 bg-white p-8 text-center shadow-xs">
+            <div className="relative mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-amber-50 text-cta">
+              <svg
+                className="h-7 w-7 animate-spin"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2.5"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67" />
+              </svg>
+            </div>
+            <p className="font-display text-base font-bold text-navy">Connecting to WooCommerce API...</p>
+            <p className="mt-1 text-xs text-slate-500">Synchronizing live store inventory and product catalog (400+ titles).</p>
+          </div>
+        ) : products.length === 0 ? (
+          <div className="flex h-72 flex-col items-center justify-center rounded-2xl border border-dashed border-slate-300 bg-white p-8 text-center shadow-xs">
+            <div className="mb-3 flex h-12 w-12 items-center justify-center rounded-2xl bg-slate-100 text-slate-400">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1 0-5H20" />
+              </svg>
+            </div>
+            <p className="font-display text-base font-bold text-navy">No titles loaded in POS terminal</p>
+            <p className="mt-1 max-w-sm text-xs text-slate-500">
+              The catalog has not been pulled from WooCommerce yet or is still synchronizing.
+            </p>
+            {onSync && (
+              <button
+                type="button"
+                onClick={onSync}
+                className="mt-4 flex items-center gap-2 rounded-xl bg-navy px-5 py-2.5 text-xs font-bold text-white shadow-md hover:bg-navy/90 active:scale-95 transition-all cursor-pointer"
+              >
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67" />
+                </svg>
+                Connect &amp; Sync WooCommerce Catalog
+              </button>
+            )}
+          </div>
+        ) : filteredProducts.length === 0 ? (
           <div className="flex h-64 flex-col items-center justify-center rounded-2xl border border-dashed border-slate-300 bg-white text-center">
             <p className="text-sm font-bold text-slate-500">No matching titles found.</p>
             <p className="mt-1 text-xs text-slate-400">Try changing your filter or clearing the search query.</p>
             {search && (
               <button
                 onClick={() => setSearch("")}
-                className="mt-3 rounded-lg bg-slate-100 px-4 py-1.5 text-xs font-bold text-charcoal hover:bg-slate-200"
+                className="mt-3 rounded-lg bg-slate-100 px-4 py-1.5 text-xs font-bold text-charcoal hover:bg-slate-200 cursor-pointer"
               >
                 Clear Search
               </button>

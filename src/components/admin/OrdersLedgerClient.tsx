@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import type { WCOrder } from "@/services/woocommerce";
 import { formatPrice } from "@/utils/currency";
 
@@ -9,6 +9,12 @@ export function OrdersLedgerClient({ initialOrders }: { initialOrders: WCOrder[]
   const [activeTab, setActiveTab] = useState("all");
   const [selectedOrder, setSelectedOrder] = useState<WCOrder | null>(null);
   const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    if (orders.length === 0) {
+      void fetchFiltered("all");
+    }
+  }, []);
 
   const fetchFiltered = async (status: string) => {
     setActiveTab(status);
@@ -64,7 +70,27 @@ export function OrdersLedgerClient({ initialOrders }: { initialOrders: WCOrder[]
             </button>
           );
         })}
-        {loading && <span className="text-xs font-bold text-slate-400 animate-pulse ml-2">Refreshing ledger...</span>}
+        <button
+          type="button"
+          onClick={() => void fetchFiltered(activeTab)}
+          disabled={loading}
+          className="ml-auto flex items-center gap-1.5 rounded-2xl border border-slate-200 bg-white px-4 py-2 text-xs font-bold text-navy shadow-xs transition-all hover:bg-slate-50 hover:border-cta active:scale-95 disabled:opacity-60 cursor-pointer"
+        >
+          <svg
+            width="13"
+            height="13"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2.5"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            className={loading ? "animate-spin text-cta" : "text-slate-400"}
+          >
+            <path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67" />
+          </svg>
+          <span>{loading ? "Refreshing..." : "Refresh Orders"}</span>
+        </button>
       </div>
 
       {/* Orders Table */}

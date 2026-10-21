@@ -42,6 +42,38 @@ export function PosTerminalClient({ initialProducts, categories, submitApiUrl, s
   const [exchangeCredit, setExchangeCredit] = useState<{ originalOrderId: number; amount: number } | null>(null);
   const [sessionKey, setSessionKey] = useState(0);
 
+  const [syncing, setSyncing] = useState(false);
+  const [syncToast, setSyncToast] = useState<string | null>(null);
+
+  const syncCatalog = async (forceRefresh = false) => {
+    setSyncing(true);
+    setSyncToast(null);
+    try {
+      const url = `/api/admin/products${forceRefresh ? "?refresh=true" : ""}`;
+      const res = await fetch(url, { cache: "no-store" });
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const data = await res.json();
+      if (Array.isArray(data.products) && data.products.length > 0) {
+        setProducts(data.products);
+        setSyncToast(`Synced ${data.products.length} titles from WooCommerce!`);
+        setTimeout(() => setSyncToast(null), 3000);
+      }
+    } catch (err: unknown) {
+      console.error("Failed to sync catalog:", err);
+      setSyncToast("Sync failed. Check WooCommerce connection.");
+      setTimeout(() => setSyncToast(null), 4000);
+    } finally {
+      setSyncing(false);
+    }
+  };
+
+  // If initialProducts was empty (e.g. cold start), auto-fetch immediately
+  useEffect(() => {
+    if (products.length === 0) {
+      void syncCatalog(false);
+    }
+  }, []);
+
   // Load book cover images asynchronously after POS opens — doesn't block render
   useEffect(() => {
     async function loadImages() {
@@ -253,9 +285,38 @@ export function PosTerminalClient({ initialProducts, categories, submitApiUrl, s
             <span className="h-2 w-2 rounded-full bg-emerald-600 animate-ping" />
             REGISTER OPEN
           </span>
-          <span className="rounded-xl border border-slate-200 bg-white px-3 py-1 font-mono text-xs font-bold text-slate-600 shadow-xs">
-            {products.length} Titles Loaded
-          </span>
+          <button
+            type="button"
+            onClick={() => void syncCatalog(true)}
+            disabled={syncing}
+            title="Click to force refresh catalog from WooCommerce"
+            className="flex items-center gap-1.5 rounded-xl border border-slate-200 bg-white px-3 py-1 font-mono text-xs font-bold text-slate-600 shadow-xs transition-all hover:bg-slate-50 hover:border-cta active:scale-95 disabled:opacity-60 cursor-pointer"
+          >
+            <svg
+              width="13"
+              height="13"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2.5"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              className={syncing ? "animate-spin text-cta" : "text-slate-400"}
+            >
+              <path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67" />
+            </svg>
+            <span>
+              {syncing
+                ? "Syncing Catalog..."
+                : `${products.length} Titles Loaded`}
+            </span>
+          </button>
+
+          {syncToast && (
+            <span className="rounded-xl bg-navy px-3 py-1 text-xs font-bold text-gold shadow-xs animate-fade-in">
+              {syncToast}
+            </span>
+          )}
 
           {/* Held Orders Badge */}
           {heldOrders.length > 0 && (
@@ -321,6 +382,8 @@ export function PosTerminalClient({ initialProducts, categories, submitApiUrl, s
             products={products}
             categories={categories}
             onAddToCart={handleAddToCart}
+            syncing={syncing}
+            onSync={() => void syncCatalog(true)}
           />
         </div>
         <div className="h-full">
