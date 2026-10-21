@@ -98,24 +98,32 @@ export async function wpLogin(
   }
 
   // User credentials are 100% verified by WordPress core!
-  // Resolve user details from WooCommerce API
+  // Check if WordPress set a canonical username in the logged_in cookie
+  let authenticatedUsername = username.trim();
+  const wpCookieMatch = cookiesHeader.match(/wordpress_logged_in_[a-f0-9]+=([^%|;]+)/i);
+  if (wpCookieMatch && wpCookieMatch[1]) {
+    try {
+      authenticatedUsername = decodeURIComponent(wpCookieMatch[1]).trim();
+    } catch {
+      /* ignore */
+    }
+  }
+
+  // Resolve user details from WooCommerce API using exact username or email
   let customer: WCCustomer | null = null;
   try {
-    customer = await getCustomerByEmail(username);
-    if (!customer) {
-      const { wcFetch } = await import("@/services/woocommerce");
-      const searchRes = await wcFetch<WCCustomer[]>("/customers", {
-        searchParams: { search: username, per_page: 1, role: "all" },
-        revalidate: 0,
-      }).catch(() => []);
-      customer = searchRes[0] ?? null;
-    }
+    const { getCustomerByUsernameOrEmail } = await import("@/services/woocommerce");
+    customer =
+      (await getCustomerByUsernameOrEmail(authenticatedUsername)) ||
+      (await getCustomerByUsernameOrEmail(username));
   } catch {
     /* ignore lookup error */
   }
 
-  const email = customer?.email ?? (username.includes("@") ? username : `${username}@forthetruth.in`);
-  const firstName = customer?.first_name || username.split("@")[0];
+  const email =
+    customer?.email ??
+    (username.includes("@") ? username : `${username.toLowerCase().replace(/[^a-z0-9]/g, "")}@forthetruth.in`);
+  const firstName = customer?.first_name || customer?.username || username.split("@")[0];
   const lastName = customer?.last_name || "";
   const id = customer?.id ?? 1000;
   const wpRole = customer?.role?.toLowerCase() ?? "customer";
@@ -125,7 +133,10 @@ export async function wpLogin(
     .split(",")
     .map((s) => s.trim().toLowerCase())
     .filter(Boolean);
-  const isEnvAdmin = allowed.includes(email.toLowerCase());
+  const isEnvAdmin =
+    allowed.includes(email.toLowerCase()) ||
+    allowed.includes(username.toLowerCase()) ||
+    allowed.includes(authenticatedUsername.toLowerCase());
   const isStaff = ["administrator", "shop_manager", "editor"].includes(wpRole);
   const finalRole = isEnvAdmin || isStaff ? "admin" : "customer";
   const avatarUrl =
@@ -210,8 +221,9 @@ export async function getSessionUser(): Promise<SessionUser & { role?: string } 
 
       // Check Option 2: Resolve WooCommerce customer ID and role
       try {
+        const { getCustomerByUsernameOrEmail } = await import("@/services/woocommerce");
         const wcCustomer = await Promise.race([
-          getCustomerByEmail(email),
+          getCustomerByUsernameOrEmail(email),
           new Promise<null>((resolve) => setTimeout(() => resolve(null), 1500)),
         ]);
         if (wcCustomer?.id) {

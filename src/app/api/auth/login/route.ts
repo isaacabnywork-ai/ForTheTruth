@@ -23,11 +23,11 @@ export async function POST(req: NextRequest) {
 
 
   try {
-    // Attempt standard WordPress JWT login
-    const { token } = await wpLogin(email, password);
-    const user = await resolveUser(token, email);
+    // Attempt standard WordPress JWT login or native WordPress verification
+    const wpResult = await wpLogin(email, password);
+    const user = await resolveUser(wpResult.token, wpResult.user_email || email);
     const res = NextResponse.json({ ok: true, user });
-    res.cookies.set(SESSION_COOKIE, token, {
+    res.cookies.set(SESSION_COOKIE, wpResult.token, {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
       sameSite: "lax",
@@ -87,15 +87,17 @@ async function resolveUser(token: string, fallbackEmail: string) {
     .map((s) => s.trim().toLowerCase())
     .filter(Boolean);
 
+  const { getCustomerByUsernameOrEmail } = await import("@/services/woocommerce");
+
   if (!res || !res.ok) {
-    const customer = await getCustomerByEmail(fallbackEmail).catch(() => null);
+    const customer = await getCustomerByUsernameOrEmail(fallbackEmail).catch(() => null);
     const isEnvAdmin = allowed.includes(fallbackEmail.toLowerCase());
     const isWpStaff = customer?.role && ["administrator", "shop_manager", "editor"].includes(customer.role.toLowerCase());
     const role = isEnvAdmin || isWpStaff ? "admin" : (customer?.role ?? "customer");
 
     return {
       id: customer?.id ?? 1001,
-      email: fallbackEmail,
+      email: customer?.email || fallbackEmail,
       firstName: customer?.first_name || fallbackEmail.split("@")[0],
       lastName: customer?.last_name || "Reader",
       avatarUrl:
@@ -107,7 +109,7 @@ async function resolveUser(token: string, fallbackEmail: string) {
 
   const wpUser = await res.json();
   const wpEmail = wpUser.email || fallbackEmail;
-  const customer = await getCustomerByEmail(wpEmail).catch(() => null);
+  const customer = await getCustomerByUsernameOrEmail(wpEmail).catch(() => null);
   const wpRoles = ((wpUser.roles as string[]) || []).map((r: string) => r.toLowerCase());
   const isEnvAdmin = allowed.includes(wpEmail.toLowerCase());
   const isWpStaff =

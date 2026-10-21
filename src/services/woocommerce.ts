@@ -383,13 +383,84 @@ export async function getCustomerByEmail(
   if (!isWooConfigured()) return null;
   try {
     const res = await wcFetch<WCCustomer[]>("/customers", {
-      searchParams: { email, per_page: 1, role: "all" },
+      searchParams: { email: email.trim(), per_page: 1, role: "all" },
       revalidate: 0,
     });
     return res[0] ?? null;
   } catch {
     return null;
   }
+}
+
+/**
+ * Robust customer lookup by either WordPress username or email address.
+ * Prioritizes staff members and exact username/email matches to avoid fuzzy search false positives.
+ */
+export async function getCustomerByUsernameOrEmail(
+  identifier: string
+): Promise<WCCustomer | null> {
+  if (!isWooConfigured()) return null;
+  const clean = identifier.trim().toLowerCase();
+  if (!clean) return null;
+
+  // 1. Direct email lookup if input looks like an email
+  if (clean.includes("@")) {
+    const directEmailCustomer = await getCustomerByEmail(clean);
+    if (directEmailCustomer) return directEmailCustomer;
+  }
+
+  // 2. Check WordPress staff roles first (administrator, shop_manager, editor)
+  try {
+    const staffRoles = ["administrator", "shop_manager", "editor"];
+    const staffBatches = await Promise.all(
+      staffRoles.map((role) =>
+        wcFetch<WCCustomer[]>("/customers", {
+          searchParams: { role, per_page: 100 },
+          revalidate: 30,
+          timeout: 10000,
+        }).catch(() => [])
+      )
+    );
+
+    for (const batch of staffBatches) {
+      const match = batch.find(
+        (u) =>
+          u.email?.toLowerCase() === clean ||
+          u.username?.toLowerCase() === clean ||
+          `${u.first_name || ""} ${u.last_name || ""}`.trim().toLowerCase() === clean
+      );
+      if (match) return match;
+    }
+  } catch {
+    /* fallback to search */
+  }
+
+  // 3. Search general customers with exact matching priority
+  try {
+    const searchRes = await wcFetch<WCCustomer[]>("/customers", {
+      searchParams: { search: clean, per_page: 50, role: "all" },
+      revalidate: 0,
+      timeout: 10000,
+    }).catch(() => []);
+
+    const exactMatch = searchRes.find(
+      (u) =>
+        u.email?.toLowerCase() === clean ||
+        u.username?.toLowerCase() === clean
+    );
+    if (exactMatch) return exactMatch;
+
+    const partialMatch = searchRes.find(
+      (u) =>
+        u.email?.toLowerCase().includes(clean) ||
+        u.username?.toLowerCase().includes(clean)
+    );
+    if (partialMatch) return partialMatch;
+  } catch {
+    /* ignore search error */
+  }
+
+  return null;
 }
 
 export async function updateCustomer(

@@ -1,5 +1,5 @@
 import { getSessionUser, type SessionUser } from "@/lib/session";
-import { getCustomerByEmail } from "@/services/woocommerce";
+import { getCustomerByUsernameOrEmail } from "@/services/woocommerce";
 
 export const STAFF_ROLES = ["admin", "administrator", "shop_manager", "editor"];
 
@@ -32,8 +32,8 @@ export async function requireAdmin(): Promise<SessionUser | null> {
   // Option 2 Fallback: Check live WooCommerce / WordPress customer record
   try {
     const wcCustomer = await Promise.race([
-      getCustomerByEmail(user.email),
-      new Promise<null>((resolve) => setTimeout(() => resolve(null), 1500)),
+      getCustomerByUsernameOrEmail(user.email),
+      new Promise<null>((resolve) => setTimeout(() => resolve(null), 2500)),
     ]);
     if (wcCustomer?.role && STAFF_ROLES.includes(wcCustomer.role.toLowerCase())) {
       return { ...user, role: wcCustomer.role };

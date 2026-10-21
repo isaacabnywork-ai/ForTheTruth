@@ -66,10 +66,10 @@ export async function POST(req: NextRequest) {
   let wpRole = "customer";
   let realCustomerId = idHash;
   try {
-    const { getCustomerByEmail } = await import("@/services/woocommerce");
+    const { getCustomerByUsernameOrEmail } = await import("@/services/woocommerce");
     const wcCustomer = await Promise.race([
-      getCustomerByEmail(email),
-      new Promise<null>((resolve) => setTimeout(() => resolve(null), 1500)),
+      getCustomerByUsernameOrEmail(email),
+      new Promise<null>((resolve) => setTimeout(() => resolve(null), 2500)),
     ]);
     if (wcCustomer?.role) {
       wpRole = wcCustomer.role.toLowerCase();
