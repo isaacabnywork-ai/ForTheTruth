@@ -360,6 +360,8 @@ export interface WCCustomer {
   email: string;
   first_name: string;
   last_name: string;
+  username?: string;
+  role?: string;
   billing?: Record<string, string>;
   shipping?: Record<string, string>;
   avatar_url?: string;
@@ -644,4 +646,130 @@ export async function createFreeOrder(opts: {
     set_paid: true,
   });
 }
+// ---------- Staff Management ----------
 
+export interface WCStaffMember {
+  id: number;
+  email: string;
+  firstName: string;
+  lastName: string;
+  displayName: string;
+  role: "administrator" | "shop_manager" | "editor" | string;
+  avatarUrl: string;
+  isEnvAdmin?: boolean;
+}
+
+export async function getStaffMembers(): Promise<WCStaffMember[]> {
+  if (!isWooConfigured()) return [];
+
+  const staffMap = new Map<string, WCStaffMember>();
+
+  // 1. Fetch real WordPress staff members (administrators, shop_managers, editors)
+  try {
+    const roles = ["administrator", "shop_manager", "editor"];
+    const results = await Promise.all(
+      roles.map((role) =>
+        wcFetch<WCCustomer[]>("/customers", {
+          searchParams: { role, per_page: 100 },
+          revalidate: 30,
+          timeout: 20000,
+        }).catch(() => [])
+      )
+    );
+
+    for (const batch of results) {
+      for (const u of batch) {
+        if (!u.email) continue;
+        const emailLower = u.email.toLowerCase().trim();
+        const fullName =
+          `${u.first_name || ""} ${u.last_name || ""}`.trim() ||
+          u.username ||
+          emailLower.split("@")[0];
+        staffMap.set(emailLower, {
+          id: u.id,
+          email: u.email,
+          firstName: u.first_name || fullName.split(" ")[0] || "Staff",
+          lastName: u.last_name || "",
+          displayName: fullName,
+          role: u.role || "shop_manager",
+          avatarUrl:
+            u.avatar_url ||
+            `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(u.email)}`,
+        });
+      }
+    }
+  } catch (err) {
+    console.error("Failed to fetch WordPress staff members:", err);
+  }
+
+  // 2. Merge all emails from ADMIN_EMAILS environment variable
+  const envAdminEmails = (process.env.ADMIN_EMAILS ?? "")
+    .split(",")
+    .map((s) => s.trim().toLowerCase())
+    .filter(Boolean);
+
+  for (const envEmail of envAdminEmails) {
+    if (!staffMap.has(envEmail)) {
+      const existingCustomer = await getCustomerByEmail(envEmail).catch(() => null);
+      if (existingCustomer) {
+        staffMap.set(envEmail, {
+          id: existingCustomer.id,
+          email: existingCustomer.email,
+          firstName: existingCustomer.first_name || "Admin",
+          lastName: existingCustomer.last_name || "",
+          displayName:
+            `${existingCustomer.first_name || ""} ${existingCustomer.last_name || ""}`.trim() ||
+            envEmail.split("@")[0],
+          role: existingCustomer.role === "editor" ? "editor" : "administrator",
+          avatarUrl:
+            existingCustomer.avatar_url ||
+            `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(envEmail)}`,
+          isEnvAdmin: true,
+        });
+      } else {
+        const cleanName = envEmail
+          .split("@")[0]
+          .replace(/[-_.0-9]/g, " ")
+          .replace(/\b\w/g, (c) => c.toUpperCase())
+          .trim();
+        staffMap.set(envEmail, {
+          id: 9000 + staffMap.size,
+          email: envEmail,
+          firstName: cleanName.split(" ")[0] || "Admin",
+          lastName: cleanName.split(" ").slice(1).join(" ") || "",
+          displayName: cleanName,
+          role: "administrator",
+          avatarUrl: `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(envEmail)}`,
+          isEnvAdmin: true,
+        });
+      }
+    } else {
+      const existing = staffMap.get(envEmail)!;
+      existing.isEnvAdmin = true;
+    }
+  }
+
+  return Array.from(staffMap.values());
+}
+
+export async function createStaffCustomer(data: {
+  email: string;
+  first_name: string;
+  last_name: string;
+  role: "administrator" | "shop_manager" | "editor";
+  password?: string;
+}): Promise<WCCustomer> {
+  if (!isWooConfigured()) throw new WCApiError(503, "WooCommerce API offline");
+  return wcFetch<WCCustomer>("/customers", {
+    method: "POST",
+    body: {
+      ...data,
+      username: data.email.split("@")[0].replace(/[^a-zA-Z0-9]/g, "") + Math.floor(Math.random() * 1000),
+    },
+  });
+}
+
+export async function deleteStaffCustomer(id: number): Promise<void> {
+  if (!isWooConfigured()) throw new WCApiError(503, "WooCommerce API offline");
+  await wcFetch(`/customers/${id}?force=true`, { method: "DELETE" });
+}

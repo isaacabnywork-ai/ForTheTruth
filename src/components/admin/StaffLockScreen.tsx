@@ -44,7 +44,7 @@ export function StaffLockScreen({ onUnlock }: StaffLockScreenProps) {
         onUnlock();
       } else {
         setErrorMessage(
-          "This account is not authorized for admin access. Add its email to ADMIN_EMAILS in .env.local."
+          "This account is not authorized for admin access. Your email must either be listed in ADMIN_EMAILS or assigned as an Administrator, Shop Manager, or Editor in WordPress."
         );
       }
     } catch {
@@ -77,14 +77,14 @@ export function StaffLockScreen({ onUnlock }: StaffLockScreenProps) {
         return;
       }
 
-      // 3. Server-side admin check — Gmail must be in ADMIN_EMAILS env var
+      // 3. Server-side admin check — ADMIN_EMAILS env var OR WordPress role
       const res = await fetch("/api/admin/session", { cache: "no-store" });
       const data = await res.json();
       if (data.isAdmin) {
         onUnlock();
       } else {
         setErrorMessage(
-          `${profile.email} is not authorised for admin access. Ask your administrator to add this Gmail to ADMIN_EMAILS.`
+          `${profile.email} is not authorized for admin access. Add this email to ADMIN_EMAILS or assign it an Administrator/Editor role in WordPress.`
         );
       }
     } catch (err: any) {

@@ -11,6 +11,7 @@ interface StaffUser {
   role: string;
   avatarUrl: string;
   isFallback?: boolean;
+  isEnvAdmin?: boolean;
 }
 
 interface Props {
@@ -246,6 +247,14 @@ export function StaffManagerClient({ initialUsers, isFallback, currentUserEmail 
                             YOU
                           </span>
                         )}
+                        {user.isEnvAdmin && (
+                          <span
+                            className="rounded-full bg-purple-50 px-2 py-0.5 text-[10px] font-bold text-purple-700 border border-purple-200"
+                            title="Configured via ADMIN_EMAILS environment variable"
+                          >
+                            ENV Admin
+                          </span>
+                        )}
                       </p>
                       <p className="text-xs text-slate-500 truncate">{user.email}</p>
                     </div>
@@ -256,7 +265,7 @@ export function StaffManagerClient({ initialUsers, isFallback, currentUserEmail 
                     <span className={`rounded-full border px-3 py-1 text-[11px] font-bold tracking-wide ${roleInfo.color}`}>
                       {roleInfo.label}
                     </span>
-                    {!isCurrentUser && !user.isFallback && (
+                    {!isCurrentUser && !user.isFallback && !user.isEnvAdmin && (
                       <button
                         onClick={() => handleDelete(user.id, user.email)}
                         disabled={deleting === user.id}
@@ -272,6 +281,14 @@ export function StaffManagerClient({ initialUsers, isFallback, currentUserEmail 
                             </svg>
                           )}
                       </button>
+                    )}
+                    {user.isEnvAdmin && !isCurrentUser && (
+                      <span
+                        className="rounded-md bg-slate-100 px-2 py-1 text-[10px] font-semibold text-slate-400"
+                        title="Managed in ADMIN_EMAILS environment variable"
+                      >
+                        ENV
+                      </span>
                     )}
                   </div>
                 </li>

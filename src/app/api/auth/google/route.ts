@@ -50,22 +50,51 @@ export async function POST(req: NextRequest) {
   const finalLast = lastName || "";
   const finalAvatar = avatarUrl || `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(email)}`;
 
-  // Generate deterministic customer ID from email string hash for realistic persistence
-  let idHash = 5000;
-  for (let i = 0; i < email.length; i++) {
-    idHash = (idHash + email.charCodeAt(i) * 31) % 90000 + 10000;
+  // Check Option 1: Is email in ADMIN_EMAILS environment variable?
+  const allowed = (process.env.ADMIN_EMAILS ?? "")
+    .split(",")
+    .map((s) => s.trim().toLowerCase())
+    .filter(Boolean);
+  const isEnvAdmin = allowed.includes(email.toLowerCase());
+
+  // Calculate stable numeric ID hash for the user
+  const idHash = Math.abs(
+    email.split("").reduce((acc, char) => (acc << 5) - acc + char.charCodeAt(0), 0)
+  ) % 1000000 || 5001;
+
+  // Check Option 2: Does user have an administrator, shop_manager, or editor role in WordPress?
+  let wpRole = "customer";
+  let realCustomerId = idHash;
+  try {
+    const { getCustomerByEmail } = await import("@/services/woocommerce");
+    const wcCustomer = await Promise.race([
+      getCustomerByEmail(email),
+      new Promise<null>((resolve) => setTimeout(() => resolve(null), 1500)),
+    ]);
+    if (wcCustomer?.role) {
+      wpRole = wcCustomer.role.toLowerCase();
+    }
+    if (wcCustomer?.id) {
+      realCustomerId = wcCustomer.id;
+    }
+  } catch {
+    /* ignore fallback */
   }
 
-  const token = `google:${email}:${finalFirst}:${finalLast}:${idHash}:customer:${finalAvatar}`;
+  const isWpAdmin = ["administrator", "shop_manager", "editor"].includes(wpRole);
+  const finalRole = isEnvAdmin || isWpAdmin ? "admin" : "customer";
+
+  const token = `google:${email}:${finalFirst}:${finalLast}:${realCustomerId}:${finalRole}:${finalAvatar}`;
   
   const user = {
-    id: idHash,
+    id: realCustomerId,
     email,
     firstName: finalFirst,
     lastName: finalLast,
     displayName: `${finalFirst} ${finalLast}`.trim(),
     avatarUrl: finalAvatar,
-    role: "customer",
+    role: finalRole,
+    wpRole,
   };
 
   const res = NextResponse.json({ ok: true, user });

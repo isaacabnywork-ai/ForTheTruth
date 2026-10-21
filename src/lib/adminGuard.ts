@@ -1,28 +1,46 @@
 import { getSessionUser, type SessionUser } from "@/lib/session";
+import { getCustomerByEmail } from "@/services/woocommerce";
+
+export const STAFF_ROLES = ["admin", "administrator", "shop_manager", "editor"];
 
 /**
- * Server-side admin check. A user is an admin if:
- *   1. They have the 'admin' role (set by WP administrator/shop_manager roles), OR
- *   2. They match the fallback admin email (contact@forthetruth.in) used when WP JWT is unavailable.
- *
- * This replaces the old ADMIN_EMAILS env var approach, allowing dynamic user management
- * directly via the Staff & Access panel instead of env var changes.
- *
- * Client-side lock screens are UX only; every /api/admin/* route MUST call
- * this and return 401 when it yields null.
+ * Server-side admin check. Access to the Admin Panel is granted if EITHER:
+ *   Option 1: The user's email matches the ADMIN_EMAILS environment variable list, OR
+ *   Option 2: The user has a WordPress staff role (administrator, shop_manager, or editor).
  */
 export async function requireAdmin(): Promise<SessionUser | null> {
   const user = await getSessionUser().catch(() => null);
   if (!user?.email) return null;
 
-  // Grant access to WordPress admin/shop_manager roles OR the fallback admin
-  if (user.role === "admin") return user;
+  const emailLower = user.email.toLowerCase();
 
-  // Also check ADMIN_EMAILS env var as a secondary fallback
+  // Option 1: Check ADMIN_EMAILS environment variable
   const allowed = (process.env.ADMIN_EMAILS ?? "")
     .split(",")
     .map((s) => s.trim().toLowerCase())
     .filter(Boolean);
 
-  return allowed.includes(user.email.toLowerCase()) ? user : null;
+  if (allowed.includes(emailLower)) {
+    return { ...user, role: "admin" };
+  }
+
+  // Option 2: Check session role (administrator, shop_manager, editor, admin)
+  if (user.role && STAFF_ROLES.includes(user.role.toLowerCase())) {
+    return user;
+  }
+
+  // Option 2 Fallback: Check live WooCommerce / WordPress customer record
+  try {
+    const wcCustomer = await Promise.race([
+      getCustomerByEmail(user.email),
+      new Promise<null>((resolve) => setTimeout(() => resolve(null), 1500)),
+    ]);
+    if (wcCustomer?.role && STAFF_ROLES.includes(wcCustomer.role.toLowerCase())) {
+      return { ...user, role: wcCustomer.role };
+    }
+  } catch {
+    /* ignore network timeout */
+  }
+
+  return null;
 }
