@@ -298,9 +298,8 @@ export function HeroShelf({
   );
 }
 
-/** Cover rendered as a physical 3D book with page edges, floor shadow, and dynamic original dimensions. */
+/** Cover rendered as a physical 3D book with page edges and a soft floor shadow. */
 function FloatingBook({ product }: { product: Product }) {
-  const [aspect, setAspect] = useState<number | null>(null);
   const image = product.images && product.images[0];
 
   return (
@@ -315,17 +314,7 @@ function FloatingBook({ product }: { product: Product }) {
       />
 
       <span className="relative block transition-transform duration-700 ease-out group-hover:-translate-y-3 [transform-style:preserve-3d]">
-        <span
-          style={
-            aspect
-              ? {
-                  aspectRatio: `${aspect}`,
-                  width: `calc(clamp(250px, 32vh, 360px) * ${aspect})`,
-                }
-              : undefined
-          }
-          className="relative block h-[260px] sm:h-[310px] md:h-[355px] w-[185px] sm:w-[220px] md:w-[250px] max-w-[340px] [transform:rotateY(-16deg)_rotateX(3deg)] transition-all duration-700 group-hover:[transform:rotateY(-6deg)_rotateX(1deg)]"
-        >
+        <span className="relative block h-[310px] w-[215px] [transform:rotateY(-16deg)_rotateX(3deg)] transition-transform duration-700 group-hover:[transform:rotateY(-6deg)_rotateX(1deg)] md:h-[380px] md:w-[260px]">
           {/* page edges */}
           <span
             aria-hidden="true"
@@ -338,15 +327,9 @@ function FloatingBook({ product }: { product: Product }) {
                 src={image.src}
                 alt={image.alt || product.name}
                 fill
-                sizes="(max-width: 768px) 300px, 400px"
+                sizes="(max-width: 768px) 220px, 275px"
                 priority
-                onLoad={(e) => {
-                  const el = e.currentTarget;
-                  if (el.naturalWidth && el.naturalHeight) {
-                    setAspect(el.naturalWidth / el.naturalHeight);
-                  }
-                }}
-                className="object-fill"
+                className="object-cover"
               />
             ) : (
               <span className="flex h-full w-full items-center justify-center bg-gold-gradient p-6 text-center">
