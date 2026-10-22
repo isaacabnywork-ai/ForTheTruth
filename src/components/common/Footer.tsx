@@ -26,7 +26,7 @@ const TRUST = [
   { title: "Free shipping over ₹499", icon: "M1 3h15v13H1zM16 8h4l3 3v5h-7V8z" },
   { title: "Dispatched in 24 hours", icon: "M12 6v6l4 2M12 22a10 10 0 1 1 0-20 10 10 0 0 1 0 20z" },
   { title: "Razorpay secure payments", icon: "M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" },
-  { title: "Bulk discounts for churches", icon: "M3 21h18M5 21V7l7-4 7 4v14M9 21v-6h6v6" },
+  { title: "Curated Christian literature", icon: "M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" },
 ];
 
 export function Footer() {

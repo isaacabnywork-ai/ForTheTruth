@@ -7,7 +7,7 @@ import { useEffect, useState } from "react";
 import { useCartStore } from "@/store/cartStore";
 import { useWishlistStore } from "@/store/wishlistStore";
 import type { WCCategory } from "@/types/product";
-import { COLLECTIONS, CHURCH_LINKS } from "@/utils/constants";
+import { COLLECTIONS } from "@/utils/constants";
 
 /* ── SVG icon paths ────────────────────────────────────────── */
 const ICONS = {
@@ -325,38 +325,7 @@ export function DesktopSidebar({
           </>
         )}
 
-        {/* Church card — only shown when expanded */}
-        {!collapsed && (
-          <>
-            <div className="my-4 border-t border-sand/60" />
-            <div className="rounded-2xl bg-navy-gradient p-4">
-              <p className="text-[9px] font-bold uppercase tracking-[0.25em] text-gold-light">
-                For Churches
-              </p>
-              <p className="mt-2 font-display text-sm font-bold leading-snug text-white">
-                Bulk orders up to 30% off
-              </p>
-              <ul className="mt-3 space-y-1">
-                {CHURCH_LINKS.slice(0, 3).map((c) => (
-                  <li key={`${c.href}-${c.label}`}>
-                    <Link
-                      href={c.href}
-                      className="block text-[12px] text-white/60 transition-smooth hover:text-gold-light"
-                    >
-                      {c.label}
-                    </Link>
-                  </li>
-                ))}
-              </ul>
-              <Link
-                href="/church-resources#quote"
-                className="mt-3 block rounded-full bg-cta px-4 py-2 text-center text-[11px] font-bold uppercase tracking-wider text-white transition-smooth hover:-translate-y-0.5 hover:bg-cta-light"
-              >
-                Request a Quote
-              </Link>
-            </div>
-          </>
-        )}
+
       </div>
 
       {/* ── Footer help link ── */}

@@ -10,14 +10,14 @@ const TESTIMONIALS = [
   },
   {
     quote:
-      "We ordered 50 copies for our small groups. The bulk pricing made it affordable for every family, and delivery was quick.",
+      "We ordered copies for our small groups. Honest, transparent pricing made it affordable for every family, and delivery was quick.",
     name: "Pastor James",
     role: "Grace Church · Bangalore",
     audience: "church" as const,
   },
   {
     quote:
-      "Sound theology, fair prices, no gimmicks. This is the bookstore I recommend to everyone in our congregation.",
+      "Sound theology, fair prices, no gimmicks. This is the bookstore I recommend to everyone in our community.",
     name: "Rev. Maria",
     role: "Youth Ministry · Chennai",
     audience: "church" as const,
@@ -28,7 +28,7 @@ export function Testimonials() {
   return (
     <section className="mx-auto max-w-6xl px-4 py-16 lg:px-8">
       <div className="mb-10 text-center">
-        <p className="overline-label">Trusted by readers &amp; churches</p>
+        <p className="overline-label">Trusted by readers across India</p>
         <h2 className="section-title mt-3">What people say</h2>
       </div>
 

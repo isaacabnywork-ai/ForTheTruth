@@ -2,7 +2,6 @@ import { Bookshelf, BookshelfSkeleton } from "@/components/products/Bookshelf";
 import { HeroShelf } from "@/components/home/HeroShelf";
 import { TopicGrid } from "@/components/home/TopicGrid";
 import { FeaturedPick } from "@/components/home/FeaturedPick";
-import { ChurchBanner } from "@/components/home/ChurchBanner";
 import { Testimonials } from "@/components/home/Testimonials";
 import { SpineSlider } from "@/components/home/SpineSlider";
 import { isWooConfigured } from "@/config/env";
@@ -143,9 +142,6 @@ export default async function HomePage() {
           subtitle={curated.featuredSubtitle}
         />
       )}
-
-      {/* 5 — Church / bulk pathway */}
-      <ChurchBanner />
 
       {/* 6 — Explore the shelf (spine slider) with customizable titles & book selection */}
       {spineProducts.length > 0 && (

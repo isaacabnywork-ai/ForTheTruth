@@ -50,15 +50,14 @@ export const TOPICS = [
 ] as const;
 
 export const CHURCH_LINKS = [
-  { label: "Bulk Orders & Pricing", href: "/church-resources#pricing" },
   { label: "Curriculum Kits", href: "/church-resources#kits" },
   { label: "Small Group Sets", href: "/church-resources#kits" },
-  { label: "Request a Quote", href: "/church-resources#quote" },
+  { label: "Study Guides", href: "/products?orderby=popularity" },
   { label: "Invoicing & POs", href: "/church-resources#faq" },
 ] as const;
 
 export const ANNOUNCEMENT =
-  "Free shipping over ₹499 · Bulk discounts for churches — up to 30% off";
+  "Free shipping across India on orders over ₹499 · 600+ Handpicked Christian Books";
 
 export const PRODUCTS_PER_PAGE = 20;
 
@@ -70,7 +69,7 @@ export const READER_TRUST = [
 ] as const;
 
 export const CHURCH_TRUST = [
-  { title: "Up to 30% Bulk Discount", detail: "On orders of 10+ copies" },
+  { title: "Curated for Congregations", detail: "Sound doctrine for whole groups" },
   { title: "Invoicing & Purchase Orders", detail: "For churches and schools" },
   { title: "Curriculum & Group Sets", detail: "Ready-made or custom kits" },
 ] as const;
