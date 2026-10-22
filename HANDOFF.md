@@ -32,7 +32,7 @@ A headless e-commerce storefront for a Christian bookstore. WordPress/WooCommerc
 | Forms | React Hook Form + Zod | Zod also validates all API route inputs |
 | Auth | WordPress JWT plugin | Token in an httpOnly cookie |
 | Payments | Razorpay | REST API directly, no SDK |
-| Fonts | Montserrat, sans-serif (headings, body, paragraphs) | via `next/font/google` |
+| Fonts | Cormorant Garamond (headings), Montserrat (paragraphs & body) | via `next/font/google` |
 
 Node 22, npm. No database of its own — WooCommerce is the single source of truth.
 

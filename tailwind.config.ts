@@ -29,10 +29,11 @@ const config: Config = {
       },
       fontFamily: {
         sans: ["var(--font-montserrat)", "Montserrat", "sans-serif"],
-        display: ["var(--font-montserrat)", "Montserrat", "sans-serif"],
-        serif: ["var(--font-montserrat)", "Montserrat", "sans-serif"],
+        display: ["var(--font-cormorant)", "Georgia", "serif"],
+        serif: ["var(--font-cormorant)", "Georgia", "serif"],
         body: ["var(--font-montserrat)", "Montserrat", "sans-serif"],
         montserrat: ["var(--font-montserrat)", "Montserrat", "sans-serif"],
+        cormorant: ["var(--font-cormorant)", "Georgia", "serif"],
       },
       fontSize: {
         // Display scale for headings

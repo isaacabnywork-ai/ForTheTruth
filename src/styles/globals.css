@@ -9,7 +9,6 @@
   --color-offwhite: #FAF8F2;
   --color-charcoal: #2C2C2C;
   --font-montserrat: "Montserrat", sans-serif;
-  --font-cormorant: var(--font-montserrat);
   --font-inter: var(--font-montserrat);
   --font-merriweather: var(--font-montserrat);
 }
@@ -43,7 +42,7 @@
   }
   h1, h2, h3, h4, h5, h6 {
     @apply font-display text-charcoal;
-    font-family: var(--font-montserrat), Montserrat, sans-serif;
+    font-family: var(--font-cormorant), Georgia, serif;
   }
   p {
     font-family: var(--font-montserrat), Montserrat, sans-serif;

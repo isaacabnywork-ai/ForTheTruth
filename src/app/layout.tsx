@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { Montserrat } from "next/font/google";
+import { Cormorant_Garamond, Montserrat } from "next/font/google";
 import { Header } from "@/components/common/Header";
 import { Footer } from "@/components/common/Footer";
 import { MobileNav } from "@/components/common/MobileNav";
@@ -16,6 +16,15 @@ import "@/styles/globals.css";
 const montserrat = Montserrat({
   subsets: ["latin"],
   variable: "--font-montserrat",
+  display: "swap",
+});
+
+/** Cormorant Garamond — timeless editorial serif for headings. */
+const cormorant = Cormorant_Garamond({
+  subsets: ["latin"],
+  style: ["normal", "italic"],
+  weight: ["400", "600", "700"],
+  variable: "--font-cormorant",
   display: "swap",
 });
 
@@ -68,7 +77,7 @@ export default async function RootLayout({
     <html
       lang="en"
       suppressHydrationWarning
-      className={`${montserrat.variable} ${montserrat.className} overflow-x-clip`}
+      className={`${montserrat.variable} ${cormorant.variable} ${montserrat.className} overflow-x-clip`}
     >
       <body className="flex min-h-screen w-full max-w-full overflow-x-clip bg-cream antialiased font-sans" suppressHydrationWarning>
         {/* One-time cleanup: dark mode was removed — clear any saved preference */}
