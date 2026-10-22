@@ -8,6 +8,10 @@
   --color-cta: #2F5D50;
   --color-offwhite: #FAF8F2;
   --color-charcoal: #2C2C2C;
+  --font-montserrat: "Montserrat", sans-serif;
+  --font-cormorant: var(--font-montserrat);
+  --font-inter: var(--font-montserrat);
+  --font-merriweather: var(--font-montserrat);
 }
 
 @layer base {
@@ -15,11 +19,14 @@
     scroll-behavior: smooth;
     overscroll-behavior-y: none;
     -webkit-tap-highlight-color: transparent;
+    font-family: var(--font-montserrat), Montserrat, sans-serif;
   }
   body {
     @apply bg-offwhite text-charcoal font-sans antialiased transition-colors duration-300;
     overscroll-behavior-y: none;
     -webkit-touch-callout: none;
+    font-family: var(--font-montserrat), Montserrat, sans-serif;
+    font-size-adjust: from-font;
   }
   /* Native App UI touch constraints: disable text highlighting, callout popups, and dragging on interactive app controls */
   button, a, nav, header, footer, [role="button"], [role="tab"], .btn-cta, .btn-gold, .btn-outline, .btn-navy, img, svg {
@@ -32,9 +39,14 @@
   input, textarea, select, [contenteditable="true"] {
     user-select: text;
     -webkit-user-select: text;
+    font-family: var(--font-montserrat), Montserrat, sans-serif;
   }
-  h1, h2, h3, h4 {
+  h1, h2, h3, h4, h5, h6 {
     @apply font-display text-charcoal;
+    font-family: var(--font-montserrat), Montserrat, sans-serif;
+  }
+  p {
+    font-family: var(--font-montserrat), Montserrat, sans-serif;
   }
   ::selection {
     background: rgba(200, 155, 60, 0.30);

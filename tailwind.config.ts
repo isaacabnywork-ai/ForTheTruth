@@ -28,10 +28,11 @@ const config: Config = {
         accent: { DEFAULT: "#2F5D50", light: "#3D7567" },
       },
       fontFamily: {
-        serif: ["var(--font-cormorant)", "Georgia", "serif"],
-        display: ["var(--font-cormorant)", "Georgia", "serif"],
-        body: ["var(--font-merriweather)", "Georgia", "serif"],
-        sans: ["var(--font-inter)", "system-ui", "sans-serif"],
+        sans: ["var(--font-montserrat)", "Montserrat", "sans-serif"],
+        display: ["var(--font-montserrat)", "Montserrat", "sans-serif"],
+        serif: ["var(--font-montserrat)", "Montserrat", "sans-serif"],
+        body: ["var(--font-montserrat)", "Montserrat", "sans-serif"],
+        montserrat: ["var(--font-montserrat)", "Montserrat", "sans-serif"],
       },
       fontSize: {
         // Display scale for headings

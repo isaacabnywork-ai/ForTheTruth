@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { Cormorant_Garamond, Inter, Merriweather } from "next/font/google";
+import { Montserrat } from "next/font/google";
 import { Header } from "@/components/common/Header";
 import { Footer } from "@/components/common/Footer";
 import { MobileNav } from "@/components/common/MobileNav";
@@ -13,18 +13,10 @@ import type { WCCategory } from "@/types/product";
 import { SITE_NAME, SITE_DESCRIPTION } from "@/utils/constants";
 import "@/styles/globals.css";
 
-const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
-const merriweather = Merriweather({
-  weight: ["400", "700", "900"],
+const montserrat = Montserrat({
   subsets: ["latin"],
-  variable: "--font-merriweather",
-});
-/** Cormorant Garamond — timeless editorial serif for headings. */
-const cormorant = Cormorant_Garamond({
-  subsets: ["latin"],
-  style: ["normal", "italic"],
-  weight: ["400", "600", "700"],
-  variable: "--font-cormorant",
+  variable: "--font-montserrat",
+  display: "swap",
 });
 
 export const metadata: Metadata = {
@@ -76,9 +68,9 @@ export default async function RootLayout({
     <html
       lang="en"
       suppressHydrationWarning
-      className={`${inter.variable} ${merriweather.variable} ${cormorant.variable} overflow-x-clip`}
+      className={`${montserrat.variable} ${montserrat.className} overflow-x-clip`}
     >
-      <body className="flex min-h-screen w-full max-w-full overflow-x-clip bg-cream antialiased" suppressHydrationWarning>
+      <body className="flex min-h-screen w-full max-w-full overflow-x-clip bg-cream antialiased font-sans" suppressHydrationWarning>
         {/* One-time cleanup: dark mode was removed — clear any saved preference */}
         <script
           dangerouslySetInnerHTML={{
