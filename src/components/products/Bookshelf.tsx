@@ -60,52 +60,12 @@ export function Bookshelf({ title, href, products }: BookshelfProps) {
       <div className="w-full overflow-x-auto scrollbar-hide py-2 px-4 sm:px-6 lg:px-8">
         <div className="relative mx-auto flex w-max items-end justify-start gap-5 sm:gap-7 md:gap-9 lg:gap-11 pb-[22px] pt-6 sm:pt-8">
           {books.map((p) => (
-            <Link
+            <ShelfBook
               key={p.id}
-              href={`/products/${p.slug}`}
-              className="group relative block h-44 w-[118px] shrink-0 origin-bottom overflow-hidden rounded-r-md rounded-l-[3px] shadow-book transition-all duration-500 ease-out hover:z-10 sm:hover:-translate-y-4 sm:hover:rotate-[-1.5deg] hover:shadow-book-lg sm:h-52 sm:w-[140px] md:h-56 md:w-[152px]"
-            >
-              {p.images[0] ? (
-                <Image
-                  src={p.images[0].src}
-                  alt={p.images[0].alt || p.name}
-                  fill
-                  sizes="200px"
-                  className="object-cover"
-                />
-              ) : (
-                <div className="flex h-full items-center justify-center bg-gold-gradient p-3 text-center">
-                  <span className="font-display text-sm italic leading-snug text-white [text-shadow:0_1px_2px_rgba(120,85,40,0.4)]">
-                    {p.name}
-                  </span>
-                </div>
-              )}
-              {/* spine crease */}
-              <div className="absolute inset-y-0 left-0 w-[5px] bg-gradient-to-r from-black/30 to-transparent" />
-              
-              {/* Touch-Friendly Caption & Cart: Always visible on mobile/tablet screens (< lg), slide-on-hover on desktop (lg+) */}
-              <div className="absolute inset-x-0 bottom-0 translate-y-0 opacity-100 lg:translate-y-2 lg:opacity-0 bg-gradient-to-t from-charcoal/95 via-charcoal/75 to-transparent px-2 sm:px-2.5 pb-2 pt-8 transition-all duration-300 group-hover:translate-y-0 group-hover:opacity-100">
-                <p className="line-clamp-1 sm:line-clamp-2 text-[10px] sm:text-[11px] font-semibold leading-tight text-white">
-                  {p.name}
-                </p>
-                <div className="mt-1 flex items-center justify-between gap-1">
-                  <p className="text-[10px] sm:text-[11px] font-bold text-gold-light truncate">
-                    {formatPrice(p.price)}
-                  </p>
-                  <button
-                    onClick={(e) => handleAdd(e, p)}
-                    className={`shrink-0 rounded px-1.5 py-0.5 font-display text-[8px] sm:text-[9px] font-extrabold uppercase tracking-wider transition-all duration-200 shadow-xs ${
-                      addedId === p.id
-                        ? "bg-emerald-600 text-white"
-                        : "bg-cta text-white hover:bg-cta-light active:scale-95"
-                    }`}
-                    title="Add to Cart"
-                  >
-                    {addedId === p.id ? "Added ✓" : "+ Cart"}
-                  </button>
-                </div>
-              </div>
-            </Link>
+              product={p}
+              isAdded={addedId === p.id}
+              onAdd={handleAdd}
+            />
           ))}
 
           {/* White ledge */}
@@ -140,5 +100,80 @@ export function BookshelfSkeleton({ title }: { title: string }) {
         </div>
       </div>
     </section>
+  );
+}
+
+function ShelfBook({
+  product,
+  isAdded,
+  onAdd,
+}: {
+  product: Product;
+  isAdded: boolean;
+  onAdd: (e: React.MouseEvent, p: Product) => void;
+}) {
+  const [aspect, setAspect] = useState<number | null>(null);
+  const image = product.images[0];
+
+  return (
+    <Link
+      href={`/products/${product.slug}`}
+      style={
+        aspect
+          ? {
+              aspectRatio: `${aspect}`,
+              width: `calc(14rem * ${aspect})`,
+            }
+          : undefined
+      }
+      className="group relative block h-44 sm:h-52 md:h-56 w-[118px] sm:w-[140px] md:w-[152px] shrink-0 origin-bottom overflow-hidden rounded-r-md rounded-l-[3px] shadow-book transition-all duration-500 ease-out hover:z-10 sm:hover:-translate-y-4 sm:hover:rotate-[-1.5deg] hover:shadow-book-lg"
+    >
+      {image ? (
+        <Image
+          src={image.src}
+          alt={image.alt || product.name}
+          fill
+          sizes="240px"
+          onLoad={(e) => {
+            const el = e.currentTarget;
+            if (el.naturalWidth && el.naturalHeight) {
+              setAspect(el.naturalWidth / el.naturalHeight);
+            }
+          }}
+          className="object-fill"
+        />
+      ) : (
+        <div className="flex h-full items-center justify-center bg-gold-gradient p-3 text-center">
+          <span className="font-display text-sm italic leading-snug text-white [text-shadow:0_1px_2px_rgba(120,85,40,0.4)]">
+            {product.name}
+          </span>
+        </div>
+      )}
+      {/* spine crease */}
+      <div className="absolute inset-y-0 left-0 w-[5px] bg-gradient-to-r from-black/30 to-transparent" />
+
+      {/* Touch-Friendly Caption & Cart: Always visible on mobile/tablet screens (< lg), slide-on-hover on desktop (lg+) */}
+      <div className="absolute inset-x-0 bottom-0 translate-y-0 opacity-100 lg:translate-y-2 lg:opacity-0 bg-gradient-to-t from-charcoal/95 via-charcoal/75 to-transparent px-2 sm:px-2.5 pb-2 pt-8 transition-all duration-300 group-hover:translate-y-0 group-hover:opacity-100">
+        <p className="line-clamp-1 sm:line-clamp-2 text-[10px] sm:text-[11px] font-semibold leading-tight text-white">
+          {product.name}
+        </p>
+        <div className="mt-1 flex items-center justify-between gap-1">
+          <p className="text-[10px] sm:text-[11px] font-bold text-gold-light truncate">
+            {formatPrice(product.price)}
+          </p>
+          <button
+            onClick={(e) => onAdd(e, product)}
+            className={`shrink-0 rounded px-1.5 py-0.5 font-display text-[8px] sm:text-[9px] font-extrabold uppercase tracking-wider transition-all duration-200 shadow-xs ${
+              isAdded
+                ? "bg-emerald-600 text-white"
+                : "bg-cta text-white hover:bg-cta-light active:scale-95"
+            }`}
+            title="Add to Cart"
+          >
+            {isAdded ? "Added ✓" : "+ Cart"}
+          </button>
+        </div>
+      </div>
+    </Link>
   );
 }

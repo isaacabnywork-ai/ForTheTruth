@@ -111,25 +111,27 @@ export function ProductDetail({ product, reviews = [] }: ProductDetailProps) {
             {images.map((img, idx) => (
               <div 
                 key={img.id || idx}
-                className="relative min-w-full aspect-[3/4] snap-center snap-always transition-transform duration-300 hover:scale-[1.01]"
+                className="relative min-w-full min-h-[360px] sm:min-h-[420px] md:min-h-[460px] p-4 sm:p-6 flex items-center justify-center snap-center snap-always bg-gradient-to-br from-[#fcfbf8] to-[#f4ede2]/90 transition-transform duration-300 hover:scale-[1.01]"
               >
                 {img.src ? (
-                  <Image
-                    src={img.src}
-                    alt={img.alt || product.name}
-                    fill
-                    priority={idx === 0}
-                    fetchPriority={idx === 0 ? "high" : "auto"}
-                    sizes="(max-width: 768px) 100vw, 350px"
-                    className="object-cover"
-                  />
+                  <div className="relative h-full w-full min-h-[320px] sm:min-h-[380px] flex items-center justify-center">
+                    <Image
+                      src={img.src}
+                      alt={img.alt || product.name}
+                      fill
+                      priority={idx === 0}
+                      fetchPriority={idx === 0 ? "high" : "auto"}
+                      sizes="(max-width: 768px) 100vw, 350px"
+                      className="object-contain drop-shadow-[0_12px_28px_rgba(40,30,15,0.22)]"
+                    />
+                  </div>
                 ) : (
                   <div className="flex h-full items-center justify-center bg-gold-gradient p-8 text-center">
                     <span className="font-display text-2xl italic text-white">{product.name}</span>
                   </div>
                 )}
                 {/* Spine shadow line */}
-                <div className="absolute inset-y-0 left-0 w-[8px] bg-gradient-to-r from-black/30 to-transparent" />
+                <div className="absolute inset-y-0 left-0 w-[8px] bg-gradient-to-r from-black/20 to-transparent pointer-events-none" />
                 
                 {discount > 0 && idx === 0 && (
                   <span className="absolute right-3.5 top-3.5 z-20 rounded-full bg-gold-gradient px-3 py-1 text-xs font-bold text-white shadow-gold lg:left-4 lg:right-auto lg:top-4">
@@ -155,11 +157,11 @@ export function ProductDetail({ product, reviews = [] }: ProductDetailProps) {
                       });
                     }
                   }}
-                  className={`relative h-20 w-14 shrink-0 overflow-hidden rounded-lg border-2 transition-all ${
+                  className={`relative h-20 w-14 shrink-0 overflow-hidden rounded-lg border-2 p-0.5 bg-cream/40 transition-all ${
                     selectedImg === idx ? "border-gold shadow-md scale-105" : "border-sand/60 opacity-70 hover:opacity-100"
                   }`}
                 >
-                  <Image src={img.src} alt="" fill className="object-cover" />
+                  <Image src={img.src} alt="" fill className="object-contain" />
                 </button>
               ))}
             </div>

@@ -21,6 +21,7 @@ export function ProductCard({
   rank?: number;
 }) {
   const [added, setAdded] = useState(false);
+  const [aspect, setAspect] = useState<number | null>(null);
   const addToCart = useCartStore((s) => s.addToCart);
   const toggleWishlist = useWishlistStore((s) => s.toggleWishlist);
   const wishlisted = useWishlistStore((s) => s.productIds.includes(product.id));
@@ -61,24 +62,42 @@ export function ProductCard({
 
   return (
     <article className="group relative flex flex-col transition-all duration-300">
-      <div className="relative overflow-hidden rounded-xl bg-gradient-to-br from-sand/60 to-cream shadow-card transition-all duration-500 group-hover:-translate-y-1.5 group-hover:shadow-card-hover">
-        <Link href={`/products/${product.slug}`} className="relative block aspect-[2/3]">
+      <div className="relative overflow-hidden rounded-xl bg-gradient-to-br from-sand/40 via-cream/60 to-sand/20 shadow-card transition-all duration-500 group-hover:-translate-y-1.5 group-hover:shadow-card-hover">
+        <Link
+          href={`/products/${product.slug}`}
+          className="relative flex items-center justify-center aspect-[3/4] p-3 sm:p-4 bg-gradient-to-b from-[#fdfbf7] to-[#f4ede1]/80 overflow-hidden"
+        >
           {image ? (
-            <Image
-              src={image.src}
-              alt={image.alt || product.name}
-              fill
-              sizes="(max-width: 640px) 45vw, (max-width: 1200px) 30vw, 22vw"
-              className="object-cover transition-transform duration-700 ease-out group-hover:scale-[1.06]"
-            />
+            <div
+              className="relative h-full w-full flex items-center justify-center transition-transform duration-500 ease-out group-hover:scale-[1.04]"
+              style={{
+                aspectRatio: aspect ? `${aspect}` : undefined,
+                maxHeight: "100%",
+                maxWidth: "100%",
+              }}
+            >
+              <Image
+                src={image.src}
+                alt={image.alt || product.name}
+                fill
+                sizes="(max-width: 640px) 45vw, (max-width: 1200px) 30vw, 22vw"
+                onLoad={(e) => {
+                  const el = e.currentTarget;
+                  if (el.naturalWidth && el.naturalHeight) {
+                    setAspect(el.naturalWidth / el.naturalHeight);
+                  }
+                }}
+                className="object-contain drop-shadow-[2px_5px_12px_rgba(40,30,15,0.2)]"
+              />
+            </div>
           ) : (
-            <div className="flex h-full items-center justify-center bg-gold-gradient p-4 text-center">
+            <div className="flex h-full w-full items-center justify-center bg-gold-gradient p-4 text-center">
               <span className="font-display text-base italic leading-snug text-white">
                 {product.name}
               </span>
             </div>
           )}
-          <div className="absolute inset-0 bg-gradient-to-t from-charcoal/75 via-transparent to-transparent opacity-0 transition-opacity duration-500 group-hover:opacity-100" />
+          <div className="absolute inset-0 bg-gradient-to-t from-charcoal/70 via-transparent to-transparent opacity-0 transition-opacity duration-500 group-hover:opacity-100" />
         </Link>
 
         {/* Badges — top left, stacked */}

@@ -59,7 +59,7 @@ export function TopicGrid({
                       }}
                     >
                       {p.images[0] ? (
-                        <Image src={p.images[0].src} alt="" fill sizes="60px" className="object-cover" />
+                        <Image src={p.images[0].src} alt="" fill sizes="60px" className="object-contain p-0.5" />
                       ) : (
                         <span className="block h-full w-full bg-gold-gradient" />
                       )}

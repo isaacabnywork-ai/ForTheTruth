@@ -64,52 +64,15 @@ export function SpineSlider({
           {/* Shelf */}
           <div className="overflow-x-auto scrollbar-hide w-full">
             <div className="relative mx-auto flex w-max min-w-full items-end justify-start lg:justify-center gap-2 sm:gap-[10px] px-6 sm:px-10 pb-[20px] pt-10">
-              {products.map((p, i) => {
-                const isActive = i === active;
-                return (
-                  <button
-                    key={p.id}
-                    onClick={() => setActive(i)}
-                    aria-label={isActive ? undefined : `Select ${p.name}`}
-                    aria-pressed={isActive}
-                    className={`relative shrink-0 origin-bottom overflow-hidden text-left transition-all duration-500 ease-out ${
-                      isActive
-                        ? "z-10 h-72 w-48 -translate-y-8 rotate-[-2deg] rounded-lg shadow-book-lg ring-2 ring-gold/50 md:h-80 md:w-56"
-                        : "h-56 w-9 rounded-[3px] shadow-book hover:-translate-y-2 md:h-64 md:w-10"
-                    }`}
-                  >
-                    {p.images[0] ? (
-                      <Image
-                        src={p.images[0].src}
-                        alt={isActive ? p.images[0].alt || p.name : ""}
-                        fill
-                        sizes={isActive ? "260px" : "48px"}
-                        className="object-cover"
-                      />
-                    ) : (
-                      <div
-                        className={`h-full w-full ${
-                          i % 3 === 0
-                            ? "bg-royal-gradient"
-                            : i % 3 === 1
-                              ? "bg-gold-gradient"
-                              : "bg-gradient-to-b from-charcoal to-[#4a4a4a]"
-                        }`}
-                      />
-                    )}
-                    {!isActive && (
-                      <>
-                        <div className="absolute inset-0 bg-charcoal/40" />
-                        <span className="absolute inset-0 flex items-center justify-center">
-                          <span className="max-h-full overflow-hidden whitespace-nowrap text-[10px] font-semibold tracking-wide text-white/90 [writing-mode:vertical-rl]">
-                            {p.name.length > 28 ? `${p.name.slice(0, 28)}…` : p.name}
-                          </span>
-                        </span>
-                      </>
-                    )}
-                  </button>
-                );
-              })}
+              {products.map((p, i) => (
+                <SpineBookItem
+                  key={p.id}
+                  product={p}
+                  index={i}
+                  isActive={i === active}
+                  onSelect={() => setActive(i)}
+                />
+              ))}
 
               {/* White ledge */}
               <div
@@ -146,3 +109,76 @@ export function SpineSlider({
     </section>
   );
 }
+
+function SpineBookItem({
+  product,
+  isActive,
+  index,
+  onSelect,
+}: {
+  product: Product;
+  isActive: boolean;
+  index: number;
+  onSelect: () => void;
+}) {
+  const [aspect, setAspect] = useState<number | null>(null);
+  const image = product.images?.[0];
+
+  return (
+    <button
+      onClick={onSelect}
+      aria-label={isActive ? undefined : `Select ${product.name}`}
+      aria-pressed={isActive}
+      style={
+        isActive && aspect
+          ? {
+              aspectRatio: `${aspect}`,
+              width: "auto",
+            }
+          : undefined
+      }
+      className={`relative shrink-0 origin-bottom overflow-hidden text-left transition-all duration-500 ease-out ${
+        isActive
+          ? "z-10 h-72 w-48 -translate-y-8 rotate-[-2deg] rounded-lg shadow-book-lg ring-2 ring-gold/50 md:h-80 md:w-56 bg-cream/30"
+          : "h-56 w-9 rounded-[3px] shadow-book hover:-translate-y-2 md:h-64 md:w-10"
+      }`}
+    >
+      {image ? (
+        <Image
+          src={image.src}
+          alt={isActive ? image.alt || product.name : ""}
+          fill
+          sizes={isActive ? "320px" : "48px"}
+          className={isActive ? "object-contain" : "object-cover"}
+          onLoad={(e) => {
+            const el = e.currentTarget;
+            if (el.naturalWidth && el.naturalHeight) {
+              setAspect(el.naturalWidth / el.naturalHeight);
+            }
+          }}
+        />
+      ) : (
+        <div
+          className={`h-full w-full ${
+            index % 3 === 0
+              ? "bg-royal-gradient"
+              : index % 3 === 1
+                ? "bg-gold-gradient"
+                : "bg-gradient-to-b from-charcoal to-[#4a4a4a]"
+          }`}
+        />
+      )}
+      {!isActive && (
+        <>
+          <div className="absolute inset-0 bg-charcoal/40" />
+          <span className="absolute inset-0 flex items-center justify-center">
+            <span className="max-h-full overflow-hidden whitespace-nowrap text-[10px] font-semibold tracking-wide text-white/90 [writing-mode:vertical-rl]">
+              {product.name.length > 28 ? `${product.name.slice(0, 28)}…` : product.name}
+            </span>
+          </span>
+        </>
+      )}
+    </button>
+  );
+}
+

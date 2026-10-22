@@ -61,10 +61,10 @@ export default function CartPage() {
             >
               <Link
                 href={`/products/${item.slug}`}
-                className="relative block h-28 w-20 shrink-0 overflow-hidden rounded-lg shadow-book"
+                className="relative flex h-28 w-20 shrink-0 items-center justify-center overflow-hidden rounded-lg bg-cream/30 p-1 shadow-book"
               >
                 {item.image ? (
-                  <Image src={item.image} alt="" fill sizes="80px" className="object-cover" />
+                  <Image src={item.image} alt={item.name} fill sizes="80px" className="object-contain p-1" />
                 ) : (
                   <div className="h-full w-full bg-gold-gradient" />
                 )}

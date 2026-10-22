@@ -234,9 +234,9 @@ export function SearchBar() {
                           activeItem?.id === r.id ? "bg-[#e5e5e5]" : "hover:bg-cream/60"
                         }`}
                       >
-                        <span className="relative block h-[50px] w-[35px] shrink-0 overflow-hidden bg-white shadow-sm ring-1 ring-sand/60">
+                        <span className="relative flex h-[50px] w-[35px] shrink-0 items-center justify-center overflow-hidden bg-cream/40 shadow-sm ring-1 ring-sand/60">
                           {r.image ? (
-                            <Image src={r.image} alt="" fill sizes="35px" className="object-cover" />
+                            <Image src={r.image} alt="" fill sizes="35px" className="object-contain p-0.5" />
                           ) : (
                             <span className="block h-full w-full bg-gold-gradient" />
                           )}
@@ -299,9 +299,14 @@ export function SearchBar() {
 
                 <div className="relative z-10 flex-1 flex flex-col">
                   <div className="flex justify-center mb-6 h-[200px]">
-                    <div className="relative h-full aspect-[2/3] shadow-lg ring-1 ring-black/5 bg-white">
+                    <div className="relative h-full flex items-center justify-center">
                       {activeItem.image && (
-                        <Image src={activeItem.image} alt="" fill sizes="200px" className="object-cover" />
+                        /* eslint-disable-next-line @next/next/no-img-element */
+                        <img
+                          src={activeItem.image}
+                          alt={activeItem.name}
+                          className="h-full w-auto max-w-[200px] object-contain drop-shadow-[0_8px_18px_rgba(40,30,15,0.22)] rounded-sm"
+                        />
                       )}
                     </div>
                   </div>

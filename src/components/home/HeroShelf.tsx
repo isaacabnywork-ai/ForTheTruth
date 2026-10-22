@@ -298,8 +298,11 @@ export function HeroShelf({
   );
 }
 
-/** Cover rendered as a physical 3D book with page edges and a soft floor shadow. */
+/** Cover rendered as a physical 3D book with page edges, floor shadow, and dynamic original dimensions. */
 function FloatingBook({ product }: { product: Product }) {
+  const [aspect, setAspect] = useState<number | null>(null);
+  const image = product.images && product.images[0];
+
   return (
     <Link
       href={`/products/${product.slug}`}
@@ -312,7 +315,17 @@ function FloatingBook({ product }: { product: Product }) {
       />
 
       <span className="relative block transition-transform duration-700 ease-out group-hover:-translate-y-3 [transform-style:preserve-3d]">
-        <span className="relative block h-[320px] w-[220px] [transform:rotateY(-16deg)_rotateX(3deg)] transition-transform duration-700 group-hover:[transform:rotateY(-6deg)_rotateX(1deg)] md:h-[400px] md:w-[275px]">
+        <span
+          style={
+            aspect
+              ? {
+                  aspectRatio: `${aspect}`,
+                  width: `calc(clamp(250px, 32vh, 360px) * ${aspect})`,
+                }
+              : undefined
+          }
+          className="relative block h-[260px] sm:h-[310px] md:h-[355px] w-[185px] sm:w-[220px] md:w-[250px] max-w-[340px] [transform:rotateY(-16deg)_rotateX(3deg)] transition-all duration-700 group-hover:[transform:rotateY(-6deg)_rotateX(1deg)]"
+        >
           {/* page edges */}
           <span
             aria-hidden="true"
@@ -320,14 +333,20 @@ function FloatingBook({ product }: { product: Product }) {
           />
           {/* cover */}
           <span className="relative block h-full w-full overflow-hidden rounded-[3px] rounded-r-md shadow-book-lg">
-            {product.images && product.images[0] ? (
+            {image ? (
               <Image
-                src={product.images[0].src}
-                alt={product.images[0].alt || product.name}
+                src={image.src}
+                alt={image.alt || product.name}
                 fill
-                sizes="(max-width: 768px) 220px, 275px"
+                sizes="(max-width: 768px) 300px, 400px"
                 priority
-                className="object-cover"
+                onLoad={(e) => {
+                  const el = e.currentTarget;
+                  if (el.naturalWidth && el.naturalHeight) {
+                    setAspect(el.naturalWidth / el.naturalHeight);
+                  }
+                }}
+                className="object-fill"
               />
             ) : (
               <span className="flex h-full w-full items-center justify-center bg-gold-gradient p-6 text-center">
