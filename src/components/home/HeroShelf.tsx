@@ -195,30 +195,6 @@ export function HeroShelf({
             ) : (
               <BookSkeleton />
             )}
-
-            {/* Quick floating arrow buttons on desktop hover */}
-            {total > 1 && (
-              <>
-                <button
-                  onClick={prevSlide}
-                  aria-label="Previous book"
-                  className="hidden md:flex absolute -left-4 top-1/2 -translate-y-1/2 h-9 w-9 items-center justify-center rounded-full border border-charcoal/15 bg-white/95 text-charcoal shadow-md opacity-0 group-hover/hero:opacity-100 transition-all hover:scale-110 hover:bg-gold hover:text-white cursor-pointer z-20"
-                >
-                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                    <path d="M15 18l-6-6 6-6" />
-                  </svg>
-                </button>
-                <button
-                  onClick={nextSlide}
-                  aria-label="Next book"
-                  className="hidden md:flex absolute -right-4 top-1/2 -translate-y-1/2 h-9 w-9 items-center justify-center rounded-full border border-charcoal/15 bg-white/95 text-charcoal shadow-md opacity-0 group-hover/hero:opacity-100 transition-all hover:scale-110 hover:bg-gold hover:text-white cursor-pointer z-20"
-                >
-                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                    <path d="M9 18l6-6-6-6" />
-                  </svg>
-                </button>
-              </>
-            )}
           </div>
 
           {/* ---------- RIGHT: Featured Book Summary & Slide Controls ---------- */}
@@ -233,15 +209,10 @@ export function HeroShelf({
                   exit={{ opacity: 0, y: -16 }}
                   transition={{ duration: 0.38, ease: [0.22, 1, 0.36, 1] }}
                 >
-                  <div className="flex items-center justify-center lg:justify-between gap-2 mb-2.5">
+                  <div className="mb-2.5">
                     <p className="text-xs font-bold uppercase tracking-[0.25em] text-gold-dark">
                       Featuring books this week
                     </p>
-                    {total > 1 && (
-                      <span className="hidden lg:inline-flex items-center font-mono text-xs font-black text-charcoal/50 bg-charcoal/5 px-2.5 py-0.5 rounded-full">
-                        {String(currentIndex + 1).padStart(2, "0")} / {String(total).padStart(2, "0")}
-                      </span>
-                    )}
                   </div>
 
                   <Link href={`/products/${hero.slug}`} className="block group">
@@ -298,59 +269,24 @@ export function HeroShelf({
                 </motion.div>
               </AnimatePresence>
 
-              {/* ---------- Slider Navigation Controls & Indicators ---------- */}
+              {/* ---------- Slider Navigation Dots ---------- */}
               {total > 1 && (
-                <div className="mt-6 pt-4 border-t border-charcoal/10 flex items-center justify-center lg:justify-between gap-4">
-                  <div className="flex items-center gap-2.5">
-                    {/* Previous Button */}
-                    <button
-                      onClick={prevSlide}
-                      aria-label="Previous book"
-                      className="flex h-9 w-9 items-center justify-center rounded-full border border-charcoal/15 bg-white/90 text-charcoal shadow-sm transition-all hover:bg-gold hover:border-gold hover:text-white active:scale-95 cursor-pointer"
-                    >
-                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                        <path d="M15 18l-6-6 6-6" />
-                      </svg>
-                    </button>
-
-                    {/* Pagination Dots */}
-                    <div className="flex items-center gap-1.5" role="tablist" aria-label="Hero slider pagination">
-                      {validProducts.map((p, idx) => (
-                        <button
-                          key={p.id}
-                          onClick={() => goToSlide(idx)}
-                          aria-label={`Jump to book ${idx + 1}: ${p.name}`}
-                          aria-selected={currentIndex === idx}
-                          role="tab"
-                          className={`h-2 rounded-full transition-all duration-300 cursor-pointer ${
-                            currentIndex === idx
-                              ? "w-7 bg-gold shadow-xs"
-                              : "w-2 bg-charcoal/20 hover:bg-charcoal/40"
-                          }`}
-                        />
-                      ))}
-                    </div>
-
-                    {/* Next Button */}
-                    <button
-                      onClick={nextSlide}
-                      aria-label="Next book"
-                      className="flex h-9 w-9 items-center justify-center rounded-full border border-charcoal/15 bg-white/90 text-charcoal shadow-sm transition-all hover:bg-gold hover:border-gold hover:text-white active:scale-95 cursor-pointer"
-                    >
-                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                        <path d="M9 18l6-6-6-6" />
-                      </svg>
-                    </button>
-                  </div>
-
-                  {/* Auto-sliding indicator with pause status */}
-                  <div className="flex items-center gap-2 text-[11px] font-semibold text-charcoal/50">
-                    <span
-                      className={`inline-block h-2 w-2 rounded-full transition-colors ${
-                        isPaused ? "bg-amber-400" : "bg-emerald-500 animate-pulse"
-                      }`}
-                    />
-                    <span>{isPaused ? "Paused" : "Auto-playing"}</span>
+                <div className="mt-6 pt-4 border-t border-charcoal/10 flex items-center justify-center lg:justify-start">
+                  <div className="flex items-center gap-2" role="tablist" aria-label="Hero slider pagination">
+                    {validProducts.map((p, idx) => (
+                      <button
+                        key={p.id}
+                        onClick={() => goToSlide(idx)}
+                        aria-label={`Jump to book ${idx + 1}: ${p.name}`}
+                        aria-selected={currentIndex === idx}
+                        role="tab"
+                        className={`h-2 rounded-full transition-all duration-300 cursor-pointer ${
+                          currentIndex === idx
+                            ? "w-8 bg-gold shadow-xs"
+                            : "w-2 bg-charcoal/20 hover:bg-charcoal/40"
+                        }`}
+                      />
+                    ))}
                   </div>
                 </div>
               )}
