@@ -62,34 +62,29 @@ export function ProductCard({
 
   return (
     <article className="group relative flex flex-col transition-all duration-300">
-      <div className="relative overflow-hidden rounded-xl bg-gradient-to-br from-sand/40 via-cream/60 to-sand/20 shadow-card transition-all duration-500 group-hover:-translate-y-1.5 group-hover:shadow-card-hover">
+      {/* Book Cover — Clean presentation with NO surrounding box */}
+      <div className="relative flex items-end justify-center h-[260px] sm:h-[290px] md:h-[310px] w-full">
         <Link
           href={`/products/${product.slug}`}
-          className="relative flex items-center justify-center aspect-[3/4] p-3 sm:p-4 bg-gradient-to-b from-[#fdfbf7] to-[#f4ede1]/80 overflow-hidden"
+          style={{
+            aspectRatio: aspect ? `${aspect}` : "2/3",
+          }}
+          className="relative block h-full max-h-full max-w-full overflow-hidden rounded-r-md rounded-l-[2px] shadow-book transition-all duration-500 ease-out group-hover:-translate-y-2 group-hover:shadow-book-lg"
         >
           {image ? (
-            <div
-              className="relative h-full w-full flex items-center justify-center transition-transform duration-500 ease-out group-hover:scale-[1.04]"
-              style={{
-                aspectRatio: aspect ? `${aspect}` : undefined,
-                maxHeight: "100%",
-                maxWidth: "100%",
+            <Image
+              src={image.src}
+              alt={image.alt || product.name}
+              fill
+              sizes="(max-width: 640px) 45vw, (max-width: 1200px) 30vw, 22vw"
+              onLoad={(e) => {
+                const el = e.currentTarget;
+                if (el.naturalWidth && el.naturalHeight) {
+                  setAspect(el.naturalWidth / el.naturalHeight);
+                }
               }}
-            >
-              <Image
-                src={image.src}
-                alt={image.alt || product.name}
-                fill
-                sizes="(max-width: 640px) 45vw, (max-width: 1200px) 30vw, 22vw"
-                onLoad={(e) => {
-                  const el = e.currentTarget;
-                  if (el.naturalWidth && el.naturalHeight) {
-                    setAspect(el.naturalWidth / el.naturalHeight);
-                  }
-                }}
-                className="object-contain drop-shadow-[2px_5px_12px_rgba(40,30,15,0.2)]"
-              />
-            </div>
+              className="object-fill"
+            />
           ) : (
             <div className="flex h-full w-full items-center justify-center bg-gold-gradient p-4 text-center">
               <span className="font-display text-base italic leading-snug text-white">
@@ -97,62 +92,70 @@ export function ProductCard({
               </span>
             </div>
           )}
-          <div className="absolute inset-0 bg-gradient-to-t from-charcoal/70 via-transparent to-transparent opacity-0 transition-opacity duration-500 group-hover:opacity-100" />
-        </Link>
 
-        {/* Badges — top left, stacked */}
-        <div className="pointer-events-none absolute left-3 top-3 flex flex-col gap-1.5">
-          {rank != null && rank <= 3 && (
-            <span className="badge bg-navy text-white">
-              {rank === 1 ? "🥇 #1" : rank === 2 ? "🥈 #2" : "🥉 #3"} Bestseller
-            </span>
-          )}
-          {discount > 0 && (
-            <span className="badge bg-gold-gradient text-white [text-shadow:0_1px_2px_rgba(120,85,40,0.35)]">
-              −{discount}% off
-            </span>
-          )}
-          {!inStock && <span className="badge bg-navy text-white">Pre-order</span>}
-          {rank == null && isBestseller && inStock && discount === 0 && (
-            <span className="badge bg-white/90 text-gold-deep">Bestseller</span>
-          )}
-        </div>
+          {/* Book spine crease */}
+          <div className="absolute inset-y-0 left-0 w-[4px] bg-gradient-to-r from-black/25 to-transparent pointer-events-none" />
 
-        {/* Wishlist */}
-        <button
-          onClick={(e) => {
-            e.preventDefault();
-            triggerHaptic("tap");
-            toggleWishlist(product.id);
-          }}
-          aria-label={wishlisted ? "Remove from wishlist" : "Add to wishlist"}
-          aria-pressed={wishlisted}
-          className={`absolute right-3 top-3 rounded-full p-2 shadow-md backdrop-blur transition-all duration-300 active:scale-90 ${
-            wishlisted
-              ? "bg-gold text-white"
-              : "bg-white/90 text-charcoal/60 opacity-0 hover:bg-gold hover:text-white focus:opacity-100 group-hover:opacity-100"
-          }`}
-        >
-          <svg width="15" height="15" viewBox="0 0 24 24" fill={wishlisted ? "currentColor" : "none"} stroke="currentColor" strokeWidth="2" aria-hidden="true">
-            <path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z" />
-          </svg>
-        </button>
+          {/* Subtle glossy sheen */}
+          <div className="pointer-events-none absolute inset-0 bg-gradient-to-tr from-transparent via-white/5 to-white/20 opacity-50" />
 
-        {/* Quick actions — slide up on hover */}
-        <div className="absolute inset-x-3 bottom-3 translate-y-3 space-y-2 opacity-0 transition-all duration-500 group-hover:translate-y-0 group-hover:opacity-100">
+          {/* Hover overlay gradient */}
+          <div className="absolute inset-0 bg-gradient-to-t from-charcoal/65 via-transparent to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
+
+          {/* Badges — top left over the book */}
+          <div className="pointer-events-none absolute left-2 top-2 z-10 flex flex-col gap-1">
+            {rank != null && rank <= 3 && (
+              <span className="badge bg-navy text-white text-[10px] py-0.5 px-2">
+                {rank === 1 ? "🥇 #1" : rank === 2 ? "🥈 #2" : "🥉 #3"} Bestseller
+              </span>
+            )}
+            {discount > 0 && (
+              <span className="badge bg-gold-gradient text-white text-[10px] py-0.5 px-2 shadow-xs">
+                −{discount}% off
+              </span>
+            )}
+            {!inStock && <span className="badge bg-navy text-white text-[10px] py-0.5 px-2">Pre-order</span>}
+            {rank == null && isBestseller && inStock && discount === 0 && (
+              <span className="badge bg-white/90 text-gold-deep text-[10px] py-0.5 px-2">Bestseller</span>
+            )}
+          </div>
+
+          {/* Wishlist */}
           <button
-            onClick={handleAdd}
-            className="w-full rounded-full bg-cta py-2.5 text-xs font-bold uppercase tracking-widest text-white shadow-cta transition-smooth hover:bg-cta-light"
+            onClick={(e) => {
+              e.preventDefault();
+              triggerHaptic("tap");
+              toggleWishlist(product.id);
+            }}
+            aria-label={wishlisted ? "Remove from wishlist" : "Add to wishlist"}
+            aria-pressed={wishlisted}
+            className={`absolute right-2 top-2 z-10 rounded-full p-1.5 shadow-md backdrop-blur transition-all duration-300 active:scale-90 ${
+              wishlisted
+                ? "bg-gold text-white"
+                : "bg-white/90 text-charcoal/60 opacity-0 hover:bg-gold hover:text-white focus:opacity-100 group-hover:opacity-100"
+            }`}
           >
-            {added ? "Added ✓" : inStock ? "Add to Cart" : "Pre-order"}
+            <svg width="14" height="14" viewBox="0 0 24 24" fill={wishlisted ? "currentColor" : "none"} stroke="currentColor" strokeWidth="2" aria-hidden="true">
+              <path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z" />
+            </svg>
           </button>
-          <Link
-            href={`/products/${product.slug}`}
-            className="block w-full rounded-full bg-white/95 py-2 text-center text-[11px] font-bold uppercase tracking-widest text-charcoal/75 backdrop-blur transition-smooth hover:text-gold-dark"
-          >
-            Quick View
-          </Link>
-        </div>
+
+          {/* Quick actions — slide up on hover */}
+          <div className="absolute inset-x-2.5 bottom-2.5 z-10 translate-y-2 space-y-1.5 opacity-0 transition-all duration-300 group-hover:translate-y-0 group-hover:opacity-100">
+            <button
+              onClick={handleAdd}
+              className="w-full rounded-full bg-cta py-2 text-xs font-bold uppercase tracking-widest text-white shadow-cta transition-smooth hover:bg-cta-light"
+            >
+              {added ? "Added ✓" : inStock ? "Add to Cart" : "Pre-order"}
+            </button>
+            <Link
+              href={`/products/${product.slug}`}
+              className="block w-full rounded-full bg-white/95 py-1.5 text-center text-[10px] font-bold uppercase tracking-widest text-charcoal/75 backdrop-blur transition-smooth hover:text-gold-dark"
+            >
+              Quick View
+            </Link>
+          </div>
+        </Link>
       </div>
 
       {/* Meta */}
