@@ -51,8 +51,16 @@ export default async function HomePage() {
       const fetchedSpine = results[4];
       const fetchedPick = results[5];
 
-      if (curated.heroIds.length > 0) featured = sortByIdList(featured, curated.heroIds);
-      else if (featured.length < 5) {
+      if (curated.heroIds.length > 0) {
+        featured = sortByIdList(featured, curated.heroIds);
+      }
+      if (featured.length < 3) {
+        const extra = [...bestsellers, ...newArrivals].filter(
+          (p) => !featured.some((f) => f.id === p.id)
+        );
+        featured = [...featured, ...extra].slice(0, 6);
+      }
+      if (featured.length === 0) {
         featured = await getProducts({ perPage: 9, orderby: "popularity", order: "desc" });
       }
 
