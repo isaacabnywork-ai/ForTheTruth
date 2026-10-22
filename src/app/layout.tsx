@@ -77,7 +77,7 @@ export default async function RootLayout({
     <html
       lang="en"
       suppressHydrationWarning
-      className={`${montserrat.variable} ${cormorant.variable} ${montserrat.className} overflow-x-clip`}
+      className={`${montserrat.variable} ${cormorant.variable} overflow-x-clip`}
     >
       <body className="flex min-h-screen w-full max-w-full overflow-x-clip bg-cream antialiased font-sans" suppressHydrationWarning>
         {/* One-time cleanup: dark mode was removed — clear any saved preference */}

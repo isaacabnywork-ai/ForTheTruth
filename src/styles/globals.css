@@ -41,8 +41,8 @@
     font-family: var(--font-montserrat), Montserrat, sans-serif;
   }
   h1, h2, h3, h4, h5, h6 {
-    @apply font-display text-charcoal;
-    font-family: var(--font-cormorant), Georgia, serif;
+    @apply text-charcoal;
+    font-family: var(--font-cormorant), "Cormorant Garamond", Georgia, serif !important;
   }
   p {
     font-family: var(--font-montserrat), Montserrat, sans-serif;
@@ -50,6 +50,14 @@
   ::selection {
     background: rgba(200, 155, 60, 0.30);
   }
+}
+
+.font-display {
+  font-family: var(--font-cormorant), "Cormorant Garamond", Georgia, serif !important;
+}
+
+.font-serif {
+  font-family: var(--font-cormorant), "Cormorant Garamond", Georgia, serif !important;
 }
 
 @layer components {
