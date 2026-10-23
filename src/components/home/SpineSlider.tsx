@@ -121,42 +121,36 @@ function SpineBookItem({
   index: number;
   onSelect: () => void;
 }) {
-  const [aspect, setAspect] = useState<number | null>(null);
   const image = product.images?.[0];
 
   return (
     <button
       onClick={onSelect}
+      type="button"
       aria-label={isActive ? undefined : `Select ${product.name}`}
       aria-pressed={isActive}
-      style={
-        isActive && aspect
-          ? {
-              aspectRatio: `${aspect}`,
-              width: "auto",
-            }
-          : undefined
-      }
       className={`relative shrink-0 origin-bottom overflow-hidden text-left transition-all duration-500 ease-out ${
         isActive
-          ? "z-10 h-72 w-48 -translate-y-8 rotate-[-2deg] rounded-lg shadow-book-lg ring-2 ring-gold/50 md:h-80 md:w-56 bg-cream/30"
+          ? "z-10 h-72 md:h-80 w-auto -translate-y-8 rotate-[-2deg] rounded-lg shadow-book-lg"
           : "h-56 w-9 rounded-[3px] shadow-book hover:-translate-y-2 md:h-64 md:w-10"
       }`}
     >
       {image ? (
-        <Image
-          src={image.src}
-          alt={isActive ? image.alt || product.name : ""}
-          fill
-          sizes={isActive ? "320px" : "48px"}
-          className={isActive ? "object-contain" : "object-cover"}
-          onLoad={(e) => {
-            const el = e.currentTarget;
-            if (el.naturalWidth && el.naturalHeight) {
-              setAspect(el.naturalWidth / el.naturalHeight);
-            }
-          }}
-        />
+        isActive ? (
+          <img
+            src={image.src}
+            alt={image.alt || product.name}
+            className="h-72 md:h-80 w-auto max-w-[240px] md:max-w-[280px] object-contain block select-none rounded-lg"
+          />
+        ) : (
+          <Image
+            src={image.src}
+            alt=""
+            fill
+            sizes="48px"
+            className="object-cover select-none"
+          />
+        )
       ) : (
         <div
           className={`h-full w-full ${
@@ -177,6 +171,9 @@ function SpineBookItem({
             </span>
           </span>
         </>
+      )}
+      {isActive && (
+        <div className="absolute inset-y-0 left-0 w-[6px] bg-gradient-to-r from-black/25 to-transparent pointer-events-none rounded-l-lg" />
       )}
     </button>
   );

@@ -38,7 +38,9 @@ export default async function HomePage() {
       const heroQuery = curated.heroIds.length > 0 ? { include: curated.heroIds, perPage: curated.heroIds.length } : { featured: true, perPage: 9 };
       const newQuery = curated.newArrivalsIds.length > 0 ? { include: curated.newArrivalsIds, perPage: curated.newArrivalsIds.length } : { perPage: 6, orderby: "date" as const, order: "desc" as const };
       const bestQuery = curated.bestsellersIds.length > 0 ? { include: curated.bestsellersIds, perPage: curated.bestsellersIds.length } : { perPage: 6, orderby: "popularity" as const, order: "desc" as const };
-      const spineQuery = curated.spineIds.length > 0 ? { include: curated.spineIds, perPage: curated.spineIds.length } : undefined;
+      const spineQuery = curated.spineIds.length > 0 
+        ? { include: curated.spineIds, perPage: curated.spineIds.length } 
+        : { category: 114, perPage: 10 };
       const categoryRowsQuery = { include: allCategoryRowIds, perPage: allCategoryRowIds.length };
 
       const results = await Promise.all([
@@ -46,7 +48,7 @@ export default async function HomePage() {
         getProducts(newQuery),
         getProducts(bestQuery),
         getCategories(),
-        spineQuery ? getProducts(spineQuery) : Promise.resolve([]),
+        getProducts(spineQuery),
         getProducts(categoryRowsQuery),
       ]);
 
@@ -75,8 +77,10 @@ export default async function HomePage() {
       
       if (curated.spineIds.length > 0 && fetchedSpine.length > 0) {
         spineProducts = sortByIdList(fetchedSpine, curated.spineIds);
+      } else if (fetchedSpine.length > 0) {
+        spineProducts = fetchedSpine;
       } else {
-        spineProducts = featured;
+        spineProducts = await getProducts({ category: 114, perPage: 10 }).catch(() => []);
       }
 
       // Cover thumbnails for the topic cards
