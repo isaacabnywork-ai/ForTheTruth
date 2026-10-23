@@ -103,7 +103,7 @@ export function HeroShelf({
 
   return (
     <section
-      className="px-3 sm:px-6 md:pt-8 lg:px-8 w-full max-w-full overflow-hidden"
+      className="relative z-0 isolate px-3 sm:px-6 md:pt-8 lg:px-8 w-full max-w-full overflow-hidden"
       onMouseEnter={() => setIsPaused(true)}
       onMouseLeave={() => setIsPaused(false)}
       onTouchStart={handleTouchStart}

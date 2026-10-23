@@ -2,9 +2,10 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { useCartStore } from "@/store/cartStore";
 import { useWishlistStore } from "@/store/wishlistStore";
+import { useRecentlyViewedStore } from "@/store/recentlyViewedStore";
 import { formatPrice } from "@/utils/currency";
 import { getAuthor, type Product, type ProductReview } from "@/types/product";
 import { RatingStars } from "./RatingStars";
@@ -30,6 +31,21 @@ export function ProductDetail({ product, reviews = [] }: ProductDetailProps) {
   const addToCart = useCartStore((s) => s.addToCart);
   const toggleWishlist = useWishlistStore((s) => s.toggleWishlist);
   const wishlisted = useWishlistStore((s) => s.productIds.includes(product.id));
+  const addRecentlyViewed = useRecentlyViewedStore((s) => s.addRecentlyViewed);
+
+  // Track product view in recently viewed store
+  useEffect(() => {
+    if (product?.id) {
+      addRecentlyViewed({
+        id: product.id,
+        name: product.name,
+        slug: product.slug,
+        price: product.price,
+        image: product.images?.[0]?.src || (product as unknown as { image?: string }).image,
+        author: getAuthor(product),
+      });
+    }
+  }, [product, addRecentlyViewed]);
 
   const author = getAuthor(product);
   const inStock = product.stock_status === "instock";

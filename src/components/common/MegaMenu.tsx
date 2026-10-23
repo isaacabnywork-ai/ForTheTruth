@@ -3,6 +3,7 @@
 import Link from "next/link";
 import type { WCCategory } from "@/types/product";
 import { COLLECTIONS, TOPICS } from "@/utils/constants";
+import { RecentlyViewedMegaSection } from "./RecentlyViewedMegaSection";
 
 interface MegaMenuProps {
   open: boolean;
@@ -33,7 +34,7 @@ export function MegaMenu({ open, categories, onNavigate, onMouseEnter, onMouseLe
 
   return (
     <div
-      className={`fixed left-1/2 top-[108px] w-[min(920px,calc(100vw-3rem))] -translate-x-1/2 transition-all duration-300 ${
+      className={`fixed left-1/2 top-[96px] z-[100] w-[min(920px,calc(100vw-3rem))] -translate-x-1/2 transition-all duration-300 before:absolute before:-top-5 before:inset-x-0 before:h-5 before:content-[''] ${
         open
           ? "pointer-events-auto visible translate-y-0 opacity-100"
           : "pointer-events-none invisible -translate-y-2 opacity-0"
@@ -141,6 +142,9 @@ export function MegaMenu({ open, categories, onNavigate, onMouseEnter, onMouseLe
             </ul>
           </div>
         </div>
+
+        {/* Recently Viewed Books Section */}
+        <RecentlyViewedMegaSection onNavigate={onNavigate} />
       </div>
     </div>
   );

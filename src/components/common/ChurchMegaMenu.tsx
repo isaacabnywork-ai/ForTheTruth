@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { CHURCH_LINKS, CHURCH_NEEDS, CHURCH_SUPPORT } from "@/utils/constants";
+import { RecentlyViewedMegaSection } from "./RecentlyViewedMegaSection";
 
 const itemCls =
   "block rounded-lg px-3 py-1.5 text-sm text-charcoal/70 transition-smooth hover:bg-cream hover:text-gold-dark";
@@ -20,7 +21,7 @@ export function ChurchMegaMenu({
 }) {
   return (
     <div
-      className={`fixed left-1/2 top-[108px] w-[min(880px,calc(100vw-3rem))] -translate-x-1/2 transition-all duration-300 ${
+      className={`fixed left-1/2 top-[96px] z-[100] w-[min(880px,calc(100vw-3rem))] -translate-x-1/2 transition-all duration-300 before:absolute before:-top-5 before:inset-x-0 before:h-5 before:content-[''] ${
         open
           ? "pointer-events-auto visible translate-y-0 opacity-100"
           : "pointer-events-none invisible -translate-y-2 opacity-0"
@@ -73,6 +74,9 @@ export function ChurchMegaMenu({
             </ul>
           </div>
         </div>
+
+        {/* Recently Viewed Books Section */}
+        <RecentlyViewedMegaSection onNavigate={onNavigate} />
       </div>
     </div>
   );

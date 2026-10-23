@@ -44,7 +44,7 @@ export function Header({ categories }: { categories: WCCategory[] }) {
     closeTimer.current = setTimeout(() => {
       setOpenMenu(null);
       closeTimer.current = null;
-    }, 200);
+    }, 350);
   }, []);
 
   const cancelClose = useCallback(() => {
@@ -66,7 +66,7 @@ export function Header({ categories }: { categories: WCCategory[] }) {
     pathname?.startsWith("/products/") && !pathname?.startsWith("/products/search");
 
   return (
-    <header className="sticky top-0 z-50 w-full">
+    <header className="sticky top-0 z-[100] w-full">
       <div className="bg-gold-gradient py-1.5 px-2 text-center text-[11px] sm:text-xs font-bold tracking-wide text-white truncate [text-shadow:0_1px_2px_rgba(120,85,40,0.35)]">
         {ANNOUNCEMENT}
       </div>
@@ -104,7 +104,12 @@ export function Header({ categories }: { categories: WCCategory[] }) {
                 >
                   <Link
                     href={link.href}
-                    className={`nav-link inline-flex items-center gap-1.5 py-2 text-sm font-semibold ${
+                    onClick={(e) => {
+                      e.preventDefault();
+                      cancelClose();
+                      setOpenMenu((prev) => (prev === menu ? null : menu));
+                    }}
+                    className={`nav-link inline-flex items-center gap-1.5 py-2 text-sm font-semibold cursor-pointer ${
                       menu === "church" ? "text-navy hover:text-cta" : ""
                     }`}
                     aria-expanded={isOpen}
