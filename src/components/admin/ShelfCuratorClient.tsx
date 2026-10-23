@@ -147,7 +147,7 @@ export function ShelfCuratorClient({ initialProducts, initialConfig }: ShelfCura
       key: "spine",
       label: "📚 2. Spine Shelf Slider",
       badge: `${config.spineIds.length} Spines`,
-      desc: "Interactive standing book spine shelf ('Explore this month's essentials').",
+      desc: "Interactive standing book spine shelf ('Explore Children Books').",
     },
     {
       key: "editor",

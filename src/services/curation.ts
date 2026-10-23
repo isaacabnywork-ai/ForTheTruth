@@ -34,7 +34,7 @@ const DEFAULT_CONFIG: CuratedShelfConfig = {
   heroSubtitle: "600+ handpicked titles on Bible study, devotion, prayer, and Christian living. Sound doctrine, honest prices, delivered across India.",
   spineIds: [],
   spineBadge: "Browse the shelf",
-  spineTitle: "Explore this month's essentials",
+  spineTitle: "Explore Children Books",
   spineSubtitle: "Tap any spine to pull the book off the shelf and see its cover, author, and price — just like browsing in store.",
   featuredPickId: null,
   featuredBadge: "Editor's choice",

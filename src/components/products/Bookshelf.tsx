@@ -15,6 +15,22 @@ interface BookshelfProps {
 
 const MAX_PER_SHELF = 6;
 
+function cleanTitle(title: string): string {
+  if (!title) return "";
+  return title
+    .replace(/&amp;/g, "&")
+    .replace(/&#038;/g, "&")
+    .replace(/&#8217;/g, "’")
+    .replace(/&#8216;/g, "‘")
+    .replace(/&#8220;/g, "“")
+    .replace(/&#8221;/g, "”")
+    .replace(/&quot;/g, '"')
+    .replace(/&#039;/g, "'")
+    .replace(/_Damage$/i, "")
+    .replace(/_Damage/gi, "")
+    .trim();
+}
+
 /**
  * A shelf of at most 6 books standing on a white ledge.
  * Every shelf uses identical book dimensions so rows line up across the page.
@@ -28,13 +44,17 @@ export function Bookshelf({ title, href, products }: BookshelfProps) {
   function handleAdd(e: React.MouseEvent, p: Product) {
     e.preventDefault();
     e.stopPropagation();
+    const imageSrc =
+      p.images?.[0]?.src ||
+      (p as unknown as { image?: string }).image ||
+      "";
     addToCart({
       productId: p.id,
       slug: p.slug,
-      name: p.name,
+      name: cleanTitle(p.name),
       price: parseFloat(p.price || p.regular_price || "0"),
-      image: p.images[0]?.src,
-      isVirtual: p.categories.some((c) => c.slug === "e-books"),
+      image: imageSrc,
+      isVirtual: p.categories?.some((c) => c.slug === "e-books"),
     });
     setAddedId(p.id);
     setTimeout(() => {
@@ -113,7 +133,12 @@ function ShelfBook({
   onAdd: (e: React.MouseEvent, p: Product) => void;
 }) {
   const [aspect, setAspect] = useState<number | null>(null);
-  const image = product.images[0];
+  const imageSrc =
+    product.images?.[0]?.src ||
+    (product as unknown as { image?: string }).image;
+  const imageAlt = product.images?.[0]?.alt || product.name;
+  const inStock = product.stock_status !== "outofstock";
+  const title = cleanTitle(product.name);
 
   return (
     <Link
@@ -128,10 +153,10 @@ function ShelfBook({
       }
       className="group relative block h-44 sm:h-52 md:h-56 w-[118px] sm:w-[140px] md:w-[152px] shrink-0 origin-bottom overflow-hidden rounded-r-md rounded-l-[3px] shadow-book transition-all duration-500 ease-out hover:z-10 sm:hover:-translate-y-4 sm:hover:rotate-[-1.5deg] hover:shadow-book-lg"
     >
-      {image ? (
+      {imageSrc ? (
         <Image
-          src={image.src}
-          alt={image.alt || product.name}
+          src={imageSrc}
+          alt={imageAlt || title}
           fill
           sizes="240px"
           onLoad={(e) => {
@@ -145,7 +170,7 @@ function ShelfBook({
       ) : (
         <div className="flex h-full items-center justify-center bg-gold-gradient p-3 text-center">
           <span className="font-display text-sm italic leading-snug text-white [text-shadow:0_1px_2px_rgba(120,85,40,0.4)]">
-            {product.name}
+            {title}
           </span>
         </div>
       )}
@@ -155,25 +180,32 @@ function ShelfBook({
       {/* Touch-Friendly Caption & Cart: Always visible on mobile/tablet screens (< lg), slide-on-hover on desktop (lg+) */}
       <div className="absolute inset-x-0 bottom-0 translate-y-0 opacity-100 lg:translate-y-2 lg:opacity-0 bg-gradient-to-t from-charcoal/95 via-charcoal/75 to-transparent px-2 sm:px-2.5 pb-2 pt-8 transition-all duration-300 group-hover:translate-y-0 group-hover:opacity-100">
         <p className="line-clamp-1 sm:line-clamp-2 text-[10px] sm:text-[11px] font-semibold leading-tight text-white">
-          {product.name}
+          {title}
         </p>
         <div className="mt-1 flex items-center justify-between gap-1">
           <p className="text-[10px] sm:text-[11px] font-bold text-gold-light truncate">
             {formatPrice(product.price)}
           </p>
-          <button
-            onClick={(e) => onAdd(e, product)}
-            className={`shrink-0 rounded px-1.5 py-0.5 font-display text-[8px] sm:text-[9px] font-extrabold uppercase tracking-wider transition-all duration-200 shadow-xs ${
-              isAdded
-                ? "bg-emerald-600 text-white"
-                : "bg-cta text-white hover:bg-cta-light active:scale-95"
-            }`}
-            title="Add to Cart"
-          >
-            {isAdded ? "Added ✓" : "+ Cart"}
-          </button>
+          {inStock ? (
+            <button
+              onClick={(e) => onAdd(e, product)}
+              className={`shrink-0 rounded px-1.5 py-0.5 font-display text-[8px] sm:text-[9px] font-extrabold uppercase tracking-wider transition-all duration-200 shadow-xs ${
+                isAdded
+                  ? "bg-emerald-600 text-white"
+                  : "bg-cta text-white hover:bg-cta-light active:scale-95"
+              }`}
+              title="Add to Cart"
+            >
+              {isAdded ? "Added ✓" : "+ Cart"}
+            </button>
+          ) : (
+            <span className="shrink-0 rounded bg-navy/90 px-1.5 py-0.5 font-display text-[8px] sm:text-[9px] font-extrabold uppercase tracking-wider text-white shadow-xs">
+              Sold out
+            </span>
+          )}
         </div>
       </div>
     </Link>
   );
 }
+

@@ -1,12 +1,17 @@
 import { Bookshelf, BookshelfSkeleton } from "@/components/products/Bookshelf";
 import { HeroShelf } from "@/components/home/HeroShelf";
 import { TopicGrid } from "@/components/home/TopicGrid";
-import { FeaturedPick } from "@/components/home/FeaturedPick";
+import {
+  CategoryBookRows,
+  CATEGORY_ROWS_CONFIG,
+  type CategoryRowItem,
+} from "@/components/home/CategoryBookRows";
 import { Testimonials } from "@/components/home/Testimonials";
 import { SpineSlider } from "@/components/home/SpineSlider";
 import { isWooConfigured } from "@/config/env";
 import { getCategories, getProducts } from "@/services/woocommerce";
 import { getCuratedShelfConfig } from "@/services/curation";
+import categoryRowsFallbackData from "@/data/category_rows_fallback.json";
 import type { Product, WCCategory } from "@/types/product";
 
 export const revalidate = 3600;
@@ -21,10 +26,12 @@ export default async function HomePage() {
   let newArrivals: Product[] = [];
   let bestsellers: Product[] = [];
   let spineProducts: Product[] = [];
-  let customPick: Product | undefined = undefined;
   let categories: WCCategory[] = [];
   let coversByCategory: Record<number, Product[]> = {};
+  let fetchedCategoryRows: Product[] = [];
   const curated = getCuratedShelfConfig();
+
+  const allCategoryRowIds = CATEGORY_ROWS_CONFIG.flatMap((c) => c.ids);
 
   if (isWooConfigured()) {
     try {
@@ -32,7 +39,7 @@ export default async function HomePage() {
       const newQuery = curated.newArrivalsIds.length > 0 ? { include: curated.newArrivalsIds, perPage: curated.newArrivalsIds.length } : { perPage: 6, orderby: "date" as const, order: "desc" as const };
       const bestQuery = curated.bestsellersIds.length > 0 ? { include: curated.bestsellersIds, perPage: curated.bestsellersIds.length } : { perPage: 6, orderby: "popularity" as const, order: "desc" as const };
       const spineQuery = curated.spineIds.length > 0 ? { include: curated.spineIds, perPage: curated.spineIds.length } : undefined;
-      const pickQuery = curated.featuredPickId ? { include: [curated.featuredPickId], perPage: 1 } : undefined;
+      const categoryRowsQuery = { include: allCategoryRowIds, perPage: allCategoryRowIds.length };
 
       const results = await Promise.all([
         getProducts(heroQuery),
@@ -40,7 +47,7 @@ export default async function HomePage() {
         getProducts(bestQuery),
         getCategories(),
         spineQuery ? getProducts(spineQuery) : Promise.resolve([]),
-        pickQuery ? getProducts(pickQuery) : Promise.resolve([]),
+        getProducts(categoryRowsQuery),
       ]);
 
       featured = results[0];
@@ -48,7 +55,7 @@ export default async function HomePage() {
       bestsellers = results[2];
       categories = results[3];
       const fetchedSpine = results[4];
-      const fetchedPick = results[5];
+      fetchedCategoryRows = results[5];
 
       if (curated.heroIds.length > 0) {
         featured = sortByIdList(featured, curated.heroIds);
@@ -72,10 +79,6 @@ export default async function HomePage() {
         spineProducts = featured;
       }
 
-      if (fetchedPick && fetchedPick.length > 0) {
-        customPick = fetchedPick[0];
-      }
-
       // Cover thumbnails for the topic cards
       const top = categories.slice(0, 8);
       const covers = await Promise.all(
@@ -91,9 +94,23 @@ export default async function HomePage() {
     }
   }
 
+  // Build the 4 category rows with real or fallback data
+  const productsMap = new Map<number, Product>();
+  (categoryRowsFallbackData as unknown as Product[]).forEach((p) => {
+    productsMap.set(p.id, p);
+  });
+  fetchedCategoryRows.forEach((p) => {
+    productsMap.set(p.id, p);
+  });
+
+  const categoryRows: CategoryRowItem[] = CATEGORY_ROWS_CONFIG.map((cfg) => ({
+    title: cfg.title,
+    slug: cfg.slug,
+    viewMoreHref: cfg.viewMoreHref,
+    products: cfg.ids.map((id) => productsMap.get(id)).filter(Boolean) as Product[],
+  }));
+
   const storeReady = newArrivals.length > 0 || bestsellers.length > 0;
-  // Featured pick: override with explicit selection or fall back to automatic pick
-  const pick = customPick ?? featured[1] ?? bestsellers[0] ?? featured[0];
 
   return (
     <>
@@ -108,52 +125,46 @@ export default async function HomePage() {
       {/* 2 — Quick browse by topic */}
       <TopicGrid categories={categories} coversByCategory={coversByCategory} />
 
-      {/* 3 — Shelves with custom title & ID support */}
+      {/* 3 — New Arrivals Shelf */}
       {storeReady ? (
-        <>
-          {newArrivals.length > 0 && (
-            <Bookshelf
-              title={curated.newArrivalsTitle || "New Arrivals"}
-              href="/products?orderby=date"
-              products={newArrivals}
-            />
-          )}
-          {bestsellers.length > 0 && (
-            <Bookshelf
-              title={curated.bestsellersTitle || "Bestsellers"}
-              href="/products?orderby=popularity"
-              products={bestsellers}
-            />
-          )}
-        </>
+        newArrivals.length > 0 && (
+          <Bookshelf
+            title={curated.newArrivalsTitle || "New Arrivals"}
+            href="/products?orderby=date"
+            products={newArrivals}
+          />
+        )
       ) : (
-        <>
-          <BookshelfSkeleton title={curated.newArrivalsTitle || "New Arrivals"} />
-          <BookshelfSkeleton title={curated.bestsellersTitle || "Bestsellers"} />
-        </>
+        <BookshelfSkeleton title={curated.newArrivalsTitle || "New Arrivals"} />
       )}
 
-      {/* 4 — Editor's Choice Featured pick with customizable titles */}
-      {pick && (
-        <FeaturedPick
-          product={pick}
-          badge={curated.featuredBadge}
-          title={curated.featuredTitle}
-          subtitle={curated.featuredSubtitle}
-        />
+      {/* 4 — 4 Categorical Rows: The Bible Speaks Today, Christian Living, Ministry, Theology */}
+      <CategoryBookRows rows={categoryRows} />
+
+      {/* 5 — Bestsellers Shelf (placed below Theology category) */}
+      {storeReady ? (
+        bestsellers.length > 0 && (
+          <Bookshelf
+            title={curated.bestsellersTitle || "Bestsellers"}
+            href="/products?orderby=popularity"
+            products={bestsellers}
+          />
+        )
+      ) : (
+        <BookshelfSkeleton title={curated.bestsellersTitle || "Bestsellers"} />
       )}
 
-      {/* 6 — Explore the shelf (spine slider) with customizable titles & book selection */}
+      {/* 6 — Explore Children Books (spine slider) with customizable titles & book selection */}
       {spineProducts.length > 0 && (
         <SpineSlider
           products={spineProducts}
-          badge={curated.spineBadge}
-          title={curated.spineTitle}
+          badge={curated.spineBadge || "Browse the shelf"}
+          title={curated.spineTitle || "Explore Children Books"}
           subtitle={curated.spineSubtitle}
         />
       )}
 
-      {/* 7 — Social proof */}
+      {/* 6 — Social proof */}
       <Testimonials />
     </>
   );

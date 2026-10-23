@@ -1,0 +1,572 @@
+[
+  {
+    "id": 36313,
+    "name": "The Message of Acts",
+    "slug": "the-message-of-acts",
+    "price": "649",
+    "regular_price": "2149",
+    "sale_price": "649",
+    "on_sale": true,
+    "stock_status": "instock",
+    "average_rating": "4.50",
+    "rating_count": 2,
+    "image": "https://forthetruth.in/wp-content/uploads/2023/06/The-Message-of-ACTS.png",
+    "categories": [
+      {
+        "id": 2178,
+        "name": "Bible Commentary",
+        "slug": "bible-commentary"
+      }
+    ]
+  },
+  {
+    "id": 36309,
+    "name": "The Message of John",
+    "slug": "the-message-of-john",
+    "price": "649",
+    "regular_price": "1899",
+    "sale_price": "649",
+    "on_sale": true,
+    "stock_status": "instock",
+    "average_rating": "4.00",
+    "rating_count": 1,
+    "image": "https://forthetruth.in/wp-content/uploads/2023/06/The-Message-of-John.png",
+    "categories": [
+      {
+        "id": 2178,
+        "name": "Bible Commentary",
+        "slug": "bible-commentary"
+      }
+    ]
+  },
+  {
+    "id": 36306,
+    "name": "The Message of Luke",
+    "slug": "the-message-of-luke",
+    "price": "549",
+    "regular_price": "1399",
+    "sale_price": "549",
+    "on_sale": true,
+    "stock_status": "instock",
+    "average_rating": "4.75",
+    "rating_count": 4,
+    "image": "https://forthetruth.in/wp-content/uploads/2023/06/The-Message-of-Luke.png",
+    "categories": [
+      {
+        "id": 2178,
+        "name": "Bible Commentary",
+        "slug": "bible-commentary"
+      }
+    ]
+  },
+  {
+    "id": 36302,
+    "name": "The Message of Mark",
+    "slug": "the-message-of-mark",
+    "price": "599",
+    "regular_price": "1499",
+    "sale_price": "599",
+    "on_sale": true,
+    "stock_status": "instock",
+    "average_rating": "4.00",
+    "rating_count": 1,
+    "image": "https://forthetruth.in/wp-content/uploads/2023/06/The-Message-of-Mark.png",
+    "categories": [
+      {
+        "id": 2178,
+        "name": "Bible Commentary",
+        "slug": "bible-commentary"
+      }
+    ]
+  },
+  {
+    "id": 36294,
+    "name": "The Message of Matthew: The Kingdom of Heaven",
+    "slug": "the-message-of-matthew",
+    "price": "649",
+    "regular_price": "1899",
+    "sale_price": "649",
+    "on_sale": true,
+    "stock_status": "instock",
+    "average_rating": "4.00",
+    "rating_count": 1,
+    "image": "https://forthetruth.in/wp-content/uploads/2023/06/The-Message-of-Matthew.png",
+    "categories": [
+      {
+        "id": 2178,
+        "name": "Bible Commentary",
+        "slug": "bible-commentary"
+      }
+    ]
+  },
+  {
+    "id": 36285,
+    "name": "The Message of the Sermon on the Mount",
+    "slug": "the-message-of-the-sermon-on-the-mount",
+    "price": "649",
+    "regular_price": "1499",
+    "sale_price": "649",
+    "on_sale": true,
+    "stock_status": "instock",
+    "average_rating": "4.75",
+    "rating_count": 4,
+    "image": "https://forthetruth.in/wp-content/uploads/2023/06/The-Message-of-the-Sermon-on-the-mount.png",
+    "categories": [
+      {
+        "id": 2178,
+        "name": "Bible Commentary",
+        "slug": "bible-commentary"
+      }
+    ]
+  },
+  {
+    "id": 38336,
+    "name": "Sex & Money",
+    "slug": "sex-money",
+    "price": "649",
+    "regular_price": "2499",
+    "sale_price": "649",
+    "on_sale": true,
+    "stock_status": "instock",
+    "average_rating": "3.00",
+    "rating_count": 1,
+    "image": "https://forthetruth.in/wp-content/uploads/2022/04/sex-and-money.jpg",
+    "categories": [
+      {
+        "id": 112,
+        "name": "Christian Living",
+        "slug": "christian-living"
+      }
+    ]
+  },
+  {
+    "id": 31266,
+    "name": "The Apostles' Creed",
+    "slug": "the-apostles-creed",
+    "price": "199",
+    "regular_price": "699",
+    "sale_price": "199",
+    "on_sale": true,
+    "stock_status": "instock",
+    "average_rating": "5.00",
+    "rating_count": 5,
+    "image": "https://forthetruth.in/wp-content/uploads/2023/01/gac_original.fd0b19e4ed685a4aec8cd2516c9fc191.jpg",
+    "categories": [
+      {
+        "id": 112,
+        "name": "Christian Living",
+        "slug": "christian-living"
+      }
+    ]
+  },
+  {
+    "id": 46237,
+    "name": "Love Your Church",
+    "slug": "love-your-church",
+    "price": "499",
+    "regular_price": "899",
+    "sale_price": "499",
+    "on_sale": true,
+    "stock_status": "instock",
+    "average_rating": "4.67",
+    "rating_count": 6,
+    "image": "https://forthetruth.in/wp-content/uploads/2023/12/w600.9ccc66e7.544f3167.jpg",
+    "categories": [
+      {
+        "id": 112,
+        "name": "Christian Living",
+        "slug": "christian-living"
+      }
+    ]
+  },
+  {
+    "id": 38662,
+    "name": "He Gives More Grace",
+    "slug": "he-gives-more-grace",
+    "price": "549",
+    "regular_price": "1499",
+    "sale_price": "549",
+    "on_sale": true,
+    "stock_status": "instock",
+    "average_rating": "5.00",
+    "rating_count": 7,
+    "image": "https://forthetruth.in/wp-content/uploads/2023/08/He-Gives-More-Grace-1.jpg",
+    "categories": [
+      {
+        "id": 1698,
+        "name": "Devotional",
+        "slug": "devotional"
+      }
+    ]
+  },
+  {
+    "id": 4793,
+    "name": "Health, Wealth &amp; Happiness",
+    "slug": "health-wealth-happiness",
+    "price": "1949",
+    "regular_price": "1949",
+    "sale_price": "",
+    "on_sale": false,
+    "stock_status": "outofstock",
+    "average_rating": "5.00",
+    "rating_count": 1,
+    "image": "https://forthetruth.in/wp-content/uploads/2020/09/Health-Wealth-and-Happiness.jpg",
+    "categories": [
+      {
+        "id": 112,
+        "name": "Christian Living",
+        "slug": "christian-living"
+      }
+    ]
+  },
+  {
+    "id": 53424,
+    "name": "Am I Really a Christian ?",
+    "slug": "am-i-really-a-christian",
+    "price": "499",
+    "regular_price": "1799",
+    "sale_price": "499",
+    "on_sale": true,
+    "stock_status": "outofstock",
+    "average_rating": "0.00",
+    "rating_count": 0,
+    "image": "https://forthetruth.in/wp-content/uploads/2025/06/Am-I-Really-a-Christian.webp",
+    "categories": [
+      {
+        "id": 112,
+        "name": "Christian Living",
+        "slug": "christian-living"
+      },
+      {
+        "id": 2224,
+        "name": "Church Ministry",
+        "slug": "church-ministry"
+      }
+    ]
+  },
+  {
+    "id": 44354,
+    "name": "Gospel Centered Preaching",
+    "slug": "gospel-centered-preaching",
+    "price": "249",
+    "regular_price": "699",
+    "sale_price": "249",
+    "on_sale": true,
+    "stock_status": "instock",
+    "average_rating": "4.33",
+    "rating_count": 3,
+    "image": "https://forthetruth.in/wp-content/uploads/2023/09/Gospel-centred-preaching.jpg",
+    "categories": [
+      {
+        "id": 1713,
+        "name": "Pastoral",
+        "slug": "pastoral"
+      },
+      {
+        "id": 1727,
+        "name": "Ministry",
+        "slug": "ministry"
+      }
+    ]
+  },
+  {
+    "id": 14694,
+    "name": "Understanding Church Leadership_Damage",
+    "slug": "understanding-church-leadership",
+    "price": "149",
+    "regular_price": "399",
+    "sale_price": "149",
+    "on_sale": true,
+    "stock_status": "instock",
+    "average_rating": "4.67",
+    "rating_count": 3,
+    "image": "https://forthetruth.in/wp-content/uploads/2022/05/Understanding-Church-Leadership.jpg",
+    "categories": [
+      {
+        "id": 1727,
+        "name": "Ministry",
+        "slug": "ministry"
+      },
+      {
+        "id": 1713,
+        "name": "Pastoral",
+        "slug": "pastoral"
+      },
+      {
+        "id": 2271,
+        "name": "Understanding Church Basics",
+        "slug": "understanding-church-basics"
+      }
+    ]
+  },
+  {
+    "id": 22394,
+    "name": "What Is the Mission of the Church?",
+    "slug": "what-is-the-mission-of-the-church",
+    "price": "299",
+    "regular_price": "699",
+    "sale_price": "299",
+    "on_sale": true,
+    "stock_status": "instock",
+    "average_rating": "5.00",
+    "rating_count": 4,
+    "image": "https://forthetruth.in/wp-content/uploads/2022/07/What-Is-the-Mission-of-the-Church-1.jpg",
+    "categories": [
+      {
+        "id": 1727,
+        "name": "Ministry",
+        "slug": "ministry"
+      },
+      {
+        "id": 1705,
+        "name": "Missions",
+        "slug": "missions"
+      }
+    ]
+  },
+  {
+    "id": 14678,
+    "name": "Understanding Church Discipline_Damage",
+    "slug": "understanding-church-discipline",
+    "price": "149",
+    "regular_price": "399",
+    "sale_price": "149",
+    "on_sale": true,
+    "stock_status": "instock",
+    "average_rating": "4.50",
+    "rating_count": 2,
+    "image": "https://forthetruth.in/wp-content/uploads/2021/10/Understanding_Discipline_5c4a2dc2-08de-4ec0-8708-affd0863bb6e_large.jpg",
+    "categories": [
+      {
+        "id": 1696,
+        "name": "Church",
+        "slug": "church"
+      },
+      {
+        "id": 1727,
+        "name": "Ministry",
+        "slug": "ministry"
+      },
+      {
+        "id": 2271,
+        "name": "Understanding Church Basics",
+        "slug": "understanding-church-basics"
+      }
+    ]
+  },
+  {
+    "id": 14669,
+    "name": "Understanding the Great Commission_Damage",
+    "slug": "understanding-the-great-commission",
+    "price": "149",
+    "regular_price": "399",
+    "sale_price": "149",
+    "on_sale": true,
+    "stock_status": "instock",
+    "average_rating": "4.86",
+    "rating_count": 7,
+    "image": "https://forthetruth.in/wp-content/uploads/2021/10/417Mcq8dMWL._SX355_BO1204203200_.jpg",
+    "categories": [
+      {
+        "id": 1705,
+        "name": "Missions",
+        "slug": "missions"
+      },
+      {
+        "id": 1727,
+        "name": "Ministry",
+        "slug": "ministry"
+      },
+      {
+        "id": 1895,
+        "name": "Store Clearance",
+        "slug": "store-clearance"
+      },
+      {
+        "id": 2271,
+        "name": "Understanding Church Basics",
+        "slug": "understanding-church-basics"
+      }
+    ]
+  },
+  {
+    "id": 4958,
+    "name": "Character Matters",
+    "slug": "character-matters",
+    "price": "399",
+    "regular_price": "399",
+    "sale_price": "",
+    "on_sale": false,
+    "stock_status": "outofstock",
+    "average_rating": "5.00",
+    "rating_count": 9,
+    "image": "https://forthetruth.in/wp-content/uploads/2022/05/Character-Matters-1-1.jpg",
+    "categories": [
+      {
+        "id": 1727,
+        "name": "Ministry",
+        "slug": "ministry"
+      },
+      {
+        "id": 1713,
+        "name": "Pastoral",
+        "slug": "pastoral"
+      }
+    ]
+  },
+  {
+    "id": 31091,
+    "name": "The Serpent and the Serpent Slayer",
+    "slug": "the-serpent-and-the-serpent-slayer",
+    "price": "299",
+    "regular_price": "799",
+    "sale_price": "299",
+    "on_sale": true,
+    "stock_status": "instock",
+    "average_rating": "0.00",
+    "rating_count": 0,
+    "image": "https://forthetruth.in/wp-content/uploads/2023/01/The-Serpent-and-the-Serpent-Slayer.jpg",
+    "categories": [
+      {
+        "id": 1718,
+        "name": "Biblical Theology",
+        "slug": "biblical-theology"
+      },
+      {
+        "id": 1717,
+        "name": "Theology",
+        "slug": "theology"
+      }
+    ]
+  },
+  {
+    "id": 31117,
+    "name": "Resurrection Hope and the Death of Death",
+    "slug": "resurrection-hope-and-the-death-of-death",
+    "price": "299",
+    "regular_price": "799",
+    "sale_price": "299",
+    "on_sale": true,
+    "stock_status": "instock",
+    "average_rating": "0.00",
+    "rating_count": 0,
+    "image": "https://forthetruth.in/wp-content/uploads/2023/01/Resurrection-Hope-and-the-Death-of-Death.jpg",
+    "categories": [
+      {
+        "id": 1718,
+        "name": "Biblical Theology",
+        "slug": "biblical-theology"
+      },
+      {
+        "id": 2206,
+        "name": "Easter Books",
+        "slug": "easter-books"
+      },
+      {
+        "id": 1717,
+        "name": "Theology",
+        "slug": "theology"
+      }
+    ]
+  },
+  {
+    "id": 31424,
+    "name": "Glorification: An Introduction",
+    "slug": "glorification-an-introduction",
+    "price": "299",
+    "regular_price": "799",
+    "sale_price": "299",
+    "on_sale": true,
+    "stock_status": "instock",
+    "average_rating": "5.00",
+    "rating_count": 2,
+    "image": "https://forthetruth.in/wp-content/uploads/2023/01/Glorification-An-Introduction.jpg",
+    "categories": [
+      {
+        "id": 1720,
+        "name": "Systematic Theology",
+        "slug": "systematic-theology"
+      },
+      {
+        "id": 1717,
+        "name": "Theology",
+        "slug": "theology"
+      }
+    ]
+  },
+  {
+    "id": 52810,
+    "name": "Sanctification as Set Apart and Growing in Christ",
+    "slug": "sanctification-as-set-apart-and-growing-in-christ",
+    "price": "349",
+    "regular_price": "799",
+    "sale_price": "349",
+    "on_sale": true,
+    "stock_status": "instock",
+    "average_rating": "0.00",
+    "rating_count": 0,
+    "image": "https://forthetruth.in/wp-content/uploads/2025/04/Cover-Sanctification-as-Set-Apart-and-Growing-in-Christ-front-.jpg",
+    "categories": [
+      {
+        "id": 1717,
+        "name": "Theology",
+        "slug": "theology"
+      },
+      {
+        "id": 1718,
+        "name": "Biblical Theology",
+        "slug": "biblical-theology"
+      }
+    ]
+  },
+  {
+    "id": 31100,
+    "name": "The City of God and the Goal of Creation",
+    "slug": "the-city-of-god-and-the-goal-of-creation",
+    "price": "299",
+    "regular_price": "799",
+    "sale_price": "299",
+    "on_sale": true,
+    "stock_status": "instock",
+    "average_rating": "0.00",
+    "rating_count": 0,
+    "image": "https://forthetruth.in/wp-content/uploads/2023/01/The-City-of-God-and-the-Goal-of-Creation.jpg",
+    "categories": [
+      {
+        "id": 1718,
+        "name": "Biblical Theology",
+        "slug": "biblical-theology"
+      },
+      {
+        "id": 1717,
+        "name": "Theology",
+        "slug": "theology"
+      }
+    ]
+  },
+  {
+    "id": 31155,
+    "name": "Divine Blessing and the Fullness of Life in the Presence of God",
+    "slug": "divine-blessing-and-the-fullness-of-life-in-the-presence-of-god",
+    "price": "299",
+    "regular_price": "799",
+    "sale_price": "299",
+    "on_sale": true,
+    "stock_status": "instock",
+    "average_rating": "0.00",
+    "rating_count": 0,
+    "image": "https://forthetruth.in/wp-content/uploads/2023/01/Divine-Blessing-and-the-Fullness-of-Life-in-the-Presence-of-God.jpg",
+    "categories": [
+      {
+        "id": 1718,
+        "name": "Biblical Theology",
+        "slug": "biblical-theology"
+      },
+      {
+        "id": 1717,
+        "name": "Theology",
+        "slug": "theology"
+      }
+    ]
+  }
+]

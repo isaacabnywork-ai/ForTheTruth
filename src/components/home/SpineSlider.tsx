@@ -20,7 +20,7 @@ interface SpineSliderProps {
 export function SpineSlider({
   products,
   badge = "Browse the shelf",
-  title = "Explore this month's essentials",
+  title = "Explore Children Books",
   subtitle = "Tap any spine to pull the book off the shelf and see its cover, author, and price — just like browsing in store.",
 }: SpineSliderProps) {
   const [active, setActive] = useState(Math.floor(products.length / 2));

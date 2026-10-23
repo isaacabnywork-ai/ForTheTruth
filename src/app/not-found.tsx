@@ -1,8 +1,4 @@
 import Link from "next/link";
-import { motion } from "framer-motion";
-
-// Note: not-found.tsx is a server component, so we can't use framer-motion directly here.
-// We'll use CSS animations instead via Tailwind for the best effect.
 export default function NotFound() {
   return (
     <div className="flex min-h-[85vh] items-center justify-center bg-offwhite px-4">
