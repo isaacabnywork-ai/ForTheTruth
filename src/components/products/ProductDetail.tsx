@@ -83,11 +83,11 @@ export function ProductDetail({ product, reviews = [] }: ProductDetailProps) {
 
       {/* Main Product Grid */}
       <div className="grid gap-8 md:grid-cols-12 lg:gap-12 items-start">
-        {/* Left: Image Gallery (Compact / Medium Cover Size) */}
-        <div className="flex flex-col gap-4 md:col-span-5 lg:col-span-5 w-full max-w-[350px] mx-auto md:mx-0">
+        {/* Left: Image Gallery (Clean presentation with NO surrounding box) */}
+        <div className="flex flex-col gap-4 md:col-span-5 lg:col-span-5 w-full max-w-[340px] mx-auto md:mx-0">
           <div 
             ref={scrollContainerRef}
-            className="relative flex w-full overflow-x-auto snap-x snap-mandatory scrollbar-hide rounded-2xl border border-sand bg-cream/50 shadow-book-lg"
+            className="relative flex w-full overflow-x-auto snap-x snap-mandatory scrollbar-hide items-center justify-center py-2"
             onScroll={(e) => {
               const scrollLeft = e.currentTarget.scrollLeft;
               const width = e.currentTarget.clientWidth;
@@ -101,7 +101,7 @@ export function ProductDetail({ product, reviews = [] }: ProductDetailProps) {
             <button
               onClick={() => window.history.back()}
               aria-label="Go back"
-              className="absolute left-3.5 top-3.5 z-20 flex h-9 w-9 items-center justify-center rounded-full bg-white/90 text-charcoal shadow-md backdrop-blur-md transition-transform active:scale-95 lg:hidden"
+              className="absolute left-2 top-2 z-20 flex h-9 w-9 items-center justify-center rounded-full bg-white/90 text-charcoal shadow-md backdrop-blur-md transition-transform active:scale-95 lg:hidden"
             >
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" aria-hidden="true">
                 <path d="M15 18l-6-6 6-6" strokeLinecap="round" strokeLinejoin="round" />
@@ -111,30 +111,26 @@ export function ProductDetail({ product, reviews = [] }: ProductDetailProps) {
             {images.map((img, idx) => (
               <div 
                 key={img.id || idx}
-                className="relative min-w-full min-h-[360px] sm:min-h-[420px] md:min-h-[460px] p-4 sm:p-6 flex items-center justify-center snap-center snap-always bg-gradient-to-br from-[#fcfbf8] to-[#f4ede2]/90 transition-transform duration-300 hover:scale-[1.01]"
+                className="relative min-w-full flex items-center justify-center snap-center snap-always transition-transform duration-300 hover:scale-[1.01]"
               >
                 {img.src ? (
-                  <div className="relative h-full w-full min-h-[320px] sm:min-h-[380px] flex items-center justify-center">
-                    <Image
+                  <div className="relative flex items-center justify-center">
+                    <img
                       src={img.src}
                       alt={img.alt || product.name}
-                      fill
-                      priority={idx === 0}
-                      fetchPriority={idx === 0 ? "high" : "auto"}
-                      sizes="(max-width: 768px) 100vw, 350px"
-                      className="object-contain drop-shadow-[0_12px_28px_rgba(40,30,15,0.22)]"
+                      className="max-h-[440px] sm:max-h-[480px] w-auto max-w-full rounded-r-md rounded-l-[2px] shadow-book-lg drop-shadow-[0_16px_36px_rgba(40,30,15,0.22)] object-contain select-none"
                     />
+                    {/* Book spine crease */}
+                    <div className="absolute inset-y-0 left-0 w-[6px] bg-gradient-to-r from-black/25 to-transparent pointer-events-none rounded-l-[2px]" />
                   </div>
                 ) : (
-                  <div className="flex h-full items-center justify-center bg-gold-gradient p-8 text-center">
+                  <div className="flex h-[360px] w-[240px] items-center justify-center bg-gold-gradient p-8 text-center rounded-r-md rounded-l-[2px] shadow-book-lg">
                     <span className="font-display text-2xl italic text-white">{product.name}</span>
                   </div>
                 )}
-                {/* Spine shadow line */}
-                <div className="absolute inset-y-0 left-0 w-[8px] bg-gradient-to-r from-black/20 to-transparent pointer-events-none" />
                 
                 {discount > 0 && idx === 0 && (
-                  <span className="absolute right-3.5 top-3.5 z-20 rounded-full bg-gold-gradient px-3 py-1 text-xs font-bold text-white shadow-gold lg:left-4 lg:right-auto lg:top-4">
+                  <span className="absolute left-2 top-2 z-20 rounded-full bg-gold-gradient px-3 py-1 text-xs font-bold text-white shadow-gold">
                     −{discount}%
                   </span>
                 )}

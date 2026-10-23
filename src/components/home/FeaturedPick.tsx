@@ -1,6 +1,5 @@
 "use client";
 
-import Image from "next/image";
 import Link from "next/link";
 import { RatingStars } from "@/components/products/RatingStars";
 import { useCartStore } from "@/store/cartStore";
@@ -24,7 +23,6 @@ export function FeaturedPick({
   subtitle = "One title we think belongs on every shelf this month — and why.",
 }: FeaturedPickProps) {
   const [added, setAdded] = useState(false);
-  const [aspect, setAspect] = useState<number | null>(null);
   const addToCart = useCartStore((s) => s.addToCart);
   const toggleWishlist = useWishlistStore((s) => s.toggleWishlist);
   const wishlisted = useWishlistStore((s) => s.productIds.includes(product.id));
@@ -63,38 +61,23 @@ export function FeaturedPick({
           <div className="relative flex justify-center pb-[18px]">
             <Link
               href={`/products/${product.slug}`}
-              style={
-                aspect
-                  ? {
-                      aspectRatio: `${aspect}`,
-                      width: `calc(350px * ${aspect})`,
-                    }
-                  : undefined
-              }
-              className="group relative block h-[310px] sm:h-[350px] w-[200px] sm:w-[220px] max-w-[320px] origin-bottom overflow-hidden rounded-lg shadow-book-lg transition-all duration-500 hover:-translate-y-3 hover:rotate-[-1.5deg]"
+              className="group relative block h-[310px] sm:h-[350px] w-auto max-w-[320px] origin-bottom overflow-hidden rounded-lg shadow-book-lg transition-all duration-500 hover:-translate-y-3 hover:rotate-[-1.5deg]"
             >
               {product.images[0] ? (
-                <Image
+                <img
                   src={product.images[0].src}
                   alt={product.images[0].alt || product.name}
-                  fill
-                  sizes="320px"
-                  onLoad={(e) => {
-                    const el = e.currentTarget;
-                    if (el.naturalWidth && el.naturalHeight) {
-                      setAspect(el.naturalWidth / el.naturalHeight);
-                    }
-                  }}
-                  className="object-fill"
+                  loading="lazy"
+                  className="h-[310px] sm:h-[350px] w-auto max-w-[320px] block select-none object-contain"
                 />
               ) : (
-                <div className="flex h-full items-center justify-center bg-gold-gradient p-6 text-center">
+                <div className="flex h-[310px] sm:h-[350px] w-[220px] items-center justify-center bg-gold-gradient p-6 text-center">
                   <span className="font-display text-xl italic text-white">
                     {product.name}
                   </span>
                 </div>
               )}
-              <div className="absolute inset-y-0 left-0 w-[6px] bg-gradient-to-r from-black/30 to-transparent" />
+              <div className="absolute inset-y-0 left-0 w-[6px] bg-gradient-to-r from-black/30 to-transparent pointer-events-none" />
             </Link>
             <div
               aria-hidden="true"

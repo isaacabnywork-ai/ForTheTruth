@@ -1,6 +1,5 @@
 "use client";
 
-import Image from "next/image";
 import Link from "next/link";
 import { useState } from "react";
 import { formatPrice } from "@/utils/currency";
@@ -132,7 +131,6 @@ function ShelfBook({
   isAdded: boolean;
   onAdd: (e: React.MouseEvent, p: Product) => void;
 }) {
-  const [aspect, setAspect] = useState<number | null>(null);
   const imageSrc =
     product.images?.[0]?.src ||
     (product as unknown as { image?: string }).image;
@@ -143,46 +141,31 @@ function ShelfBook({
   return (
     <Link
       href={`/products/${product.slug}`}
-      style={
-        aspect
-          ? {
-              aspectRatio: `${aspect}`,
-              width: `calc(14rem * ${aspect})`,
-            }
-          : undefined
-      }
-      className="group relative block h-44 sm:h-52 md:h-56 w-[118px] sm:w-[140px] md:w-[152px] shrink-0 origin-bottom overflow-hidden rounded-r-md rounded-l-[3px] shadow-book transition-all duration-500 ease-out hover:z-10 sm:hover:-translate-y-4 sm:hover:rotate-[-1.5deg] hover:shadow-book-lg"
+      className="group relative block h-44 sm:h-52 md:h-56 w-auto shrink-0 origin-bottom overflow-hidden rounded-r-md rounded-l-[3px] shadow-book transition-all duration-500 ease-out hover:z-10 sm:hover:-translate-y-4 sm:hover:rotate-[-1.5deg] hover:shadow-book-lg"
     >
       {imageSrc ? (
-        <Image
+        <img
           src={imageSrc}
           alt={imageAlt || title}
-          fill
-          sizes="240px"
-          onLoad={(e) => {
-            const el = e.currentTarget;
-            if (el.naturalWidth && el.naturalHeight) {
-              setAspect(el.naturalWidth / el.naturalHeight);
-            }
-          }}
-          className="object-fill"
+          loading="lazy"
+          className="h-44 sm:h-52 md:h-56 max-w-[145px] sm:max-w-[170px] md:max-w-[190px] w-auto block select-none object-contain"
         />
       ) : (
-        <div className="flex h-full items-center justify-center bg-gold-gradient p-3 text-center">
+        <div className="flex h-44 sm:h-52 md:h-56 w-[140px] items-center justify-center bg-gold-gradient p-3 text-center">
           <span className="font-display text-sm italic leading-snug text-white [text-shadow:0_1px_2px_rgba(120,85,40,0.4)]">
             {title}
           </span>
         </div>
       )}
       {/* spine crease */}
-      <div className="absolute inset-y-0 left-0 w-[5px] bg-gradient-to-r from-black/30 to-transparent" />
+      <div className="absolute inset-y-0 left-0 w-[5px] bg-gradient-to-r from-black/30 to-transparent pointer-events-none" />
 
       {/* Touch-Friendly Caption & Cart: Always visible on mobile/tablet screens (< lg), slide-on-hover on desktop (lg+) */}
-      <div className="absolute inset-x-0 bottom-0 translate-y-0 opacity-100 lg:translate-y-2 lg:opacity-0 bg-gradient-to-t from-charcoal/95 via-charcoal/75 to-transparent px-2 sm:px-2.5 pb-2 pt-8 transition-all duration-300 group-hover:translate-y-0 group-hover:opacity-100">
+      <div className="absolute inset-x-0 bottom-0 translate-y-0 opacity-100 lg:translate-y-2 lg:opacity-0 bg-gradient-to-t from-charcoal/95 via-charcoal/75 to-transparent px-2 sm:px-2.5 pb-2 pt-8 transition-all duration-300 group-hover:translate-y-0 group-hover:opacity-100 pointer-events-none">
         <p className="line-clamp-1 sm:line-clamp-2 text-[10px] sm:text-[11px] font-semibold leading-tight text-white">
           {title}
         </p>
-        <div className="mt-1 flex items-center justify-between gap-1">
+        <div className="mt-1 flex items-center justify-between gap-1 pointer-events-auto">
           <p className="text-[10px] sm:text-[11px] font-bold text-gold-light truncate">
             {formatPrice(product.price)}
           </p>
