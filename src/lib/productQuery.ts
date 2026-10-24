@@ -39,7 +39,7 @@ export function parseProductQuery(
   const stockStatus =
     availability === "instock"
       ? ("instock" as const)
-      : availability === "preorder"
+      : availability === "preorder" || availability === "outofstock"
         ? ("outofstock" as const)
         : undefined;
 

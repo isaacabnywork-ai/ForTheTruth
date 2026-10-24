@@ -20,6 +20,7 @@ interface ProductDetailProps {
 
 export function ProductDetail({ product, reviews = [] }: ProductDetailProps) {
   const [selectedImg, setSelectedImg] = useState(0);
+  const [isZoomOpen, setIsZoomOpen] = useState(false);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const [qty, setQty] = useState(1);
   const [activeTab, setActiveTab] = useState<"description" | "details" | "reviews">("description");
@@ -51,6 +52,52 @@ export function ProductDetail({ product, reviews = [] }: ProductDetailProps) {
   const inStock = product.stock_status === "instock";
   const images = product.images.length > 0 ? product.images : [{ id: 0, src: "", alt: product.name }];
   const currentImage = images[selectedImg] || images[0];
+
+  const scrollToIndex = (idx: number) => {
+    if (idx < 0 || idx >= images.length) return;
+    setSelectedImg(idx);
+    const container = scrollContainerRef.current;
+    if (container) {
+      const targetChild = container.children[idx] as HTMLElement | undefined;
+      if (targetChild) {
+        targetChild.scrollIntoView({ behavior: "smooth", inline: "start", block: "nearest" });
+      } else {
+        container.scrollTo({
+          left: container.clientWidth * idx,
+          behavior: "smooth",
+        });
+      }
+    }
+  };
+
+  const handlePrev = (e?: React.MouseEvent) => {
+    e?.stopPropagation();
+    const newIdx = selectedImg > 0 ? selectedImg - 1 : images.length - 1;
+    scrollToIndex(newIdx);
+  };
+
+  const handleNext = (e?: React.MouseEvent) => {
+    e?.stopPropagation();
+    const newIdx = selectedImg < images.length - 1 ? selectedImg + 1 : 0;
+    scrollToIndex(newIdx);
+  };
+
+  // Keyboard navigation & body scroll lock when lightbox is open
+  useEffect(() => {
+    if (!isZoomOpen) return;
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setIsZoomOpen(false);
+      if (e.key === "ArrowLeft") handlePrev();
+      if (e.key === "ArrowRight") handleNext();
+    };
+    window.addEventListener("keydown", onKeyDown);
+    const originalOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      window.removeEventListener("keydown", onKeyDown);
+      document.body.style.overflow = originalOverflow;
+    };
+  }, [isZoomOpen, selectedImg, images.length]);
 
   const discount =
     product.on_sale && product.regular_price
@@ -100,80 +147,126 @@ export function ProductDetail({ product, reviews = [] }: ProductDetailProps) {
       {/* Main Product Grid */}
       <div className="grid gap-8 md:grid-cols-12 lg:gap-12 items-start">
         {/* Left: Image Gallery (Clean presentation with NO surrounding box) */}
-        <div className="flex flex-col gap-4 md:col-span-5 lg:col-span-5 w-full max-w-[340px] mx-auto md:mx-0">
-          <div 
-            ref={scrollContainerRef}
-            className="relative flex w-full overflow-x-auto snap-x snap-mandatory scrollbar-hide items-center justify-center py-2"
-            onScroll={(e) => {
-              const scrollLeft = e.currentTarget.scrollLeft;
-              const width = e.currentTarget.clientWidth;
-              const newIndex = Math.round(scrollLeft / width);
-              if (newIndex !== selectedImg) {
-                setSelectedImg(newIndex);
-              }
-            }}
-          >
+        <div className="flex flex-col gap-4 md:col-span-5 lg:col-span-5 w-full max-w-[420px] mx-auto md:mx-0">
+          <div className="relative w-full group">
             {/* Native App-Style Mobile/Tablet Back Button */}
             <button
               onClick={() => window.history.back()}
               aria-label="Go back"
-              className="absolute left-2 top-2 z-20 flex h-9 w-9 items-center justify-center rounded-full bg-white/90 text-charcoal shadow-md backdrop-blur-md transition-transform active:scale-95 lg:hidden"
+              className="absolute left-2 top-2 z-30 flex h-9 w-9 items-center justify-center rounded-full bg-white/90 text-charcoal shadow-md backdrop-blur-md transition-transform active:scale-95 lg:hidden border border-sand/50"
             >
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" aria-hidden="true">
                 <path d="M15 18l-6-6 6-6" strokeLinecap="round" strokeLinejoin="round" />
               </svg>
             </button>
 
-            {images.map((img, idx) => (
-              <div 
-                key={img.id || idx}
-                className="relative min-w-full flex items-center justify-center snap-center snap-always transition-transform duration-300 hover:scale-[1.01]"
+            {/* Discount Badge */}
+            {discount > 0 && (
+              <span className="absolute left-2 top-2 z-20 hidden lg:inline-flex items-center rounded-full bg-gold-gradient px-3 py-1 text-xs font-bold text-white shadow-gold tracking-wide">
+                −{discount}%
+              </span>
+            )}
+
+            {/* Zoom / Lightbox Trigger Button */}
+            {currentImage.src && (
+              <button
+                type="button"
+                onClick={() => setIsZoomOpen(true)}
+                aria-label="Enlarge image"
+                title="Click to zoom"
+                className="absolute right-2 top-2 z-20 flex h-9 w-9 items-center justify-center rounded-full bg-white/90 text-charcoal shadow-sm backdrop-blur-md transition-all duration-200 hover:bg-white hover:scale-105 active:scale-95 border border-sand/60 opacity-0 group-hover:opacity-100 sm:opacity-75"
               >
-                {img.src ? (
-                  <div className="relative flex items-center justify-center">
-                    <img
-                      src={img.src}
-                      alt={img.alt || product.name}
-                      className="max-h-[440px] sm:max-h-[480px] w-auto max-w-full rounded-r-md rounded-l-[2px] shadow-book-lg drop-shadow-[0_16px_36px_rgba(40,30,15,0.22)] object-contain select-none"
-                    />
-                    {/* Book spine crease */}
-                    <div className="absolute inset-y-0 left-0 w-[6px] bg-gradient-to-r from-black/25 to-transparent pointer-events-none rounded-l-[2px]" />
-                  </div>
-                ) : (
-                  <div className="flex h-[360px] w-[240px] items-center justify-center bg-gold-gradient p-8 text-center rounded-r-md rounded-l-[2px] shadow-book-lg">
-                    <span className="font-display text-2xl italic text-white">{product.name}</span>
-                  </div>
-                )}
-                
-                {discount > 0 && idx === 0 && (
-                  <span className="absolute left-2 top-2 z-20 rounded-full bg-gold-gradient px-3 py-1 text-xs font-bold text-white shadow-gold">
-                    −{discount}%
-                  </span>
-                )}
-              </div>
-            ))}
+                <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <circle cx="11" cy="11" r="8" />
+                  <line x1="21" y1="21" x2="16.65" y2="16.65" />
+                  <line x1="11" y1="8" x2="11" y2="14" />
+                  <line x1="8" y1="11" x2="14" y2="11" />
+                </svg>
+              </button>
+            )}
+
+            {/* Desktop Prev / Next Carousel Controls */}
+            {images.length > 1 && (
+              <>
+                <button
+                  type="button"
+                  onClick={handlePrev}
+                  aria-label="Previous image"
+                  className="absolute -left-3 sm:-left-4 top-1/2 -translate-y-1/2 z-20 flex h-10 w-10 items-center justify-center rounded-full bg-white/95 text-charcoal shadow-lg border border-sand/70 backdrop-blur-md transition-all duration-200 hover:bg-white hover:scale-110 active:scale-95 opacity-0 group-hover:opacity-100 sm:opacity-90"
+                >
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M15 18l-6-6 6-6" />
+                  </svg>
+                </button>
+                <button
+                  type="button"
+                  onClick={handleNext}
+                  aria-label="Next image"
+                  className="absolute -right-3 sm:-right-4 top-1/2 -translate-y-1/2 z-20 flex h-10 w-10 items-center justify-center rounded-full bg-white/95 text-charcoal shadow-lg border border-sand/70 backdrop-blur-md transition-all duration-200 hover:bg-white hover:scale-110 active:scale-95 opacity-0 group-hover:opacity-100 sm:opacity-90"
+                >
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M9 18l6-6-6-6" />
+                  </svg>
+                </button>
+              </>
+            )}
+
+            {/* Carousel Container (with justify-start to prevent flex-center clipping) */}
+            <div 
+              ref={scrollContainerRef}
+              className="relative flex w-full overflow-x-auto snap-x snap-mandatory scrollbar-hide items-center justify-start py-2"
+              onScroll={(e) => {
+                const scrollLeft = e.currentTarget.scrollLeft;
+                const width = e.currentTarget.clientWidth;
+                if (width > 0) {
+                  const newIndex = Math.round(scrollLeft / width);
+                  if (newIndex !== selectedImg && newIndex >= 0 && newIndex < images.length) {
+                    setSelectedImg(newIndex);
+                  }
+                }
+              }}
+            >
+              {images.map((img, idx) => (
+                <div 
+                  key={img.id || idx}
+                  className="relative min-w-full w-full shrink-0 flex items-center justify-center snap-center snap-always cursor-zoom-in py-2"
+                  onClick={() => setIsZoomOpen(true)}
+                >
+                  {img.src ? (
+                    <div className="relative flex items-center justify-center">
+                      <img
+                        src={img.src}
+                        alt={img.alt || product.name}
+                        className="max-h-[440px] sm:max-h-[480px] w-auto max-w-full rounded-r-md rounded-l-[2px] drop-shadow-[0_14px_28px_rgba(30,20,10,0.16)] drop-shadow-[0_2px_8px_rgba(30,20,10,0.08)] object-contain select-none transition-transform duration-300 hover:scale-[1.01]"
+                        loading={idx === 0 ? "eager" : "lazy"}
+                      />
+                    </div>
+                  ) : (
+                    <div className="flex h-[360px] w-[240px] items-center justify-center bg-gold-gradient p-8 text-center rounded-r-md rounded-l-[2px] shadow-book-lg">
+                      <span className="font-display text-2xl italic text-white">{product.name}</span>
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
           </div>
 
           {/* Thumbnails */}
           {images.length > 1 && (
-            <div className="flex gap-2.5 overflow-x-auto pb-2 scrollbar-hide">
+            <div className="flex items-center gap-2.5 overflow-x-auto pb-1 pt-1 scrollbar-hide">
               {images.map((img, idx) => (
                 <button
                   key={img.id || idx}
-                  onClick={() => {
-                    setSelectedImg(idx);
-                    if (scrollContainerRef.current) {
-                      scrollContainerRef.current.scrollTo({
-                        left: scrollContainerRef.current.clientWidth * idx,
-                        behavior: "smooth"
-                      });
-                    }
-                  }}
-                  className={`relative h-20 w-14 shrink-0 overflow-hidden rounded-lg border-2 p-0.5 bg-cream/40 transition-all ${
-                    selectedImg === idx ? "border-gold shadow-md scale-105" : "border-sand/60 opacity-70 hover:opacity-100"
+                  type="button"
+                  onClick={() => scrollToIndex(idx)}
+                  aria-label={`View image ${idx + 1}`}
+                  className={`relative h-20 w-14 shrink-0 overflow-hidden rounded-lg border-2 p-0.5 bg-white/60 transition-all duration-200 ${
+                    selectedImg === idx
+                      ? "border-gold shadow-md ring-1 ring-gold/30 scale-105"
+                      : "border-sand/60 opacity-70 hover:opacity-100 hover:border-gold/50"
                   }`}
                 >
-                  <Image src={img.src} alt="" fill className="object-contain" />
+                  <img src={img.src} alt="" className="h-full w-full object-contain" />
                 </button>
               ))}
             </div>
@@ -595,6 +688,72 @@ export function ProductDetail({ product, reviews = [] }: ProductDetailProps) {
           {inStock ? "Add to Cart" : "Pre-order"}
         </button>
       </div>
+
+      {/* Lightbox / Zoom Modal */}
+      {isZoomOpen && currentImage.src && (
+        <div 
+          className="fixed inset-0 z-[200] flex items-center justify-center bg-charcoal/90 backdrop-blur-md p-4 sm:p-8 animate-fade-in"
+          onClick={() => setIsZoomOpen(false)}
+        >
+          {/* Close button */}
+          <button
+            type="button"
+            onClick={() => setIsZoomOpen(false)}
+            aria-label="Close zoom preview"
+            className="absolute top-4 right-4 z-[210] flex h-11 w-11 items-center justify-center rounded-full bg-white/15 text-white hover:bg-white/30 backdrop-blur-md transition-all active:scale-95"
+          >
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              <line x1="18" y1="6" x2="6" y2="18" />
+              <line x1="6" y1="6" x2="18" y2="18" />
+            </svg>
+          </button>
+
+          {/* Lightbox Prev / Next Controls */}
+          {images.length > 1 && (
+            <>
+              <button
+                type="button"
+                onClick={handlePrev}
+                aria-label="Previous image"
+                className="absolute left-4 top-1/2 -translate-y-1/2 z-[210] flex h-12 w-12 items-center justify-center rounded-full bg-white/15 text-white hover:bg-white/30 backdrop-blur-md transition-all active:scale-95"
+              >
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M15 18l-6-6 6-6" />
+                </svg>
+              </button>
+              <button
+                type="button"
+                onClick={handleNext}
+                aria-label="Next image"
+                className="absolute right-4 top-1/2 -translate-y-1/2 z-[210] flex h-12 w-12 items-center justify-center rounded-full bg-white/15 text-white hover:bg-white/30 backdrop-blur-md transition-all active:scale-95"
+              >
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M9 18l6-6-6-6" />
+                </svg>
+              </button>
+            </>
+          )}
+
+          {/* Active Image */}
+          <div 
+            className="relative flex items-center justify-center max-h-[88vh] max-w-[90vw]"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <img
+              src={currentImage.src}
+              alt={currentImage.alt || product.name}
+              className="max-h-[85vh] max-w-[88vw] object-contain drop-shadow-2xl rounded-lg select-none"
+            />
+          </div>
+
+          {/* Counter in Lightbox */}
+          {images.length > 1 && (
+            <div className="absolute bottom-5 left-1/2 -translate-x-1/2 rounded-full bg-white/15 backdrop-blur-md px-4 py-1 text-xs font-semibold text-white tracking-widest tabular-nums">
+              {selectedImg + 1} / {images.length}
+            </div>
+          )}
+        </div>
+      )}
     </div>
   );
 }

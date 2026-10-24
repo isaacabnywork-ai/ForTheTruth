@@ -1,10 +1,9 @@
 "use client";
 
-import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { NewsletterForm } from "./NewsletterForm";
-import { SITE_NAME, COLLECTIONS, CHURCH_LINKS } from "@/utils/constants";
+import { SITE_NAME, COLLECTIONS } from "@/utils/constants";
 
 const COMPANY_LINKS = [
   { label: "About Us", href: "/about" },
@@ -15,11 +14,13 @@ const COMPANY_LINKS = [
   { label: "Terms of Service", href: "/terms" },
 ];
 
-const HELP_LINKS = [
-  { label: "Shipping & Delivery", href: "/shipping" },
-  { label: "Returns & Refunds", href: "/returns" },
-  { label: "Track Your Order", href: "/account/orders" },
-  { label: "FAQs", href: "/faq" },
+const QUICK_LINKS = [
+  { label: "Out of Stock", href: "/products?availability=outofstock" },
+  { label: "My Account", href: "/account/dashboard" },
+  { label: "My Cart", href: "/cart" },
+  { label: "Free ebooks", href: "/free-ebooks" },
+  { label: "Hindi Books", href: "/products?category=hindi" },
+  { label: "FAQ’s", href: "/faq" },
 ];
 
 const TRUST = [
@@ -70,44 +71,50 @@ export function Footer() {
       </div>
 
       {/* Link columns (Hidden on mobile/tablet as requested) */}
-      <div className="hidden mx-auto lg:grid max-w-7xl gap-10 px-4 py-14 lg:grid-cols-5 lg:px-8">
-        <div className="sm:col-span-2 lg:col-span-1">
-          <div className="flex items-center gap-2.5">
-            <div className="relative h-9 w-9 shrink-0 overflow-hidden rounded-full bg-white/10 p-0.5">
-              <Image src="/logo.png" alt="For The Truth" fill className="object-contain" />
-            </div>
-            <p className="font-display text-2xl font-black text-white">
-              For The<span className="text-gradient-gold"> Truth</span>
-            </p>
-          </div>
-          <p className="mt-4 max-w-xs text-sm leading-relaxed text-white/55">
-            An independent Christian bookstore — 600+ handpicked titles for
-            personal growth and church ministry. Honest prices, fast delivery.
-          </p>
-          <div className="mt-6 flex gap-3">
-            {[
-              { label: "Instagram", d: "M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37zM17.5 6.5h.01M7 2h10a5 5 0 0 1 5 5v10a5 5 0 0 1-5 5H7a5 5 0 0 1-5-5V7a5 5 0 0 1 5-5z" },
-              { label: "Facebook", d: "M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z" },
-              { label: "YouTube", d: "M22.5 7a2.8 2.8 0 0 0-2-2C18.8 4.5 12 4.5 12 4.5s-6.8 0-8.5.5a2.8 2.8 0 0 0-2 2A29 29 0 0 0 1 12a29 29 0 0 0 .5 5 2.8 2.8 0 0 0 2 2c1.7.5 8.5.5 8.5.5s6.8 0 8.5-.5a2.8 2.8 0 0 0 2-2 29 29 0 0 0 .5-5 29 29 0 0 0-.5-5zM10 15V9l5 3z" },
-            ].map((s) => (
-              <a
-                key={s.label}
-                href="#"
-                aria-label={s.label}
-                className="rounded-full border border-white/20 p-2.5 text-white/60 transition-smooth hover:border-gold hover:text-gold-light"
-              >
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true">
-                  <path d={s.d} />
-                </svg>
-              </a>
-            ))}
-          </div>
-        </div>
-
+      <div className="hidden mx-auto lg:grid max-w-7xl gap-10 px-4 py-14 lg:grid-cols-4 lg:px-8">
         <FooterNav title="Shop" links={COLLECTIONS.map((c) => ({ ...c }))} />
-        <FooterNav title="For Churches" links={CHURCH_LINKS.map((c) => ({ ...c }))} />
         <FooterNav title="Company" links={COMPANY_LINKS} />
-        <FooterNav title="Help" links={HELP_LINKS} />
+        <FooterNav title="Quick Links" links={QUICK_LINKS} />
+        <div>
+          <p className="mb-5 text-xs font-semibold uppercase tracking-[0.28em] text-gold-light">
+            Contact Info
+          </p>
+          <ul className="space-y-3 text-sm">
+            <li className="flex items-center gap-2.5 text-white/55">
+              <span className="text-gold-light/90">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                  <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z" />
+                </svg>
+              </span>
+              <span>
+                Phone:{" "}
+                <a
+                  href="tel:+918604685533"
+                  className="transition-smooth hover:text-gold-light text-white/80 font-medium"
+                >
+                  +918604685533
+                </a>
+              </span>
+            </li>
+            <li className="flex items-center gap-2.5 text-white/55">
+              <span className="text-gold-light/90">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                  <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" />
+                  <polyline points="22,6 12,13 2,6" />
+                </svg>
+              </span>
+              <span>
+                Email:{" "}
+                <a
+                  href="mailto:contact@forthetruth.in"
+                  className="transition-smooth hover:text-gold-light text-white/80 font-medium"
+                >
+                  contact@forthetruth.in
+                </a>
+              </span>
+            </li>
+          </ul>
+        </div>
       </div>
 
       <div className="border-t border-white/10">

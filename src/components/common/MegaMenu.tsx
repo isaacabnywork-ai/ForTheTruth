@@ -34,7 +34,7 @@ export function MegaMenu({ open, categories, onNavigate, onMouseEnter, onMouseLe
 
   return (
     <div
-      className={`fixed left-1/2 top-[96px] z-[100] w-[min(920px,calc(100vw-3rem))] -translate-x-1/2 transition-all duration-300 before:absolute before:-top-5 before:inset-x-0 before:h-5 before:content-[''] ${
+      className={`fixed left-1/2 top-[96px] z-[100] w-[min(1080px,calc(100vw-3rem))] -translate-x-1/2 transition-all duration-300 before:absolute before:-top-5 before:inset-x-0 before:h-5 before:content-[''] ${
         open
           ? "pointer-events-auto visible translate-y-0 opacity-100"
           : "pointer-events-none invisible -translate-y-2 opacity-0"
@@ -44,17 +44,17 @@ export function MegaMenu({ open, categories, onNavigate, onMouseEnter, onMouseLe
       onMouseLeave={onMouseLeave}
     >
       <div className="overflow-hidden rounded-2xl border border-sand bg-white shadow-panel">
-        <div className="grid grid-cols-3">
+        <div className="grid grid-cols-4">
           {/* Topics */}
-          <div className="border-r border-sand p-7">
+          <div className="border-r border-sand p-6">
             <p className="overline-label mb-4">By Topic</p>
             <ul className="space-y-0.5">
               {topics.map((t) => (
                 <li key={t.href}>
                   <Link href={t.href} onClick={onNavigate} className={itemCls}>
-                    {t.label}
+                    <span className="truncate">{t.label}</span>
                     {t.count != null && (
-                      <span className="text-xs text-charcoal/25 group-hover:text-gold">
+                      <span className="text-xs text-charcoal/25 group-hover:text-gold shrink-0 ml-1">
                         {t.count}
                       </span>
                     )}
@@ -72,7 +72,7 @@ export function MegaMenu({ open, categories, onNavigate, onMouseEnter, onMouseLe
           </div>
 
           {/* Browse */}
-          <div className="border-r border-sand p-7">
+          <div className="border-r border-sand p-6">
             <p className="overline-label mb-4">Browse</p>
             <ul className="space-y-0.5">
               <li>
@@ -100,7 +100,7 @@ export function MegaMenu({ open, categories, onNavigate, onMouseEnter, onMouseLe
           </div>
 
           {/* New & Notable */}
-          <div className="p-7">
+          <div className="border-r border-sand p-6">
             <p className="overline-label mb-4">New &amp; Notable</p>
             <ul className="space-y-0.5">
               <li>
@@ -141,10 +141,10 @@ export function MegaMenu({ open, categories, onNavigate, onMouseEnter, onMouseLe
               </li>
             </ul>
           </div>
-        </div>
 
-        {/* Recently Viewed Books Section */}
-        <RecentlyViewedMegaSection onNavigate={onNavigate} />
+          {/* Recently Viewed Column */}
+          <RecentlyViewedMegaSection onNavigate={onNavigate} />
+        </div>
       </div>
     </div>
   );

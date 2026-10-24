@@ -8,6 +8,7 @@ import { useCartStore } from "@/store/cartStore";
 import { useWishlistStore } from "@/store/wishlistStore";
 import type { WCCategory } from "@/types/product";
 import { COLLECTIONS } from "@/utils/constants";
+import { SOCIAL_LINKS } from "./SocialIcons";
 
 /* ── SVG icon paths ────────────────────────────────────────── */
 const ICONS = {
@@ -328,22 +329,73 @@ export function DesktopSidebar({
 
       </div>
 
-      {/* ── Footer help link ── */}
-      <div className="flex items-center justify-between border-t border-sand px-3 py-3">
-        <Link
-          href="/faq"
-          className={`group flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-semibold text-charcoal/50 transition-smooth hover:bg-cream hover:text-charcoal ${
-            collapsed ? "justify-center" : ""
-          }`}
-          title={collapsed ? "Help & FAQ" : undefined}
-        >
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-            <circle cx="12" cy="12" r="10" />
-            <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3" />
-            <path d="M12 17h.01" />
-          </svg>
-          {!collapsed && <span>Help &amp; FAQ</span>}
-        </Link>
+      {/* ── Footer: Social icons & Help link ── */}
+      <div className="border-t border-sand p-3 space-y-2">
+        {!collapsed ? (
+          <div className="px-1 pt-0.5">
+            <p className="mb-2 text-[10px] font-bold uppercase tracking-[0.2em] text-charcoal/40">
+              Follow Us
+            </p>
+            <div className="flex items-center justify-between">
+              {SOCIAL_LINKS.map((s) => (
+                <a
+                  key={s.label}
+                  href={s.href}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label={s.label}
+                  title={s.label}
+                  className={`flex h-8 w-8 items-center justify-center rounded-full text-white shadow-sm transition-all duration-200 hover:scale-110 active:scale-95 ${s.bgClass}`}
+                >
+                  {s.icon}
+                </a>
+              ))}
+            </div>
+          </div>
+        ) : (
+          <div className="flex flex-col items-center gap-1.5 py-1">
+            {SOCIAL_LINKS.map((s) => (
+              <a
+                key={s.label}
+                href={s.href}
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label={s.label}
+                title={s.label}
+                className={`flex h-7 w-7 items-center justify-center rounded-full text-white shadow-sm transition-all duration-200 hover:scale-110 active:scale-95 ${s.bgClass}`}
+              >
+                {s.icon}
+              </a>
+            ))}
+          </div>
+        )}
+
+        <div className={!collapsed ? "border-t border-sand/60 pt-1.5" : "border-t border-sand/60 pt-1"}>
+          <Link
+            href="/faq"
+            className={`group flex items-center gap-3 rounded-xl px-2.5 py-2 text-sm font-semibold text-charcoal/50 transition-smooth hover:bg-cream hover:text-charcoal ${
+              collapsed ? "justify-center px-0" : ""
+            }`}
+            title={collapsed ? "Help & FAQ" : undefined}
+          >
+            <svg
+              width="16"
+              height="16"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="1.7"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              aria-hidden="true"
+            >
+              <circle cx="12" cy="12" r="10" />
+              <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3" />
+              <path d="M12 17h.01" />
+            </svg>
+            {!collapsed && <span>Help &amp; FAQ</span>}
+          </Link>
+        </div>
       </div>
     </aside>
   );

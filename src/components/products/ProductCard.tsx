@@ -83,7 +83,7 @@ export function ProductCard({
                   setAspect(el.naturalWidth / el.naturalHeight);
                 }
               }}
-              className="object-fill"
+              className="object-cover"
             />
           ) : (
             <div className="flex h-full w-full items-center justify-center bg-gold-gradient p-4 text-center">

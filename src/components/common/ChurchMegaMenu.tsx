@@ -21,7 +21,7 @@ export function ChurchMegaMenu({
 }) {
   return (
     <div
-      className={`fixed left-1/2 top-[96px] z-[100] w-[min(880px,calc(100vw-3rem))] -translate-x-1/2 transition-all duration-300 before:absolute before:-top-5 before:inset-x-0 before:h-5 before:content-[''] ${
+      className={`fixed left-1/2 top-[96px] z-[100] w-[min(1080px,calc(100vw-3rem))] -translate-x-1/2 transition-all duration-300 before:absolute before:-top-5 before:inset-x-0 before:h-5 before:content-[''] ${
         open
           ? "pointer-events-auto visible translate-y-0 opacity-100"
           : "pointer-events-none invisible -translate-y-2 opacity-0"
@@ -31,9 +31,9 @@ export function ChurchMegaMenu({
       onMouseLeave={onMouseLeave}
     >
       <div className="overflow-hidden rounded-2xl border border-sand bg-white shadow-panel">
-        <div className="grid grid-cols-3">
+        <div className="grid grid-cols-4">
           {/* Shop by ministry need */}
-          <div className="border-r border-sand p-7">
+          <div className="border-r border-sand p-6">
             <p className="overline-label mb-4">Shop by Need</p>
             <ul className="space-y-0.5">
               {CHURCH_NEEDS.map((c) => (
@@ -47,7 +47,7 @@ export function ChurchMegaMenu({
           </div>
 
           {/* Curriculum & Resources */}
-          <div className="border-r border-sand p-7">
+          <div className="border-r border-sand p-6">
             <p className="overline-label mb-4">Ministry Resources</p>
             <ul className="space-y-0.5">
               {CHURCH_LINKS.map((c) => (
@@ -61,7 +61,7 @@ export function ChurchMegaMenu({
           </div>
 
           {/* Support */}
-          <div className="p-7">
+          <div className="border-r border-sand p-6">
             <p className="overline-label mb-4">Support &amp; Guidance</p>
             <ul className="space-y-0.5">
               {CHURCH_SUPPORT.map((c) => (
@@ -73,10 +73,10 @@ export function ChurchMegaMenu({
               ))}
             </ul>
           </div>
-        </div>
 
-        {/* Recently Viewed Books Section */}
-        <RecentlyViewedMegaSection onNavigate={onNavigate} />
+          {/* Recently Viewed Column */}
+          <RecentlyViewedMegaSection onNavigate={onNavigate} />
+        </div>
       </div>
     </div>
   );

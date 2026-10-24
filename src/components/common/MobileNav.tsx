@@ -9,6 +9,7 @@ import { useCartStore } from "@/store/cartStore";
 import type { WCCategory } from "@/types/product";
 import { CHURCH_LINKS, COLLECTIONS, NAV_LINKS } from "@/utils/constants";
 import { triggerHaptic } from "@/utils/haptics";
+import { SOCIAL_LINKS } from "./SocialIcons";
 
 /**
  * Mobile/tablet navigation: a floating "dynamic island" bottom bar
@@ -261,7 +262,7 @@ export function MobileNav({ categories }: { categories: WCCategory[] }) {
           </div>
         </div>
 
-        <div className="border-t border-sand px-6 py-5">
+        <div className="border-t border-sand px-6 py-5 space-y-4">
           <Link
             href="/account/dashboard"
             className="flex items-center gap-3 text-sm font-semibold text-charcoal/80 transition-smooth hover:text-gold-dark"
@@ -272,6 +273,27 @@ export function MobileNav({ categories }: { categories: WCCategory[] }) {
             </svg>
             My Account
           </Link>
+
+          <div className="border-t border-sand/60 pt-3">
+            <p className="mb-2.5 text-[10px] font-bold uppercase tracking-[0.2em] text-charcoal/40">
+              Follow Us
+            </p>
+            <div className="flex items-center gap-2.5">
+              {SOCIAL_LINKS.map((s) => (
+                <a
+                  key={s.label}
+                  href={s.href}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label={s.label}
+                  title={s.label}
+                  className={`flex h-8 w-8 items-center justify-center rounded-full text-white shadow-sm transition-all duration-200 hover:scale-110 active:scale-95 ${s.bgClass}`}
+                >
+                  {s.icon}
+                </a>
+              ))}
+            </div>
+          </div>
         </div>
       </aside>
     </>
