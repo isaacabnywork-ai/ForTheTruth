@@ -72,7 +72,7 @@ export default async function SingleProductPage({ params }: PageProps) {
       availability:
         product.stock_status === "instock"
           ? "https://schema.org/InStock"
-          : "https://schema.org/PreOrder",
+          : "https://schema.org/OutOfStock",
     },
     aggregateRating:
       product.rating_count > 0

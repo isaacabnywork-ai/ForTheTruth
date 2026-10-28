@@ -161,7 +161,7 @@ export function ProductFilters({ categories }: { categories: WCCategory[] }) {
               <div className="space-y-1.5">
                 <label className="text-[10px] font-bold uppercase tracking-wider text-charcoal/60">Availability</label>
                 <select className="w-full rounded-xl border border-sand bg-white px-3 py-2.5 text-sm font-medium text-charcoal shadow-sm transition-smooth hover:border-gold/50 focus:border-gold focus:outline-none focus:ring-2 focus:ring-gold/25" value={searchParams.get("availability") ?? ""} onChange={(e) => setParam({ availability: e.target.value || null })}>
-                  <option value="">All availability</option><option value="instock">In stock</option><option value="preorder">Pre-order</option><option value="outofstock">Out of stock</option>
+                  <option value="">All availability</option><option value="instock">In stock</option><option value="outofstock">Out of stock</option>
                 </select>
               </div>
 
@@ -209,7 +209,7 @@ export function ProductFilters({ categories }: { categories: WCCategory[] }) {
         </select>
 
         <select className={selectCls} value={searchParams.get("availability") ?? ""} onChange={(e) => setParam({ availability: e.target.value || null })} aria-label="Availability">
-          <option value="">All availability</option><option value="instock">In stock</option><option value="preorder">Pre-order</option><option value="outofstock">Out of stock</option>
+          <option value="">All availability</option><option value="instock">In stock</option><option value="outofstock">Out of stock</option>
         </select>
 
         <select className={selectCls} value={searchParams.get("orderby") ?? "date"} onChange={(e) => setParam({ orderby: e.target.value })} aria-label="Sort By">

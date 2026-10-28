@@ -12,7 +12,7 @@ const FAQ_SECTIONS = [
     items: [
       {
         q: "Are all books on the site in stock?",
-        a: "Most titles are in stock and ready to dispatch within 24 hours. Items marked 'Pre-order' can still be ordered and will be dispatched as soon as our stock arrives.",
+        a: "Most titles are in stock and ready to dispatch within 24 hours. If an item is out of stock, it will be clearly marked as Out of Stock and will become available once inventory arrives.",
       },
       {
         q: "How do I check the status of my order?",

@@ -115,7 +115,7 @@ export function ProductCard({
                 −{discount}% off
               </span>
             )}
-            {!inStock && <span className="badge bg-navy text-white text-[10px] py-0.5 px-2">Pre-order</span>}
+            {!inStock && <span className="badge bg-charcoal/80 text-white text-[10px] py-0.5 px-2">Out of stock</span>}
             {rank == null && isBestseller && inStock && discount === 0 && (
               <span className="badge bg-white/90 text-gold-deep text-[10px] py-0.5 px-2">Bestseller</span>
             )}
@@ -143,12 +143,21 @@ export function ProductCard({
 
           {/* Quick actions — slide up on hover */}
           <div className="absolute inset-x-2.5 bottom-2.5 z-10 translate-y-2 space-y-1.5 opacity-0 transition-all duration-300 group-hover:translate-y-0 group-hover:opacity-100">
-            <button
-              onClick={handleAdd}
-              className="w-full rounded-full bg-cta py-2 text-xs font-bold uppercase tracking-widest text-white shadow-cta transition-smooth hover:bg-cta-light"
-            >
-              {added ? "Added ✓" : inStock ? "Add to Cart" : "Pre-order"}
-            </button>
+            {inStock ? (
+              <button
+                onClick={handleAdd}
+                className="w-full rounded-full bg-cta py-2 text-xs font-bold uppercase tracking-widest text-white shadow-cta transition-smooth hover:bg-cta-light"
+              >
+                {added ? "Added ✓" : "Add to Cart"}
+              </button>
+            ) : (
+              <button
+                disabled
+                className="w-full rounded-full bg-charcoal/70 py-2 text-xs font-bold uppercase tracking-widest text-white/80 cursor-not-allowed"
+              >
+                Out of Stock
+              </button>
+            )}
             <Link
               href={`/products/${product.slug}`}
               className="block w-full rounded-full bg-white/95 py-1.5 text-center text-[10px] font-bold uppercase tracking-widest text-charcoal/75 backdrop-blur transition-smooth hover:text-gold-dark"

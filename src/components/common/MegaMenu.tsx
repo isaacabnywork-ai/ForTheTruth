@@ -114,11 +114,11 @@ export function MegaMenu({ open, categories, onNavigate, onMouseEnter, onMouseLe
               </li>
               <li>
                 <Link
-                  href="/products?availability=preorder"
+                  href="/products?availability=outofstock"
                   onClick={onNavigate}
                   className={itemCls}
                 >
-                  Coming Soon
+                  Out of Stock
                 </Link>
               </li>
               <li>

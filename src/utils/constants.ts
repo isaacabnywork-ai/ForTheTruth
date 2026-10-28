@@ -33,7 +33,7 @@ export const COLLECTIONS = [
   { label: "New Arrivals", href: "/products?orderby=date" },
   { label: "Top Rated", href: "/products?orderby=rating" },
   { label: "On Sale", href: "/products?on_sale=true" },
-  { label: "Pre-orders", href: "/products?availability=preorder" },
+  { label: "Out of Stock", href: "/products?availability=outofstock" },
 ] as const;
 
 /** Fallback topic list — real categories from WooCommerce take precedence. */

@@ -283,12 +283,12 @@ export function ProductDetail({ product, reviews = [] }: ProductDetailProps) {
                 </span>
               ))}
               {inStock ? (
-                <span className="ml-auto rounded-full bg-gold/15 px-3 py-0.5 text-xs font-bold text-gold-deep">
+                <span className="ml-auto rounded-full bg-emerald-100 px-3 py-0.5 text-xs font-bold text-emerald-800">
                   In Stock
                 </span>
               ) : (
-                <span className="ml-auto rounded-full bg-royal/15 px-3 py-0.5 text-xs font-bold text-royal">
-                  Pre-order
+                <span className="ml-auto rounded-full bg-charcoal/10 px-3 py-0.5 text-xs font-bold text-charcoal/60">
+                  Out of Stock
                 </span>
               )}
             </div>
@@ -358,8 +358,16 @@ export function ProductDetail({ product, reviews = [] }: ProductDetailProps) {
               </div>
 
               {/* Add to Cart Button */}
-              <button onClick={handleAddToCart} className="btn-gold flex-1 !py-3.5 shadow-gold hover:scale-[1.01] active:scale-95 font-extrabold tracking-wide transition-transform">
-                {inStock ? "Add to Cart" : "Pre-order Now"}
+              <button
+                onClick={inStock ? handleAddToCart : undefined}
+                disabled={!inStock}
+                className={`flex-1 !py-3.5 font-extrabold tracking-wide transition-all ${
+                  inStock
+                    ? "btn-gold shadow-gold hover:scale-[1.01] active:scale-95"
+                    : "rounded-full bg-charcoal/15 text-charcoal/40 cursor-not-allowed"
+                }`}
+              >
+                {inStock ? "Add to Cart" : "Out of Stock"}
               </button>
 
               {/* Wishlist Button */}
@@ -682,10 +690,15 @@ export function ProductDetail({ product, reviews = [] }: ProductDetailProps) {
           </span>
         </div>
         <button
-          onClick={handleAddToCart}
-          className="btn-gold !px-6 !py-2.5 !text-xs font-black tracking-wide shadow-md active:scale-95 shrink-0 transition-transform"
+          onClick={inStock ? handleAddToCart : undefined}
+          disabled={!inStock}
+          className={`!px-6 !py-2.5 !text-xs font-black tracking-wide shrink-0 transition-transform ${
+            inStock
+              ? "btn-gold shadow-md active:scale-95"
+              : "rounded-full bg-charcoal/15 text-charcoal/40 cursor-not-allowed"
+          }`}
         >
-          {inStock ? "Add to Cart" : "Pre-order"}
+          {inStock ? "Add to Cart" : "Out of Stock"}
         </button>
       </div>
 

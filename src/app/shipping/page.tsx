@@ -33,7 +33,7 @@ export default function ShippingPage() {
             <ul className="list-disc pl-5 space-y-2">
               <li><strong>Dispatch:</strong> All in-stock orders are carefully packed and dispatched within 24 hours (excluding Sundays and national holidays).</li>
               <li><strong>Transit Time:</strong> Standard delivery takes <strong>5 to 7 business days</strong> depending on your pincode and location.</li>
-              <li><strong>Pre-orders:</strong> Books marked &quot;Pre-order&quot; will be dispatched as soon as stock arrives at our warehouse. Estimated timelines are displayed on the product page.</li>
+              <li><strong>Out of stock:</strong> Books marked &quot;Out of stock&quot; cannot be ordered until new inventory arrives at our warehouse.</li>
             </ul>
           </section>
 
