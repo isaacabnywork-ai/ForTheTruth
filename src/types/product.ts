@@ -44,6 +44,7 @@ export interface Product {
   rating_count: number;
   images: WCImage[];
   categories: Pick<WCCategory, "id" | "name" | "slug">[];
+  tags?: { id: number; name: string; slug: string }[];
   attributes: WCAttribute[];
   meta_data: WCMetaData[];
   weight?: string;

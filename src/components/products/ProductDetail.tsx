@@ -10,6 +10,7 @@ import { formatPrice } from "@/utils/currency";
 import { getAuthor, type Product, type ProductReview } from "@/types/product";
 import { RatingStars } from "./RatingStars";
 import { ReviewForm } from "./ReviewForm";
+import { SingleBookPaymentTrust } from "./SingleBookPaymentTrust";
 import { triggerHaptic } from "@/utils/haptics";
 import { useWishlistSync } from "@/hooks/useWishlistSync";
 
@@ -396,17 +397,8 @@ export function ProductDetail({ product, reviews = [] }: ProductDetailProps) {
               </button>
             </div>
 
-            {/* Extra Trust Badges */}
-            <div className="mt-5 grid grid-cols-2 gap-3 text-xs text-charcoal/70 bg-sand/20 rounded-2xl p-3.5 border border-sand/50">
-              <div className="flex items-center gap-2 font-semibold">
-                <span className="flex h-6 w-6 items-center justify-center rounded-full bg-gold/20 text-gold-dark text-sm">🚚</span>
-                <span>Standard Shipping from ₹100</span>
-              </div>
-              <div className="flex items-center gap-2 font-semibold">
-                <span className="flex h-6 w-6 items-center justify-center rounded-full bg-navy/10 text-navy text-sm">🔒</span>
-                <span>Razorpay Secure Payment</span>
-              </div>
-            </div>
+            {/* Single Book Payment & Trust Details */}
+            <SingleBookPaymentTrust product={product} inStock={inStock} />
           </div>
         </div>
       </div>
