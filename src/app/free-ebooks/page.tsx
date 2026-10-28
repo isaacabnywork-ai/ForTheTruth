@@ -24,12 +24,6 @@ export default function FreeEbooksPage() {
         {/* Decorative gradient */}
         <div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-gold/10 via-transparent to-transparent" />
         <div className="container relative mx-auto px-4 text-center">
-          <div className="mx-auto mb-4 inline-flex items-center gap-2 rounded-full bg-gold/20 px-4 py-1.5 text-sm font-bold text-gold-light">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden>
-              <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 14.5v-9l6 4.5-6 4.5z"/>
-            </svg>
-            Completely Free • No Credit Card Needed
-          </div>
           <h1 className="font-display text-4xl font-black text-white md:text-5xl">
             Free E-Books
           </h1>

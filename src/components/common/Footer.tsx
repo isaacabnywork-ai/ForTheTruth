@@ -2,7 +2,6 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { NewsletterForm } from "./NewsletterForm";
 import { SITE_NAME, COLLECTIONS } from "@/utils/constants";
 
 const COMPANY_LINKS = [
@@ -26,7 +25,10 @@ const QUICK_LINKS = [
 const TRUST = [
   { title: "Free shipping over ₹150", icon: "M1 3h15v13H1zM16 8h4l3 3v5h-7V8z" },
   { title: "Dispatched in 24 hours", icon: "M12 6v6l4 2M12 22a10 10 0 1 1 0-20 10 10 0 0 1 0 20z" },
-  { title: "Razorpay secure payments", icon: "M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" },
+  {
+    isRazorpay: true,
+    logo: "https://admin.forthetruth.in/wp-content/uploads/2026/10/png-transparent-razorpay-logo-tech-companies-thumbnail.png",
+  },
   { title: "Curated Christian literature", icon: "M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" },
 ];
 
@@ -39,34 +41,26 @@ export function Footer() {
       {/* Trust strip */}
       <div className="border-b border-white/10">
         <div className="mx-auto grid max-w-7xl gap-4 px-4 py-6 sm:grid-cols-2 lg:grid-cols-4 lg:px-8">
-          {TRUST.map((t) => (
-            <div key={t.title} className="flex items-center gap-3">
-              <span className="rounded-full bg-gold/15 p-2 text-gold-light">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true">
-                  <path d={t.icon} />
-                </svg>
-              </span>
-              <span className="text-sm font-semibold text-white/80">{t.title}</span>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      {/* Newsletter */}
-      <div className="border-b border-white/10">
-        <div className="mx-auto grid max-w-7xl items-center gap-8 px-4 py-12 lg:grid-cols-2 lg:px-8">
-          <div>
-            <p className="text-xs font-semibold uppercase tracking-[0.28em] text-gold-light">
-              Stay in the word
-            </p>
-            <p className="mt-3 font-display text-2xl font-bold text-white md:text-3xl">
-              New releases &amp; reading guides, weekly
-            </p>
-            <p className="mt-2 text-sm text-white/55">
-              One thoughtful email a week. Choose what fits you.
-            </p>
-          </div>
-          <NewsletterForm />
+          {TRUST.map((t, idx) =>
+            t.isRazorpay ? (
+              <div key={idx} className="flex items-center">
+                <img
+                  src={t.logo}
+                  alt="Razorpay"
+                  className="h-8 w-auto max-w-[140px] rounded-md bg-white object-contain px-2.5 py-1 shadow-sm"
+                />
+              </div>
+            ) : (
+              <div key={t.title} className="flex items-center gap-3">
+                <span className="rounded-full bg-gold/15 p-2 text-gold-light">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true">
+                    <path d={t.icon} />
+                  </svg>
+                </span>
+                <span className="text-sm font-semibold text-white/80">{t.title}</span>
+              </div>
+            )
+          )}
         </div>
       </div>
 

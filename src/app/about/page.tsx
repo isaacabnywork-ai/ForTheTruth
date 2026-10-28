@@ -3,29 +3,28 @@ import Link from "next/link";
 
 export const metadata: Metadata = {
   title: "About Us | For The Truth",
-  description: "Learn about For The Truth bookstore — our mission, curated selection of sound Christian books, and commitment to equipping readers and churches.",
+  description:
+    "FOR THE TRUTH is a publishing ministry that exists to publish, distribute, and develop faithful biblical resources for the Church in India.",
 };
 
-const VALUES = [
+const GOALS = [
   {
-    title: "Sound Theological Curation",
+    number: "01",
+    title: "Publish",
     description:
-      "Every title in our catalog is handpicked for biblical fidelity, spiritual depth, and practical wisdom.",
+      "Publish quality, and theologically sound titles in English for the Church in India.",
   },
   {
-    title: "Transparent & Honest Pricing",
+    number: "02",
+    title: "Distribute",
     description:
-      "We keep prices fair and accessible for individual readers, families, and churches across India with automatic bulk discounts.",
+      "Distribute both classic and contemporary titles in English at affordable prices for the Church in India.",
   },
   {
-    title: "Church & Ministry Partnership",
+    number: "03",
+    title: "Develop",
     description:
-      "We equip congregations, small groups, and pastors with curriculum sets, invoicing options, and dedicated support.",
-  },
-  {
-    title: "Fast & Reliable Delivery",
-    description:
-      "Orders dispatch within 24 hours and are delivered across India with secure Razorpay payment options.",
+      "Develop, publish, and distribute English resources produced by Indian writers for the Church in India.",
   },
 ];
 
@@ -34,53 +33,60 @@ export default function AboutPage() {
     <div className="bg-offwhite min-h-screen">
       {/* Hero Section */}
       <section className="bg-navy-gradient py-16 text-white md:py-24">
-        <div className="mx-auto max-w-5xl px-4 text-center lg:px-8">
+        <div className="mx-auto max-w-4xl px-4 text-center lg:px-8">
           <p className="text-xs font-semibold uppercase tracking-[0.28em] text-gold-light">
-            Our Story &amp; Mission
+            About Us
           </p>
-          <h1 className="mt-4 font-display text-4xl font-bold text-white md:text-5xl lg:text-6xl">
-            Books that point to <span className="text-gradient-gold">Truth</span>
+          <h1 className="mt-4 font-display text-3xl font-black text-white sm:text-4xl md:text-5xl lg:text-6xl tracking-tight">
+            FOR THE <span className="text-gradient-gold">TRUTH</span>
           </h1>
-          <p className="mx-auto mt-5 max-w-2xl text-base text-white/70 md:text-lg">
-            For The Truth is an independent online bookstore dedicated to serving individual readers, families, and local churches with carefully curated Christian literature.
+          <p className="mx-auto mt-6 max-w-2xl text-base leading-relaxed text-white/85 sm:text-lg md:text-xl font-medium">
+            FOR THE TRUTH is a publishing ministry that exists to publish, distribute, and develop faithful biblical resources for the Church in India.
           </p>
         </div>
       </section>
 
-      {/* Main Content & Mission Statement */}
+      {/* Main Content: Vision & Goals */}
       <section className="mx-auto max-w-4xl px-4 py-16 lg:px-8">
+        {/* Our Vision Card */}
         <div className="rounded-3xl border border-sand bg-white p-8 shadow-card md:p-12">
-          <p className="overline-label mb-3">Why We Exist</p>
+          <p className="overline-label mb-2 text-gold-dark">Our Vision</p>
           <h2 className="font-display text-2xl font-bold text-charcoal md:text-3xl">
-            Equipping readers with stories &amp; theology worth your time
+            Meeting the Need for Faithful Theological Resources
           </h2>
-          <div className="mt-6 space-y-4 text-sm leading-relaxed text-charcoal/75">
+          <div className="mt-6 text-sm sm:text-base leading-relaxed text-charcoal/80 space-y-4">
             <p>
-              In a world flooded with shallow content, we believe in the quiet power of a good book. Our mission is to make sound theological literature accessible, affordable, and easily discoverable for believers across India.
-            </p>
-            <p>
-              Whether you are looking for a personal devotional, a rigorous commentary, a small-group discussion guide, or storybooks for your children, every book on our shelves has been vetted to ensure it honors Scripture and builds up the body of Christ.
+              There is a vast amount of faithful theological resources in English available across the globe. But the average Indian is unable to benefit from these resources for reasons such as: prohibitive cost, hard to find, difficult to procure, and inaccessible due to language and cultural differences. There is also a dearth of faithful resources created by and for the Indian church in English and various Indian vernaculars.
             </p>
           </div>
         </div>
 
-        {/* Core Values Grid */}
-        <div className="mt-16">
-          <div className="mb-10 text-center">
-            <p className="overline-label">Guiding Principles</p>
-            <h2 className="mt-2 font-display text-3xl font-bold text-charcoal">
-              What sets us apart
+        {/* We Hope To Section */}
+        <div className="mt-12">
+          <div className="mb-8 text-center sm:text-left">
+            <p className="overline-label text-gold-dark">Our Mission</p>
+            <h2 className="mt-2 font-display text-2xl sm:text-3xl font-bold text-charcoal">
+              We hope to:
             </h2>
           </div>
 
-          <div className="grid gap-6 sm:grid-cols-2">
-            {VALUES.map((v) => (
+          <div className="grid gap-5 sm:grid-cols-3">
+            {GOALS.map((g) => (
               <div
-                key={v.title}
-                className="rounded-2xl border border-sand bg-white p-6 shadow-card transition-all duration-300 hover:-translate-y-1 hover:shadow-card-hover"
+                key={g.number}
+                className="relative rounded-2xl border border-sand bg-white p-6 sm:p-7 shadow-card transition-all duration-300 hover:-translate-y-1 hover:border-gold/50 hover:shadow-card-hover flex flex-col justify-between"
               >
-                <h3 className="font-display text-lg font-bold text-charcoal">{v.title}</h3>
-                <p className="mt-2 text-xs leading-relaxed text-charcoal/65">{v.description}</p>
+                <div>
+                  <span className="font-display text-2xl font-black text-gold-dark/40">
+                    {g.number}
+                  </span>
+                  <h3 className="mt-2 font-display text-lg font-bold text-charcoal">
+                    {g.title}
+                  </h3>
+                  <p className="mt-3 text-sm leading-relaxed text-charcoal/75">
+                    {g.description}
+                  </p>
+                </div>
               </div>
             ))}
           </div>
@@ -89,10 +95,10 @@ export default function AboutPage() {
         {/* CTA Section */}
         <div className="mt-16 rounded-3xl bg-cream p-8 text-center border border-sand/80 shadow-sm md:p-12">
           <h3 className="font-display text-2xl font-bold text-charcoal">
-            Ready to explore the library?
+            Explore our curated resources
           </h3>
-          <p className="mt-2 text-xs text-charcoal/60">
-            Browse our handpicked titles or discover resources for your church.
+          <p className="mt-2 text-xs sm:text-sm text-charcoal/65">
+            Discover sound biblical books published and distributed for the church in India.
           </p>
           <div className="mt-6 flex flex-wrap justify-center gap-4">
             <Link href="/products" className="btn-gold !px-7 !py-3">

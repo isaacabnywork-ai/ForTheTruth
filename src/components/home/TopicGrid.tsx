@@ -21,13 +21,13 @@ export function TopicGrid({
       <div className="mb-9 flex flex-wrap items-end justify-between gap-3">
         <div>
           <p className="overline-label mb-2">Quick browse</p>
-          <h2 className="section-title">Find your topic</h2>
+          <h2 className="section-title">Find Your Categories</h2>
         </div>
         <Link
           href="/categories"
           className="group inline-flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-gold-dark transition-smooth hover:gap-3.5"
         >
-          All topics <span aria-hidden="true">→</span>
+          All categories <span aria-hidden="true">→</span>
         </Link>
       </div>
 
