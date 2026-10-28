@@ -2,8 +2,8 @@ import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 import { isWooConfigured } from "@/config/env";
-import { getCategories } from "@/services/woocommerce";
-import type { WCCategory } from "@/types/product";
+import { getCategories, getAllProducts } from "@/services/woocommerce";
+import type { WCCategory, Product } from "@/types/product";
 
 export const revalidate = 3600;
 
@@ -14,8 +14,30 @@ export const metadata: Metadata = {
 
 export default async function CategoriesPage() {
   let categories: WCCategory[] = [];
+  let allProducts: Product[] = [];
+
   if (isWooConfigured()) {
-    categories = await getCategories().catch(() => []);
+    const results = await Promise.all([
+      getCategories().catch(() => []),
+      getAllProducts().catch(() => []),
+    ]);
+    categories = results[0];
+    allProducts = results[1];
+  }
+
+  // Pre-index up to 3 book cover images per category
+  const coversByCategory: Record<number, string[]> = {};
+  for (const product of allProducts) {
+    const src = product.images?.[0]?.src;
+    if (!src) continue;
+    for (const cat of product.categories ?? []) {
+      if (!coversByCategory[cat.id]) {
+        coversByCategory[cat.id] = [];
+      }
+      if (coversByCategory[cat.id].length < 3) {
+        coversByCategory[cat.id].push(src);
+      }
+    }
   }
 
   return (
@@ -26,28 +48,61 @@ export default async function CategoriesPage() {
       </div>
 
       {categories.length > 0 ? (
-        <div className="grid grid-cols-2 gap-5 md:grid-cols-3 lg:grid-cols-4">
-          {categories.map((cat) => (
-            <Link
-              key={cat.id}
-              href={`/categories/${cat.slug}`}
-              className="group relative overflow-hidden rounded-2xl border border-sand bg-white p-8 text-center shadow-card transition-all duration-500 hover:-translate-y-1.5 hover:border-gold/50 hover:shadow-card-hover"
-            >
-              {cat.image?.src && (
-                <div className="relative mx-auto mb-4 h-16 w-16 overflow-hidden rounded-full shadow-card">
-                  <Image src={cat.image.src} alt="" fill sizes="64px" className="object-cover" />
+        <div className="grid grid-cols-2 gap-4 sm:gap-6 md:grid-cols-3 lg:grid-cols-4">
+          {categories.map((cat) => {
+            const covers =
+              coversByCategory[cat.id] && coversByCategory[cat.id].length > 0
+                ? coversByCategory[cat.id]
+                : cat.image?.src
+                ? [cat.image.src]
+                : [];
+
+            return (
+              <Link
+                key={cat.id}
+                href={`/categories/${cat.slug}`}
+                className="group relative flex flex-col justify-between overflow-hidden rounded-2xl border border-sand bg-white p-5 sm:p-6 shadow-card transition-all duration-500 hover:-translate-y-1.5 hover:border-gold/50 hover:shadow-card-hover"
+              >
+                {/* Overlapping book covers identical to home page Find Your Categories */}
+                <div className="flex h-20 items-end justify-center mb-4">
+                  {covers.length > 0 ? (
+                    covers.map((src, i) => (
+                      <span
+                        key={i}
+                        className="relative block h-[72px] w-12 overflow-hidden rounded shadow-book transition-transform duration-500 group-hover:-translate-y-1"
+                        style={{
+                          marginLeft: i === 0 ? 0 : -14,
+                          zIndex: covers.length - i,
+                          transform: `rotate(${(i - (covers.length - 1) / 2) * 6}deg)`,
+                        }}
+                      >
+                        <Image
+                          src={src}
+                          alt=""
+                          fill
+                          sizes="60px"
+                          className="object-contain p-0.5"
+                        />
+                      </span>
+                    ))
+                  ) : (
+                    <span className="block h-[72px] w-12 rounded bg-gold-gradient shadow-book" />
+                  )}
                 </div>
-              )}
-              <p className="font-display text-lg font-bold text-charcoal transition-colors group-hover:text-gold-dark">
-                {cat.name}
-              </p>
-              {cat.count != null && (
-                <p className="mt-1.5 text-xs uppercase tracking-wider text-charcoal/40">
-                  {cat.count} {cat.count === 1 ? "book" : "books"}
-                </p>
-              )}
-            </Link>
-          ))}
+
+                <div className="text-center">
+                  <p className="font-display text-base font-bold text-charcoal transition-colors group-hover:text-gold-dark line-clamp-2">
+                    {cat.name}
+                  </p>
+                  {cat.count != null && (
+                    <p className="mt-1 text-[11px] uppercase tracking-wider text-charcoal/40">
+                      {cat.count} {cat.count === 1 ? "book" : "books"}
+                    </p>
+                  )}
+                </div>
+              </Link>
+            );
+          })}
         </div>
       ) : (
         <p className="rounded-2xl border border-dashed border-sand bg-white p-16 text-center text-charcoal/50">
