@@ -201,7 +201,7 @@ export function MobileNav({ categories }: { categories: WCCategory[] }) {
               <Link
                 key={link.href}
                 href={link.href}
-                className="block border-b border-sand/60 py-3 text-sm font-semibold tracking-wide text-charcoal/85 transition-smooth hover:pl-1 hover:text-gold-dark"
+                className="block border-b border-sand/60 py-3 text-sm font-semibold uppercase tracking-wider text-charcoal/85 transition-smooth hover:pl-1 hover:text-gold-dark"
               >
                 {link.label}
               </Link>
@@ -247,16 +247,16 @@ export function MobileNav({ categories }: { categories: WCCategory[] }) {
             <p className="overline-label mb-3">Publishers</p>
             <div className="space-y-1">
               <Link href="/products?publisher=248" className="block py-2 text-sm text-charcoal/70 transition-smooth hover:pl-1 hover:text-gold-dark">
-                FOR THE TRUTH
+                For The Truth
               </Link>
               <Link href="/products?publisher=1108" className="block py-2 text-sm text-charcoal/70 transition-smooth hover:pl-1 hover:text-gold-dark">
-                SHEPHERD PRESS
+                Shepherd Press
               </Link>
               <Link href="/products?publisher=1887" className="block py-2 text-sm text-charcoal/70 transition-smooth hover:pl-1 hover:text-gold-dark">
-                10 PUBLISHING
+                10 Publishing
               </Link>
               <Link href="/products?publisher=163" className="block py-2 text-sm text-charcoal/70 transition-smooth hover:pl-1 hover:text-gold-dark">
-                THE GOOD BOOK COMPANY
+                The Good Book Company
               </Link>
             </div>
           </div>

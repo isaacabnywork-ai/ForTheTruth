@@ -90,7 +90,7 @@ export function Header({ categories }: { categories: WCCategory[] }) {
               const menu = "menu" in link ? link.menu : null;
               if (!menu) {
                 return (
-                  <Link key={link.href} href={link.href} className="nav-link py-2 text-sm font-semibold">
+                  <Link key={link.href} href={link.href} className="nav-link py-2 text-sm font-semibold uppercase tracking-wider">
                     {link.label}
                   </Link>
                 );
@@ -109,7 +109,7 @@ export function Header({ categories }: { categories: WCCategory[] }) {
                       cancelClose();
                       setOpenMenu((prev) => (prev === menu ? null : menu));
                     }}
-                    className="nav-link inline-flex items-center gap-1.5 py-2 text-sm font-semibold cursor-pointer"
+                    className="nav-link inline-flex items-center gap-1.5 py-2 text-sm font-semibold uppercase tracking-wider cursor-pointer"
                     aria-expanded={isOpen}
                   >
                     {link.label}

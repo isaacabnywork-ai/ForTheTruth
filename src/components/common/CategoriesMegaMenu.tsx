@@ -12,7 +12,7 @@ interface CategoriesMegaMenuProps {
 const itemCls =
   "group block rounded-md px-2.5 py-1 text-xs text-charcoal/75 transition-smooth hover:bg-cream hover:text-gold-dark hover:pl-3";
 const sectionHeaderCls =
-  "font-display text-sm font-black tracking-wide text-charcoal border-b border-sand pb-1 mb-2.5";
+  "font-display text-sm font-black uppercase tracking-wide text-charcoal border-b border-sand pb-1 mb-2.5";
 const subHeaderCls =
   "text-[10px] font-bold uppercase tracking-wider text-gold-dark mt-2.5 mb-1 px-2.5";
 

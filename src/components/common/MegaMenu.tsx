@@ -16,7 +16,7 @@ interface MegaMenuProps {
 const itemCls =
   "group flex items-center justify-between rounded-lg px-3 py-1.5 text-sm text-charcoal/75 transition-smooth hover:bg-cream hover:text-gold-dark hover:pl-4";
 const sectionHeaderCls =
-  "font-display text-sm font-black tracking-wide text-charcoal border-b border-sand pb-1 mb-3";
+  "font-display text-sm font-black uppercase tracking-wide text-charcoal border-b border-sand pb-1 mb-3";
 const subHeaderCls =
   "text-[10px] font-bold uppercase tracking-wider text-gold-dark mt-3 mb-1 px-3";
 
@@ -60,7 +60,7 @@ export function MegaMenu({ open, onNavigate, onMouseEnter, onMouseLeave }: MegaM
                   onClick={onNavigate}
                   className={itemCls}
                 >
-                  FOR THE TRUTH
+                  For The Truth
                 </Link>
               </li>
               <li>
@@ -69,7 +69,7 @@ export function MegaMenu({ open, onNavigate, onMouseEnter, onMouseLeave }: MegaM
                   onClick={onNavigate}
                   className={itemCls}
                 >
-                  SHEPHERD PRESS
+                  Shepherd Press
                 </Link>
               </li>
               <li>
@@ -78,7 +78,7 @@ export function MegaMenu({ open, onNavigate, onMouseEnter, onMouseLeave }: MegaM
                   onClick={onNavigate}
                   className={itemCls}
                 >
-                  10 PUBLISHING
+                  10 Publishing
                 </Link>
               </li>
               <li>
@@ -87,7 +87,7 @@ export function MegaMenu({ open, onNavigate, onMouseEnter, onMouseLeave }: MegaM
                   onClick={onNavigate}
                   className={itemCls}
                 >
-                  THE GOOD BOOK COMPANY
+                  The Good Book Company
                 </Link>
               </li>
             </ul>
