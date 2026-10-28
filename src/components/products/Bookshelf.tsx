@@ -148,7 +148,7 @@ function ShelfBook({
           src={imageSrc}
           alt={imageAlt || title}
           loading="lazy"
-          className="h-44 sm:h-52 md:h-56 max-w-[145px] sm:max-w-[170px] md:max-w-[190px] w-auto block select-none object-contain"
+          className="h-44 sm:h-52 md:h-56 w-auto max-w-none block select-none"
         />
       ) : (
         <div className="flex h-44 sm:h-52 md:h-56 w-[140px] items-center justify-center bg-gold-gradient p-3 text-center">

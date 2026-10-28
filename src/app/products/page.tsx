@@ -12,7 +12,7 @@ import type { WCCategory } from "@/types/product";
 export const metadata: Metadata = {
   title: "All Books & Curated Library",
   description:
-    "Browse 600+ handpicked sound theological books, Bestsellers, and New Arrivals.",
+    "Browse handpicked sound theological books, Bestsellers, and New Arrivals.",
 };
 
 export default async function ProductsCatalogPage({

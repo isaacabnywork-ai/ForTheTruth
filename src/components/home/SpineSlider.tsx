@@ -140,7 +140,7 @@ function SpineBookItem({
           <img
             src={image.src}
             alt={image.alt || product.name}
-            className="h-72 md:h-80 w-auto max-w-[240px] md:max-w-[280px] object-contain block select-none rounded-lg"
+            className="h-72 md:h-80 w-auto max-w-none block select-none rounded-lg"
           />
         ) : (
           <Image

@@ -24,9 +24,9 @@ interface HeroShelfProps {
 
 export function HeroShelf({
   products = [],
-  badge = "Independent Christian Bookstore",
+  badge = "",
   title = "Happy reading, friend",
-  subtitle = "600+ handpicked titles on Bible study, devotion, prayer, and Christian living. Sound doctrine, honest prices, delivered across India.",
+  subtitle = "",
   autoPlayInterval = 5500,
 }: HeroShelfProps) {
   const validProducts = Array.isArray(products) ? products.filter(Boolean) : [];
@@ -128,9 +128,11 @@ export function HeroShelf({
         <div className="relative grid items-center gap-8 sm:gap-10 px-5 sm:px-8 py-8 sm:py-12 md:px-12 grid-cols-1 lg:grid-cols-[1.05fr_auto_0.95fr] lg:gap-8 lg:px-14 lg:py-16">
           {/* ---------- LEFT: Headline & Actions ---------- */}
           <div className="hidden lg:block text-left">
-            <p className="text-xs font-semibold uppercase tracking-[0.28em] text-gold-dark">
-              {badge}
-            </p>
+            {badge && (
+              <p className="text-xs font-semibold uppercase tracking-[0.28em] text-gold-dark">
+                {badge}
+              </p>
+            )}
 
             <h1 className="mt-5 font-display text-display-md font-black leading-tight text-charcoal">
               {titleParts[0]}
@@ -144,9 +146,11 @@ export function HeroShelf({
               )}
             </h1>
 
-            <p className="mt-5 max-w-md text-[15px] leading-relaxed text-charcoal/65">
-              {subtitle}
-            </p>
+            {subtitle && (
+              <p className="mt-5 max-w-md text-[15px] leading-relaxed text-charcoal/65">
+                {subtitle}
+              </p>
+            )}
 
             <div className="mt-8 flex flex-wrap items-center gap-3 justify-start">
               <Link href="/products" className="btn-cta text-sm px-8 py-3.5">
@@ -183,22 +187,10 @@ export function HeroShelf({
             </ul>
           </div>
 
-          {/* ---------- CENTRE: Floating 3D Book with Slider Transition ---------- */}
+          {/* ---------- CENTRE: Book Cover Image (as-is, original aspect ratio, no animation) ---------- */}
           <div className="relative flex justify-center items-center py-2 sm:py-4 lg:col-span-1 min-h-[340px] md:min-h-[420px]">
             {hero ? (
-              <AnimatePresence mode="wait" custom={direction}>
-                <motion.div
-                  key={hero.id}
-                  custom={direction}
-                  initial={{ opacity: 0, x: direction * 40, scale: 0.95 }}
-                  animate={{ opacity: 1, x: 0, scale: 1 }}
-                  exit={{ opacity: 0, x: -direction * 40, scale: 0.95 }}
-                  transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
-                  className="flex justify-center w-full"
-                >
-                  <FloatingBook product={hero} />
-                </motion.div>
-              </AnimatePresence>
+              <HeroBookImage product={hero} />
             ) : (
               <BookSkeleton />
             )}
@@ -310,57 +302,28 @@ export function HeroShelf({
   );
 }
 
-/** Cover rendered as a physical 3D book with page edges and a soft floor shadow. */
-function FloatingBook({ product }: { product: Product }) {
+/** Cover rendered as-is with its authentic aspect ratio, no 3D tilt, no artificial shrink. */
+function HeroBookImage({ product }: { product: Product }) {
   const image = product.images && product.images[0];
+  const title = decodeHtmlEntities(product.name);
 
   return (
     <Link
       href={`/products/${product.slug}`}
-      className="group relative block [perspective:1400px]"
+      className="group relative flex items-center justify-center p-2"
       aria-label={product.name}
     >
-      <span
-        aria-hidden="true"
-        className="absolute -bottom-6 left-1/2 h-6 w-[78%] -translate-x-1/2 rounded-[50%] bg-charcoal/25 blur-xl transition-all duration-700 group-hover:w-[68%] group-hover:opacity-70"
-      />
-
-      <span className="relative block transition-transform duration-700 ease-out group-hover:-translate-y-3 [transform-style:preserve-3d]">
-        <span className="relative block h-[310px] w-[215px] [transform:rotateY(-16deg)_rotateX(3deg)] transition-transform duration-700 group-hover:[transform:rotateY(-6deg)_rotateX(1deg)] md:h-[380px] md:w-[260px]">
-          {/* page edges */}
-          <span
-            aria-hidden="true"
-            className="absolute -right-[13px] bottom-[5px] top-[5px] w-[15px] rounded-r-sm bg-[repeating-linear-gradient(to_right,#fdfbf6_0px,#fdfbf6_1px,#e6dcc8_1px,#e6dcc8_2px)] shadow-[2px_2px_6px_rgba(90,70,40,0.25)] [transform:rotateY(22deg)] [transform-origin:left_center]"
-          />
-          {/* cover */}
-          <span className="relative block h-full w-full overflow-hidden rounded-[3px] rounded-r-md shadow-book-lg">
-            {image ? (
-              <Image
-                src={image.src}
-                alt={decodeHtmlEntities(image.alt || product.name)}
-                fill
-                sizes="(max-width: 768px) 220px, 275px"
-                priority
-                className="object-cover"
-              />
-            ) : (
-              <span className="flex h-full w-full items-center justify-center bg-gold-gradient p-6 text-center">
-                <span className="font-display text-xl italic text-white">
-                  {product.name}
-                </span>
-              </span>
-            )}
-            <span
-              aria-hidden="true"
-              className="absolute inset-y-0 left-0 w-[14px] bg-gradient-to-r from-black/45 via-black/15 to-transparent"
-            />
-            <span
-              aria-hidden="true"
-              className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/10 to-white/25 opacity-60"
-            />
-          </span>
-        </span>
-      </span>
+      {image ? (
+        <img
+          src={image.src}
+          alt={decodeHtmlEntities(image.alt || product.name)}
+          className="max-h-[320px] sm:max-h-[380px] md:max-h-[420px] w-auto h-auto max-w-[280px] sm:max-w-[340px] md:max-w-[400px] object-contain rounded-lg shadow-book-lg select-none"
+        />
+      ) : (
+        <div className="flex h-[320px] w-[220px] items-center justify-center rounded-lg bg-gold-gradient p-6 text-center shadow-book-lg">
+          <span className="font-display text-xl italic text-white">{title}</span>
+        </div>
+      )}
     </Link>
   );
 }

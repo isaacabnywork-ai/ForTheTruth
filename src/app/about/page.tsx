@@ -3,14 +3,14 @@ import Link from "next/link";
 
 export const metadata: Metadata = {
   title: "About Us | For The Truth",
-  description: "Learn about For The Truth bookstore — our mission, curated selection of 600+ sound Christian books, and commitment to equipping readers and churches.",
+  description: "Learn about For The Truth bookstore — our mission, curated selection of sound Christian books, and commitment to equipping readers and churches.",
 };
 
 const VALUES = [
   {
     title: "Sound Theological Curation",
     description:
-      "Every title in our catalog of 600+ books is handpicked for biblical fidelity, spiritual depth, and practical wisdom.",
+      "Every title in our catalog is handpicked for biblical fidelity, spiritual depth, and practical wisdom.",
   },
   {
     title: "Transparent & Honest Pricing",
@@ -92,7 +92,7 @@ export default function AboutPage() {
             Ready to explore the library?
           </h3>
           <p className="mt-2 text-xs text-charcoal/60">
-            Browse our 600+ handpicked titles or discover resources for your church.
+            Browse our handpicked titles or discover resources for your church.
           </p>
           <div className="mt-6 flex flex-wrap justify-center gap-4">
             <Link href="/products" className="btn-gold !px-7 !py-3">

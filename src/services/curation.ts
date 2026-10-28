@@ -29,9 +29,9 @@ export interface CuratedShelfConfig {
 
 const DEFAULT_CONFIG: CuratedShelfConfig = {
   heroIds: [],
-  heroBadge: "Independent Christian Bookstore",
+  heroBadge: "",
   heroTitle: "Happy reading, friend",
-  heroSubtitle: "600+ handpicked titles on Bible study, devotion, prayer, and Christian living. Sound doctrine, honest prices, delivered across India.",
+  heroSubtitle: "",
   spineIds: [],
   spineBadge: "Browse the shelf",
   spineTitle: "Explore Children Books",
