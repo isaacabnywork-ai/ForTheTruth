@@ -7,7 +7,8 @@ import { motion, AnimatePresence } from "framer-motion";
 import { RatingStars } from "@/components/products/RatingStars";
 import { formatPrice } from "@/utils/currency";
 import { READER_TRUST } from "@/utils/constants";
-import { getAuthor, type Product } from "@/types/product";
+import { getAuthor, getFormat, type Product } from "@/types/product";
+import { cleanExcerpt, decodeHtmlEntities } from "@/utils/text";
 
 /**
  * Hero panel in a reading-dashboard layout:
@@ -92,11 +93,17 @@ export function HeroShelf({
 
   const hero = validProducts[currentIndex] || validProducts[0];
   const author = hero ? getAuthor(hero) : undefined;
+  const format = hero ? getFormat(hero) : undefined;
 
-  const excerpt = hero
-    ? (hero.short_description || hero.description)
-        .replace(/<[^>]+>/g, "")
-        .slice(0, 150)
+  const rawDescription = hero ? (hero.short_description || hero.description || "") : "";
+  const excerpt = cleanExcerpt(rawDescription, 150);
+
+  const heroName = hero
+    ? decodeHtmlEntities(
+        hero.id === 48904 && !hero.name.toLowerCase().includes("hardback")
+          ? `${hero.name} - Hardback Book`
+          : hero.name
+      )
     : "";
 
   const titleParts = title.includes(",") ? title.split(",") : [title, ""];
@@ -217,11 +224,11 @@ export function HeroShelf({
 
                   <Link href={`/products/${hero.slug}`} className="block group">
                     <h2 className="font-display text-xl sm:text-2xl md:text-[28px] lg:text-[32px] font-black leading-tight text-charcoal transition-colors group-hover:text-gold-dark line-clamp-2">
-                      {hero.name}
+                      {heroName}
                     </h2>
                   </Link>
 
-                  <div className="mt-3 flex items-center justify-center lg:justify-start gap-2.5">
+                  <div className="mt-3 flex flex-wrap items-center justify-center lg:justify-start gap-2.5">
                     <span className="font-display text-xl sm:text-2xl font-black text-gold-dark">
                       {formatPrice(hero.price)}
                     </span>
@@ -233,6 +240,11 @@ export function HeroShelf({
                     {hero.on_sale && (
                       <span className="rounded-full bg-red-100 text-red-700 text-[10px] font-black uppercase px-2 py-0.5">
                         Save
+                      </span>
+                    )}
+                    {format && (
+                      <span className="rounded-full bg-amber-50 text-amber-900 border border-amber-300/70 text-[10px] font-black uppercase tracking-wider px-2.5 py-0.5">
+                        {format}
                       </span>
                     )}
                   </div>
@@ -325,7 +337,7 @@ function FloatingBook({ product }: { product: Product }) {
             {image ? (
               <Image
                 src={image.src}
-                alt={image.alt || product.name}
+                alt={decodeHtmlEntities(image.alt || product.name)}
                 fill
                 sizes="(max-width: 768px) 220px, 275px"
                 priority

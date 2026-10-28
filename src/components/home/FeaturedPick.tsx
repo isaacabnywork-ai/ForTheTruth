@@ -6,6 +6,7 @@ import { useCartStore } from "@/store/cartStore";
 import { useWishlistStore } from "@/store/wishlistStore";
 import { formatPrice } from "@/utils/currency";
 import { getAuthor, type Product } from "@/types/product";
+import { cleanExcerpt, decodeHtmlEntities } from "@/utils/text";
 import { useState } from "react";
 
 /** "This month's essential read" — one book, with reasons why. */
@@ -29,9 +30,7 @@ export function FeaturedPick({
 
   const author = getAuthor(product);
   const rating = parseFloat(product.average_rating);
-  const excerpt = (product.short_description || product.description)
-    .replace(/<[^>]+>/g, "")
-    .slice(0, 260);
+  const excerpt = cleanExcerpt(product.short_description || product.description, 260);
 
   const reasons = [
     product.rating_count > 0
@@ -40,7 +39,7 @@ export function FeaturedPick({
     product.categories[0]
       ? `Trending in ${product.categories[0].name}`
       : "Trending with our readers",
-    parseFloat(product.price) >= 499
+    parseFloat(product.price) >= 150
       ? "Free shipping on this title"
       : "Dispatched within 24 hours",
   ];
@@ -91,7 +90,7 @@ export function FeaturedPick({
               <p className="overline-label mb-3">{product.categories[0].name}</p>
             )}
             <h3 className="font-display text-2xl font-black leading-tight text-charcoal md:text-3xl">
-              {product.name}
+              {decodeHtmlEntities(product.name)}
             </h3>
             {author && (
               <p className="mt-2 text-sm font-semibold uppercase tracking-[0.2em] text-gold-dark">

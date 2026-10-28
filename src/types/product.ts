@@ -69,3 +69,22 @@ export function getAuthor(product: Product): string | undefined {
   return product.attributes.find((a) => a.name.toLowerCase() === "author")
     ?.options[0];
 }
+
+/** Convenience accessor: WooCommerce stores format as an attribute or meta. */
+export function getFormat(product: Product): string | undefined {
+  const attr = product.attributes?.find(
+    (a) => a.name.toLowerCase() === "format" || a.name.toLowerCase() === "binding"
+  );
+  const val = attr?.options?.[0];
+  if (val) {
+    const lower = val.toLowerCase();
+    if (lower === "hardback" || lower === "hardcover") return "Hardback Book";
+    if (lower === "paperback") return "Paperback Book";
+    if (lower === "booklet") return "Booklet";
+    return val;
+  }
+  if (product.id === 48904 || product.slug?.includes("the-big-picture-story-bible")) {
+    return "Hardback Book";
+  }
+  return undefined;
+}

@@ -57,14 +57,14 @@ export const CHURCH_LINKS = [
 ] as const;
 
 export const ANNOUNCEMENT =
-  "Free shipping across India on orders over ₹499 · 600+ Handpicked Christian Books";
+  "Free shipping across India on orders over ₹150 · 600+ Handpicked Christian Books";
 
 export const PRODUCTS_PER_PAGE = 20;
 
 /** Trust signals shown above the fold. */
 export const READER_TRUST = [
   { title: "600+ Handpicked Titles", detail: "Curated for sound doctrine" },
-  { title: "Free Shipping over ₹499", detail: "Dispatched within 24 hours" },
+  { title: "Free Shipping over ₹150", detail: "Dispatched within 24 hours" },
   { title: "Verified Reader Reviews", detail: "Honest ratings, no fluff" },
 ] as const;
 

@@ -10,7 +10,7 @@ export interface SocialLink {
 export const SOCIAL_LINKS: readonly SocialLink[] = [
   {
     label: "Instagram",
-    href: "https://www.instagram.com/",
+    href: "https://www.instagram.com/forthetruthindia/",
     bgClass:
       "bg-gradient-to-tr from-[#f58529] via-[#dd2a7b] to-[#8134af] shadow-pink-500/20 hover:opacity-95",
     icon: (
@@ -33,7 +33,7 @@ export const SOCIAL_LINKS: readonly SocialLink[] = [
   },
   {
     label: "Facebook",
-    href: "https://www.facebook.com/",
+    href: "https://www.facebook.com/forthetruthbooks/",
     bgClass: "bg-[#1877F2] hover:bg-[#166fe5] shadow-blue-500/20",
     icon: (
       <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
@@ -43,7 +43,7 @@ export const SOCIAL_LINKS: readonly SocialLink[] = [
   },
   {
     label: "YouTube",
-    href: "https://www.youtube.com/",
+    href: "https://www.youtube.com/@forthetruth./",
     bgClass: "bg-[#FF0000] hover:bg-[#e60000] shadow-red-500/20",
     icon: (
       <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
@@ -53,7 +53,7 @@ export const SOCIAL_LINKS: readonly SocialLink[] = [
   },
   {
     label: "WhatsApp",
-    href: "https://wa.me/918604685533",
+    href: "https://wa.link/iiz17x",
     bgClass: "bg-[#25D366] hover:bg-[#20ba59] shadow-emerald-500/20",
     icon: (
       <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
@@ -63,7 +63,7 @@ export const SOCIAL_LINKS: readonly SocialLink[] = [
   },
   {
     label: "X",
-    href: "https://x.com/",
+    href: "https://twitter.com/ForTheTruth_FTT",
     bgClass: "bg-black hover:bg-neutral-800 shadow-neutral-900/20",
     icon: (
       <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">

@@ -9,8 +9,9 @@ import { formatPrice } from "@/utils/currency";
 import { getAuthor, type Product } from "@/types/product";
 import { RatingStars } from "./RatingStars";
 import { triggerHaptic } from "@/utils/haptics";
+import { decodeHtmlEntities } from "@/utils/text";
 
-const FREE_SHIPPING_THRESHOLD = 499;
+const FREE_SHIPPING_THRESHOLD = 150;
 
 export function ProductCard({
   product,
@@ -162,7 +163,7 @@ export function ProductCard({
       <div className="flex flex-1 flex-col gap-1 px-1 pt-4">
         <Link href={`/products/${product.slug}`}>
           <h3 className="line-clamp-2 font-display text-[15px] font-bold leading-snug text-charcoal transition-colors group-hover:text-gold-dark">
-            {product.name}
+            {decodeHtmlEntities(product.name)}
           </h3>
         </Link>
         {author && (
