@@ -86,7 +86,7 @@ export function SingleBookPaymentTrust({ product, inStock }: SingleBookPaymentTr
         <img
           src="/images/razorpay-logo.png"
           alt="Razorpay"
-          className="h-4.5 w-auto object-contain inline-block"
+          className="h-[18px] w-auto max-w-[90px] object-contain inline-block"
         />
       </div>
 
