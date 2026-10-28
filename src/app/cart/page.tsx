@@ -6,7 +6,9 @@ import { useEffect, useState } from "react";
 import { useCartStore } from "@/store/cartStore";
 import { formatPrice } from "@/utils/currency";
 
-import { calculateShipping, calculateTotalWeight } from "@/utils/shipping";
+import { calculateShipping } from "@/utils/shipping";
+import { FreeDeliveryBar } from "@/components/cart/FreeDeliveryBar";
+import { RewardOfferBox } from "@/components/cart/RewardOfferBox";
 
 export default function CartPage() {
   const { items, updateQuantity, removeFromCart } = useCartStore();
@@ -22,7 +24,6 @@ export default function CartPage() {
   }
 
   const subtotal = items.reduce((sum, i) => sum + i.price * i.quantity, 0);
-  const totalWeight = calculateTotalWeight(items);
   const shippingInfo = calculateShipping({
     destinationCountry: "IN",
     items,
@@ -51,75 +52,80 @@ export default function CartPage() {
       <p className="overline-label mb-2">Almost there</p>
       <h1 className="font-display text-3xl font-bold md:text-4xl">Your Cart</h1>
 
-      <div className="mt-10 grid gap-10 lg:grid-cols-[1fr_360px]">
-        {/* Items */}
-        <div className="space-y-4">
-          {items.map((item) => (
-            <div
-              key={item.productId}
-              className="flex gap-5 rounded-2xl border border-sand bg-white p-4 shadow-card"
-            >
-              <Link
-                href={`/products/${item.slug}`}
-                className="relative flex h-28 w-20 shrink-0 items-center justify-center overflow-hidden rounded-lg bg-cream/30 p-1 shadow-book"
-              >
-                {item.image ? (
-                  <Image src={item.image} alt={item.name} fill sizes="80px" className="object-contain p-1" />
-                ) : (
-                  <div className="h-full w-full bg-gold-gradient" />
-                )}
-              </Link>
+      <div className="mt-8 grid gap-8 lg:grid-cols-[1fr_360px]">
+        {/* Left Column: Delivery bar, Reward box, and Cart items */}
+        <div className="space-y-6">
+          <FreeDeliveryBar subtotal={subtotal} />
+          <RewardOfferBox subtotal={subtotal} />
 
-              <div className="flex flex-1 flex-col">
+          <div className="space-y-4 pt-1">
+            {items.map((item) => (
+              <div
+                key={item.productId}
+                className="flex gap-5 rounded-2xl border border-sand bg-white p-4 shadow-card"
+              >
                 <Link
                   href={`/products/${item.slug}`}
-                  className="font-serif font-bold leading-snug hover:text-gold-dark"
+                  className="relative flex h-28 w-20 shrink-0 items-center justify-center overflow-hidden rounded-lg bg-cream/30 p-1 shadow-book"
                 >
-                  {item.name}
+                  {item.image ? (
+                    <Image src={item.image} alt={item.name} fill sizes="80px" className="object-contain p-1" />
+                  ) : (
+                    <div className="h-full w-full bg-gold-gradient" />
+                  )}
                 </Link>
-                <p className="mt-1 text-sm text-charcoal/50">
-                  {formatPrice(item.price)} each
-                </p>
 
-                <div className="mt-auto flex items-center justify-between pt-3">
-                  <div className="flex items-center rounded-full border border-sand bg-cream/50">
-                    <button
-                      onClick={() => updateQuantity(item.productId, item.quantity - 1)}
-                      aria-label="Decrease quantity"
-                      className="px-3 py-1.5 text-charcoal/60 hover:text-gold-dark"
-                    >
-                      −
-                    </button>
-                    <span className="min-w-7 text-center text-sm font-bold">
-                      {item.quantity}
-                    </span>
-                    <button
-                      onClick={() => updateQuantity(item.productId, item.quantity + 1)}
-                      aria-label="Increase quantity"
-                      className="px-3 py-1.5 text-charcoal/60 hover:text-gold-dark"
-                    >
-                      +
-                    </button>
-                  </div>
+                <div className="flex flex-1 flex-col">
+                  <Link
+                    href={`/products/${item.slug}`}
+                    className="font-serif font-bold leading-snug hover:text-gold-dark"
+                  >
+                    {item.name}
+                  </Link>
+                  <p className="mt-1 text-sm text-charcoal/50">
+                    {formatPrice(item.price)} each
+                  </p>
 
-                  <div className="flex items-center gap-4">
-                    <span className="font-bold">
-                      {formatPrice(item.price * item.quantity)}
-                    </span>
-                    <button
-                      onClick={() => removeFromCart(item.productId)}
-                      aria-label={`Remove ${item.name}`}
-                      className="text-charcoal/35 transition-smooth hover:text-red-500"
-                    >
-                      <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
-                        <path d="M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2m3 0v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6" />
-                      </svg>
-                    </button>
+                  <div className="mt-auto flex items-center justify-between pt-3">
+                    <div className="flex items-center rounded-full border border-sand bg-cream/50">
+                      <button
+                        onClick={() => updateQuantity(item.productId, item.quantity - 1)}
+                        aria-label="Decrease quantity"
+                        className="px-3 py-1.5 text-charcoal/60 hover:text-gold-dark"
+                      >
+                        −
+                      </button>
+                      <span className="min-w-7 text-center text-sm font-bold">
+                        {item.quantity}
+                      </span>
+                      <button
+                        onClick={() => updateQuantity(item.productId, item.quantity + 1)}
+                        aria-label="Increase quantity"
+                        className="px-3 py-1.5 text-charcoal/60 hover:text-gold-dark"
+                      >
+                        +
+                      </button>
+                    </div>
+
+                    <div className="flex items-center gap-4">
+                      <span className="font-bold">
+                        {formatPrice(item.price * item.quantity)}
+                      </span>
+                      <button
+                        onClick={() => removeFromCart(item.productId)}
+                        aria-label={`Remove ${item.name}`}
+                        className="text-charcoal/35 transition-smooth hover:text-red-500"
+                      >
+                        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
+                          <path d="M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2m3 0v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6" />
+                        </svg>
+                      </button>
+                    </div>
                   </div>
                 </div>
               </div>
-            </div>
-          ))}
+            ))}
+          </div>
         </div>
 
         {/* Summary */}
@@ -131,22 +137,15 @@ export default function CartPage() {
               <dd className="font-semibold">{formatPrice(subtotal)}</dd>
             </div>
             <div className="flex justify-between">
-              <dt className="text-charcoal/55">Est. Weight</dt>
-              <dd className="font-semibold text-charcoal/70">{totalWeight.toFixed(2)} kg</dd>
-            </div>
-            <div className="flex justify-between">
               <dt className="text-charcoal/55">Shipping (India)</dt>
               <dd className="font-semibold">
                 {shipping === 0 ? (
-                  <span className="text-gold-deep">Free</span>
+                  <span className="font-bold text-emerald-700">Free</span>
                 ) : (
                   formatPrice(shipping)
                 )}
               </dd>
             </div>
-            <p className="rounded-lg bg-gold/10 px-3 py-2 text-xs text-gold-deep leading-relaxed">
-              📦 <strong>Shipping Rule:</strong> {shippingInfo.breakdown}. International &amp; In-Store pickup calculated at checkout.
-            </p>
             <div className="flex justify-between border-t border-sand pt-4">
               <dt className="font-bold">Total</dt>
               <dd className="font-display text-xl font-bold text-gold-dark">

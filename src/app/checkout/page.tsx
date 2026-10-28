@@ -8,6 +8,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { useCartStore } from "@/store/cartStore";
 import { formatPrice } from "@/utils/currency";
 import { calculateShipping } from "@/utils/shipping";
+import { getUnlockedRewards } from "@/utils/rewards";
 
 declare global {
   interface Window {
@@ -72,6 +73,7 @@ export default function CheckoutPage() {
 
   const requiresShipping = items.some((i) => !i.isVirtual);
   const subtotal = items.reduce((sum, i) => sum + i.price * i.quantity, 0);
+  const earnedRewards = getUnlockedRewards(subtotal);
 
   const shippingInfo = calculateShipping({
     destinationCountry: shipping.country,
@@ -387,6 +389,27 @@ export default function CheckoutPage() {
             ))}
           </ul>
 
+          {earnedRewards.length > 0 && (
+            <div className="mt-4 pt-3 border-t border-sand/60">
+              <p className="text-xs font-bold text-[#103460] uppercase tracking-wider mb-2 flex items-center gap-1.5">
+                <span>🎁</span> Free Reward Books ({earnedRewards.length})
+              </p>
+              <ul className="space-y-1.5 text-xs">
+                {earnedRewards.map((reward) => (
+                  <li
+                    key={reward.productId}
+                    className="flex items-center justify-between gap-3 bg-sky-50/70 px-2.5 py-1.5 rounded-lg border border-sky-100"
+                  >
+                    <span className="font-semibold text-charcoal/80 line-clamp-1">{reward.title}</span>
+                    <span className="font-extrabold text-emerald-600 uppercase text-[10px] bg-emerald-100 px-2 py-0.5 rounded-full shrink-0">
+                      FREE
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+
           <div className="mt-5 flex gap-2">
             <input
               value={coupon}
@@ -406,23 +429,12 @@ export default function CheckoutPage() {
               <dd className="font-semibold">{formatPrice(subtotal)}</dd>
             </div>
             {requiresShipping && (
-            <>
-              <div className="flex justify-between">
-                <dt className="text-charcoal/55">Est. Weight</dt>
-                <dd className="font-semibold text-charcoal/70">{shippingInfo.totalWeightKg.toFixed(2)} kg</dd>
-              </div>
               <div className="flex justify-between">
                 <dt className="text-charcoal/55">{shippingMethod === "pickup" ? "Store Pickup" : shippingInfo.label}</dt>
                 <dd className="font-semibold">
                   {estShipping === 0 ? <span className="text-emerald-600 font-bold">Free</span> : formatPrice(estShipping)}
                 </dd>
               </div>
-              {estShipping > 0 && (
-                <p className="text-[11px] text-charcoal/50 bg-cream/70 rounded-lg p-2 leading-relaxed">
-                  📦 {shippingInfo.breakdown}
-                </p>
-              )}
-            </>
             )}
             <div className="flex justify-between border-t border-sand pt-3">
               <dt className="font-bold">Total</dt>

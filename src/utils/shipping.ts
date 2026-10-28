@@ -103,7 +103,20 @@ export function calculateShipping(params: ShippingCalculationParams): ShippingCa
   const isDomestic = isDomesticCountry(destinationCountry);
 
   if (isDomestic) {
-    // Domestic Rule: ₹100 + ₹70 per 0.5 kg over 0.5 kg => [₹100 - ₹∞]
+    // Orders over ₹150 qualify for Free Delivery across India
+    if (subtotal >= 150) {
+      return {
+        cost: 0,
+        label: "Free Delivery (India)",
+        ruleTitle: "Free Delivery",
+        isInternational: false,
+        totalWeightKg: weight,
+        rateFormula: "Free over ₹150",
+        breakdown: "Free shipping for orders over ₹150",
+      };
+    }
+
+    // Domestic Rule (under ₹150): ₹100 + ₹70 per 0.5 kg over 0.5 kg => [₹100 - ₹∞]
     const baseWeight = 0.5;
     const basePrice = 100;
     const extraRate = 70;

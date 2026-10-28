@@ -4,6 +4,7 @@ import { getSessionUser } from "@/lib/session";
 import { createRazorpayOrder } from "@/services/razorpay";
 import { createOrder, getProducts } from "@/services/woocommerce";
 import { calculateShipping } from "@/utils/shipping";
+import { getUnlockedRewards } from "@/utils/rewards";
 
 const addressSchema = z.object({
   firstName: z.string().min(1),
@@ -80,10 +81,25 @@ export async function POST(req: NextRequest) {
       };
     });
 
-    const lineItems = items.map((item) => ({
-      product_id: item.productId,
-      quantity: item.quantity,
+    const earnedRewards = getUnlockedRewards(subtotal);
+    const rewardLineItems = earnedRewards.map((reward) => ({
+      product_id: reward.productId,
+      quantity: 1,
+      subtotal: "0.00",
+      total: "0.00",
+      meta_data: [
+        { key: "Offer", value: "Reformation Week Free Reward Book" },
+        { key: "_free_reward", value: "yes" },
+      ],
     }));
+
+    const lineItems = [
+      ...items.map((item) => ({
+        product_id: item.productId,
+        quantity: item.quantity,
+      })),
+      ...rewardLineItems,
+    ];
 
     const bill = billing || shipping;
     if (!bill) {
@@ -120,6 +136,9 @@ export async function POST(req: NextRequest) {
         country: bill.country,
       },
       line_items: lineItems,
+      ...(earnedRewards.length > 0 && {
+        customer_note: `🎁 Included ${earnedRewards.length} Free Reward Book(s): ${earnedRewards.map((r) => r.title).join(", ")}`,
+      }),
       ...(shipping && {
         shipping: {
           first_name: shipping.firstName,
