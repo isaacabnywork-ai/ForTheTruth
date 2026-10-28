@@ -16,9 +16,9 @@ interface MegaMenuProps {
 const itemCls =
   "group flex items-center justify-between rounded-lg px-3 py-1.5 text-sm text-charcoal/75 transition-smooth hover:bg-cream hover:text-gold-dark hover:pl-4";
 const sectionHeaderCls =
-  "font-display text-sm font-black uppercase tracking-wide text-charcoal border-b border-sand pb-1 mb-3";
+  "font-display text-sm font-bold tracking-normal text-charcoal border-b border-sand pb-1 mb-3";
 const subHeaderCls =
-  "text-[10px] font-bold uppercase tracking-wider text-gold-dark mt-3 mb-1 px-3";
+  "text-[11px] font-semibold tracking-normal text-gold-dark mt-3 mb-1 px-3";
 
 export function MegaMenu({ open, onNavigate, onMouseEnter, onMouseLeave }: MegaMenuProps) {
   return (
@@ -36,7 +36,7 @@ export function MegaMenu({ open, onNavigate, onMouseEnter, onMouseLeave }: MegaM
         <div className="grid grid-cols-4 gap-6">
           {/* Column 1: All Books Main Navigation & Publishers */}
           <div className="border-r border-sand pr-6">
-            <p className={sectionHeaderCls}>ALL BOOKS</p>
+            <p className={sectionHeaderCls}>All Books</p>
             <ul className="space-y-0.5">
               <li>
                 <Link href="/products" onClick={onNavigate} className={itemCls}>
@@ -95,7 +95,7 @@ export function MegaMenu({ open, onNavigate, onMouseEnter, onMouseLeave }: MegaM
 
           {/* Column 2: Collections */}
           <div className="border-r border-sand pr-6">
-            <p className={sectionHeaderCls}>COLLECTIONS</p>
+            <p className={sectionHeaderCls}>Collections</p>
             <ul className="space-y-0.5">
               {COLLECTIONS.map((c) => (
                 <li key={c.href}>
@@ -118,7 +118,7 @@ export function MegaMenu({ open, onNavigate, onMouseEnter, onMouseLeave }: MegaM
 
           {/* Column 3: Highlights & Formats */}
           <div className="border-r border-sand pr-6">
-            <p className={sectionHeaderCls}>HIGHLIGHTS</p>
+            <p className={sectionHeaderCls}>Highlights</p>
             <ul className="space-y-0.5">
               <li>
                 <Link

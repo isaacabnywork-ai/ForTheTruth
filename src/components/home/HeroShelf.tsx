@@ -134,7 +134,7 @@ export function HeroShelf({
               </p>
             )}
 
-            <h1 className="mt-5 font-display text-2xl sm:text-3xl lg:text-[2.2rem] xl:text-[2.65rem] font-black leading-[1.35] text-charcoal">
+            <h1 className="mt-5 font-display text-xl sm:text-2xl lg:text-[1.65rem] xl:text-[1.85rem] font-bold leading-normal sm:leading-relaxed lg:leading-[1.55] text-charcoal">
               {titleParts[0]}
               {titleParts[1] ? (
                 <>
@@ -215,7 +215,7 @@ export function HeroShelf({
                   </div>
 
                   <Link href={`/products/${hero.slug}`} className="block group">
-                    <h2 className="font-display text-xl sm:text-2xl md:text-[28px] lg:text-[32px] font-black leading-snug text-charcoal transition-colors group-hover:text-gold-dark line-clamp-2">
+                    <h2 className="font-display text-lg sm:text-xl md:text-2xl lg:text-[26px] font-bold leading-normal sm:leading-relaxed lg:leading-[1.5] text-charcoal transition-colors group-hover:text-gold-dark line-clamp-2">
                       {heroName}
                     </h2>
                   </Link>

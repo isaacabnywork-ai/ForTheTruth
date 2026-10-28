@@ -210,7 +210,7 @@ export function MobileNav({ categories }: { categories: WCCategory[] }) {
 
           {/* Categories */}
           <div className="mt-8">
-            <p className="overline-label mb-3">Categories</p>
+            <p className="text-xs font-bold text-charcoal/60 mb-3">Categories</p>
             <div className="space-y-1">
               <Link href="/categories/bible-study" className="flex items-center justify-between py-2 text-sm text-charcoal/70 transition-smooth hover:pl-1 hover:text-gold-dark">
                 <span>Bible Study</span>
@@ -236,15 +236,15 @@ export function MobileNav({ categories }: { categories: WCCategory[] }) {
                 <span>Upcoming</span>
                 <span className="text-xs text-charcoal/30">→</span>
               </Link>
-              <Link href="/categories" className="block pt-2 text-xs font-bold uppercase tracking-wider text-gold-dark hover:underline">
-                View All Categories →
+              <Link href="/categories" className="block pt-2 text-xs font-bold text-gold-dark hover:underline">
+                View all categories →
               </Link>
             </div>
           </div>
 
           {/* Publishers */}
           <div className="mt-8">
-            <p className="overline-label mb-3">Publishers</p>
+            <p className="text-xs font-bold text-charcoal/60 mb-3">Publishers</p>
             <div className="space-y-1">
               <Link href="/products?publisher=248" className="block py-2 text-sm text-charcoal/70 transition-smooth hover:pl-1 hover:text-gold-dark">
                 For The Truth
@@ -262,7 +262,7 @@ export function MobileNav({ categories }: { categories: WCCategory[] }) {
           </div>
 
           <div className="mt-8">
-            <p className="overline-label mb-3">Collections</p>
+            <p className="text-xs font-bold text-charcoal/60 mb-3">Collections</p>
             {COLLECTIONS.map((c) => (
               <Link
                 key={c.href}

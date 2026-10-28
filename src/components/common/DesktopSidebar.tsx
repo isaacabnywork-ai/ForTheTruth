@@ -244,7 +244,7 @@ export function DesktopSidebar({
             <div>
               <button
                 onClick={() => setCatOpen((p) => !p)}
-                className="flex w-full items-center justify-between px-3 py-2 text-xs font-bold uppercase tracking-[0.2em] text-charcoal/50 transition-smooth hover:text-gold-dark"
+                className="flex w-full items-center justify-between px-3 py-2 text-xs font-bold text-charcoal/70 transition-smooth hover:text-gold-dark"
               >
                 <span>Categories</span>
                 <svg
@@ -288,7 +288,7 @@ export function DesktopSidebar({
                   <li>
                     <Link
                       href="/categories"
-                      className="mt-1.5 inline-flex items-center gap-1 px-3 text-[11px] font-bold uppercase tracking-widest text-gold-dark transition-smooth hover:gap-2"
+                      className="mt-1.5 inline-flex items-center gap-1 px-3 text-xs font-bold text-gold-dark hover:underline transition-smooth hover:gap-2"
                     >
                       View all categories <span aria-hidden="true">→</span>
                     </Link>
@@ -303,7 +303,7 @@ export function DesktopSidebar({
             <div>
               <button
                 onClick={() => setPublishersOpen((p) => !p)}
-                className="flex w-full items-center justify-between px-3 py-2 text-xs font-bold uppercase tracking-[0.2em] text-charcoal/50 transition-smooth hover:text-gold-dark"
+                className="flex w-full items-center justify-between px-3 py-2 text-xs font-bold text-charcoal/70 transition-smooth hover:text-gold-dark"
               >
                 <span>Publishers</span>
                 <svg
@@ -341,7 +341,7 @@ export function DesktopSidebar({
             <div>
               <button
                 onClick={() => setCollectionsOpen((p) => !p)}
-                className="flex w-full items-center justify-between px-3 py-2 text-xs font-bold uppercase tracking-[0.2em] text-charcoal/50 transition-smooth hover:text-gold-dark"
+                className="flex w-full items-center justify-between px-3 py-2 text-xs font-bold text-charcoal/70 transition-smooth hover:text-gold-dark"
               >
                 <span>Collections</span>
                 <svg
@@ -395,7 +395,7 @@ export function DesktopSidebar({
             <div>
               <button
                 onClick={() => setMoreOpen((p) => !p)}
-                className="flex w-full items-center justify-between px-3 py-2 text-xs font-bold uppercase tracking-[0.2em] text-charcoal/50 transition-smooth hover:text-gold-dark"
+                className="flex w-full items-center justify-between px-3 py-2 text-xs font-bold text-charcoal/70 transition-smooth hover:text-gold-dark"
               >
                 <span>More</span>
                 <svg
@@ -438,7 +438,7 @@ export function DesktopSidebar({
       <div className="border-t border-sand p-3">
         {!collapsed ? (
           <div className="px-1 pt-0.5">
-            <p className="mb-2 text-[10px] font-bold uppercase tracking-[0.2em] text-charcoal/40">
+            <p className="mb-2 text-[11px] font-semibold text-charcoal/50">
               Follow Us
             </p>
             <div className="flex items-center justify-between">

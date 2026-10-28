@@ -45,7 +45,7 @@ export function RecentlyViewedMegaSection({
         <div>
           <div className="flex items-center gap-2 mb-4">
             <span className="h-1.5 w-1.5 rounded-full bg-gold/50" />
-            <p className="overline-label">Recently Viewed</p>
+            <p className="font-display text-sm font-bold text-charcoal">Recently Viewed</p>
           </div>
           <div className="space-y-2.5">
             {[1, 2, 3].map((i) => (
@@ -72,7 +72,7 @@ export function RecentlyViewedMegaSection({
         {/* Header */}
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-1.5">
-            <p className="overline-label">Recently Viewed</p>
+            <p className="font-display text-sm font-bold text-charcoal">Recently Viewed</p>
             {hasItems && (
               <span className="rounded-full bg-gold/15 px-1.5 py-0.2 text-[9px] font-bold text-gold-dark">
                 {items.length}
@@ -166,7 +166,7 @@ export function RecentlyViewedMegaSection({
       <Link
         href="/products"
         onClick={onNavigate}
-        className="mt-4 inline-flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-widest text-gold-dark transition-smooth hover:gap-2.5"
+        className="mt-4 inline-flex items-center gap-1.5 text-xs font-semibold text-gold-dark transition-smooth hover:gap-2.5 hover:underline"
       >
         Browse all books <span aria-hidden="true">&rarr;</span>
       </Link>

@@ -12,9 +12,9 @@ interface CategoriesMegaMenuProps {
 const itemCls =
   "group block rounded-md px-2.5 py-1 text-xs text-charcoal/75 transition-smooth hover:bg-cream hover:text-gold-dark hover:pl-3";
 const sectionHeaderCls =
-  "font-display text-sm font-black uppercase tracking-wide text-charcoal border-b border-sand pb-1 mb-2.5";
+  "font-display text-sm font-bold tracking-normal text-charcoal border-b border-sand pb-1 mb-2.5";
 const subHeaderCls =
-  "text-[10px] font-bold uppercase tracking-wider text-gold-dark mt-2.5 mb-1 px-2.5";
+  "text-[11px] font-semibold tracking-normal text-gold-dark mt-2.5 mb-1 px-2.5";
 
 export function CategoriesMegaMenu({
   open,
@@ -38,7 +38,7 @@ export function CategoriesMegaMenu({
           {/* Column 1: Bible Study & Ministry */}
           <div className="space-y-6">
             <div>
-              <p className={sectionHeaderCls}>BIBLE STUDY</p>
+              <p className={sectionHeaderCls}>Bible Study</p>
               <ul className="space-y-0.5">
                 <li>
                   <Link href="/categories/bible-study" onClick={onNavigate} className={itemCls}>
@@ -67,7 +67,7 @@ export function CategoriesMegaMenu({
             </div>
 
             <div>
-              <p className={sectionHeaderCls}>MINISTRY</p>
+              <p className={sectionHeaderCls}>Ministry</p>
               <ul className="space-y-0.5">
                 <li>
                   <Link href="/categories/ministry" onClick={onNavigate} className={itemCls}>
@@ -95,7 +95,7 @@ export function CategoriesMegaMenu({
 
           {/* Column 2: Children */}
           <div>
-            <p className={sectionHeaderCls}>CHILDREN</p>
+            <p className={sectionHeaderCls}>Children</p>
             <ul className="space-y-0.5">
               <li>
                 <Link href="/categories/children" onClick={onNavigate} className={itemCls}>
@@ -170,7 +170,7 @@ export function CategoriesMegaMenu({
 
           {/* Column 3: Christian Living */}
           <div>
-            <p className={sectionHeaderCls}>CHRISTIAN LIVING</p>
+            <p className={sectionHeaderCls}>Christian Living</p>
             <ul className="space-y-0.5">
               <li>
                 <Link href="/categories/christian-living" onClick={onNavigate} className={itemCls}>
@@ -218,7 +218,7 @@ export function CategoriesMegaMenu({
           {/* Column 4: Theology & Upcoming */}
           <div className="space-y-6">
             <div>
-              <p className={sectionHeaderCls}>THEOLOGY</p>
+              <p className={sectionHeaderCls}>Theology</p>
               <ul className="space-y-0.5">
                 <li>
                   <Link href="/categories/theology" onClick={onNavigate} className={itemCls}>
@@ -242,7 +242,7 @@ export function CategoriesMegaMenu({
             </div>
 
             <div>
-              <p className={sectionHeaderCls}>UPCOMING</p>
+              <p className={sectionHeaderCls}>Upcoming</p>
               <ul className="space-y-0.5">
                 <li>
                   <Link href="/products?availability=outofstock" onClick={onNavigate} className={itemCls}>
@@ -253,7 +253,7 @@ export function CategoriesMegaMenu({
             </div>
 
             <div className="rounded-xl bg-sand/30 p-3.5 border border-sand/50">
-              <p className="text-[10px] font-bold uppercase tracking-wider text-charcoal/50 mb-1">
+              <p className="text-[11px] font-semibold text-charcoal/50 mb-1">
                 Browse Full Catalog
               </p>
               <Link
