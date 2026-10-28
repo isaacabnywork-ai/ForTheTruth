@@ -39,6 +39,12 @@ const nextConfig: NextConfig = {
       ],
     },
   ],
+  rewrites: async () => [
+    {
+      source: "/wp-content/uploads/:path*",
+      destination: "https://admin.forthetruth.in/wp-content/uploads/:path*",
+    },
+  ],
 };
 
 export default nextConfig;
