@@ -145,17 +145,17 @@ export default async function HomePage() {
       {/* 4 — 4 Categorical Rows: The Bible Speaks Today, Christian Living, Ministry, Theology */}
       <CategoryBookRows rows={categoryRows} />
 
-      {/* 5 — Bestsellers Shelf (placed below Theology category) */}
+      {/* 5 — Children Books Shelf (replaces Bestsellers shelf) */}
       {storeReady ? (
         bestsellers.length > 0 && (
           <Bookshelf
-            title={curated.bestsellersTitle || "Bestsellers"}
-            href="/products?orderby=popularity"
+            title={curated.bestsellersTitle || "Children Books"}
+            href="/categories/children"
             products={bestsellers}
           />
         )
       ) : (
-        <BookshelfSkeleton title={curated.bestsellersTitle || "Bestsellers"} />
+        <BookshelfSkeleton title={curated.bestsellersTitle || "Children Books"} />
       )}
 
       {/* 6 — Explore Children Books (spine slider) with customizable titles & book selection */}

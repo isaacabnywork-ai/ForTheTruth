@@ -6,7 +6,7 @@ import { usePathname } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { SearchBar } from "./SearchBar";
 import { MegaMenu } from "./MegaMenu";
-import { ChurchMegaMenu } from "./ChurchMegaMenu";
+import { CategoriesMegaMenu } from "./CategoriesMegaMenu";
 import { useCartStore } from "@/store/cartStore";
 import { useWishlistStore } from "@/store/wishlistStore";
 import { useAuthStore } from "@/store/authStore";
@@ -16,7 +16,7 @@ import { ANNOUNCEMENT, NAV_LINKS, SITE_NAME } from "@/utils/constants";
 
 export function Header({ categories }: { categories: WCCategory[] }) {
   const pathname = usePathname();
-  const [openMenu, setOpenMenu] = useState<"books" | "church" | null>(null);
+  const [openMenu, setOpenMenu] = useState<"books" | "categories" | null>(null);
   const [mounted, setMounted] = useState(false);
   const cartCount = useCartStore((s) => s.getCount());
   const wishlistCount = useWishlistStore((s) => s.productIds.length);
@@ -31,7 +31,7 @@ export function Header({ categories }: { categories: WCCategory[] }) {
     ? (user.firstName || user.displayName || (user.email ? user.email.split("@")[0] : "Account"))
     : "Account";
 
-  const openMenuSafe = useCallback((menu: "books" | "church") => {
+  const openMenuSafe = useCallback((menu: "books" | "categories") => {
     if (closeTimer.current) {
       clearTimeout(closeTimer.current);
       closeTimer.current = null;
@@ -86,7 +86,7 @@ export function Header({ categories }: { categories: WCCategory[] }) {
           </Link>
 
           <nav className="hidden flex-1 items-center gap-7 lg:flex lg:ml-10 xl:ml-16">
-            {NAV_LINKS.filter((link) => link.label !== "Authors").map((link) => {
+            {NAV_LINKS.map((link) => {
               const menu = "menu" in link ? link.menu : null;
               if (!menu) {
                 return (
@@ -109,9 +109,7 @@ export function Header({ categories }: { categories: WCCategory[] }) {
                       cancelClose();
                       setOpenMenu((prev) => (prev === menu ? null : menu));
                     }}
-                    className={`nav-link inline-flex items-center gap-1.5 py-2 text-sm font-semibold cursor-pointer ${
-                      menu === "church" ? "text-navy hover:text-cta" : ""
-                    }`}
+                    className="nav-link inline-flex items-center gap-1.5 py-2 text-sm font-semibold cursor-pointer"
                     aria-expanded={isOpen}
                   >
                     {link.label}
@@ -128,7 +126,7 @@ export function Header({ categories }: { categories: WCCategory[] }) {
                       <path d="m6 9 6 6 6-6" />
                     </svg>
                   </Link>
-                  {menu === "books" ? (
+                  {menu === "books" && (
                     <MegaMenu
                       open={isOpen}
                       categories={categories}
@@ -136,8 +134,9 @@ export function Header({ categories }: { categories: WCCategory[] }) {
                       onMouseEnter={cancelClose}
                       onMouseLeave={scheduleClose}
                     />
-                  ) : (
-                    <ChurchMegaMenu
+                  )}
+                  {menu === "categories" && (
+                    <CategoriesMegaMenu
                       open={isOpen}
                       onNavigate={() => setOpenMenu(null)}
                       onMouseEnter={cancelClose}

@@ -40,10 +40,10 @@ const DEFAULT_CONFIG: CuratedShelfConfig = {
   featuredBadge: "Editor's choice",
   featuredTitle: "This Month's Essential Read",
   featuredSubtitle: "One title we think belongs on every shelf this month — and why.",
-  newArrivalsIds: [],
+  newArrivalsIds: [56886, 56883, 56874, 53118, 53116, 53106],
   newArrivalsTitle: "New Arrivals",
-  bestsellersIds: [],
-  bestsellersTitle: "Bestsellers",
+  bestsellersIds: [35262, 13148, 12833, 34468, 35647, 20507],
+  bestsellersTitle: "Children Books",
 };
 
 function getConfigPath() {

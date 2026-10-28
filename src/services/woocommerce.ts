@@ -116,6 +116,8 @@ export interface ProductQuery {
   stockStatus?: "instock" | "outofstock" | "onbackorder";
   include?: number[];
   revalidate?: number;
+  attribute?: string;
+  attributeTerm?: number;
 }
 
 function productParams(q: ProductQuery = {}) {
@@ -132,6 +134,8 @@ function productParams(q: ProductQuery = {}) {
     max_price: q.maxPrice,
     stock_status: q.stockStatus,
     include: q.include?.join(","),
+    attribute: q.attribute,
+    attribute_term: q.attributeTerm,
     status: "publish",
   };
 }

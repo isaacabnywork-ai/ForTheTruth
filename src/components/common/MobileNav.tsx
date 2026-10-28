@@ -208,23 +208,58 @@ export function MobileNav({ categories }: { categories: WCCategory[] }) {
             ))}
           </nav>
 
-          {categories.length > 0 && (
-            <div className="mt-8">
-              <p className="overline-label mb-3">Categories</p>
-              {categories.slice(0, 10).map((cat) => (
-                <Link
-                  key={cat.id}
-                  href={`/categories/${cat.slug}`}
-                  className="flex items-center justify-between py-2.5 text-sm text-charcoal/60 transition-smooth hover:pl-1 hover:text-gold-dark"
-                >
-                  {cat.name}
-                  {cat.count != null && (
-                    <span className="text-xs text-charcoal/25">{cat.count}</span>
-                  )}
-                </Link>
-              ))}
+          {/* Categories */}
+          <div className="mt-8">
+            <p className="overline-label mb-3">Categories</p>
+            <div className="space-y-1">
+              <Link href="/categories/bible-study" className="flex items-center justify-between py-2 text-sm text-charcoal/70 transition-smooth hover:pl-1 hover:text-gold-dark">
+                <span>Bible Study</span>
+                <span className="text-xs text-charcoal/30">→</span>
+              </Link>
+              <Link href="/categories/children" className="flex items-center justify-between py-2 text-sm text-charcoal/70 transition-smooth hover:pl-1 hover:text-gold-dark">
+                <span>Children</span>
+                <span className="text-xs text-charcoal/30">→</span>
+              </Link>
+              <Link href="/categories/christian-living" className="flex items-center justify-between py-2 text-sm text-charcoal/70 transition-smooth hover:pl-1 hover:text-gold-dark">
+                <span>Christian Living</span>
+                <span className="text-xs text-charcoal/30">→</span>
+              </Link>
+              <Link href="/categories/ministry" className="flex items-center justify-between py-2 text-sm text-charcoal/70 transition-smooth hover:pl-1 hover:text-gold-dark">
+                <span>Ministry</span>
+                <span className="text-xs text-charcoal/30">→</span>
+              </Link>
+              <Link href="/categories/theology" className="flex items-center justify-between py-2 text-sm text-charcoal/70 transition-smooth hover:pl-1 hover:text-gold-dark">
+                <span>Theology</span>
+                <span className="text-xs text-charcoal/30">→</span>
+              </Link>
+              <Link href="/products?availability=outofstock" className="flex items-center justify-between py-2 text-sm text-charcoal/70 transition-smooth hover:pl-1 hover:text-gold-dark">
+                <span>Upcoming</span>
+                <span className="text-xs text-charcoal/30">→</span>
+              </Link>
+              <Link href="/categories" className="block pt-2 text-xs font-bold uppercase tracking-wider text-gold-dark hover:underline">
+                View All Categories →
+              </Link>
             </div>
-          )}
+          </div>
+
+          {/* Publishers */}
+          <div className="mt-8">
+            <p className="overline-label mb-3">Publishers</p>
+            <div className="space-y-1">
+              <Link href="/products?publisher=248" className="block py-2 text-sm text-charcoal/70 transition-smooth hover:pl-1 hover:text-gold-dark">
+                FOR THE TRUTH
+              </Link>
+              <Link href="/products?publisher=1108" className="block py-2 text-sm text-charcoal/70 transition-smooth hover:pl-1 hover:text-gold-dark">
+                SHEPHERD PRESS
+              </Link>
+              <Link href="/products?publisher=1887" className="block py-2 text-sm text-charcoal/70 transition-smooth hover:pl-1 hover:text-gold-dark">
+                10 PUBLISHING
+              </Link>
+              <Link href="/products?publisher=163" className="block py-2 text-sm text-charcoal/70 transition-smooth hover:pl-1 hover:text-gold-dark">
+                THE GOOD BOOK COMPANY
+              </Link>
+            </div>
+          </div>
 
           <div className="mt-8">
             <p className="overline-label mb-3">Collections</p>

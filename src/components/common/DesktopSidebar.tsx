@@ -58,8 +58,8 @@ function Icon({
 const PRIMARY_NAV = [
   { label: "Home", href: "/", icon: ICONS.home },
   { label: "All Books", href: "/products", icon: ICONS.books },
-  { label: "Categories", href: "/categories", icon: ICONS.categories },
-  { label: "Church Resources", href: "/church-resources", icon: ICONS.church },
+  { label: "All Categories", href: "/categories", icon: ICONS.categories },
+  { label: "Free E-Books", href: "/free-ebooks", icon: ICONS.books },
   { label: "About", href: "/about", icon: ICONS.about },
   { label: "Contact", href: "/contact", icon: ICONS.contact },
 ] as const;

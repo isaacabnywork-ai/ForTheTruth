@@ -44,6 +44,18 @@ export function parseProductQuery(
         : undefined;
 
   const categoryId = parseInt(first(sp.category) ?? "", 10);
+  const publisherId = parseInt(first(sp.publisher) ?? "", 10);
+  const ageId = parseInt(first(sp.age) ?? "", 10);
+
+  let attribute: string | undefined;
+  let attributeTerm: number | undefined;
+  if (Number.isInteger(publisherId)) {
+    attribute = "pa_publisher";
+    attributeTerm = publisherId;
+  } else if (Number.isInteger(ageId)) {
+    attribute = "pa_age-range";
+    attributeTerm = ageId;
+  }
 
   const query: ProductQuery = {
     page,
@@ -56,6 +68,8 @@ export function parseProductQuery(
     onSale: first(sp.on_sale) === "true" || undefined,
     category: Number.isInteger(categoryId) ? categoryId : undefined,
     search: first(sp.q) || first(sp.search) || undefined,
+    attribute,
+    attributeTerm,
   };
 
   const plain: Record<string, string | undefined> = {
@@ -64,6 +78,8 @@ export function parseProductQuery(
     availability: first(sp.availability),
     on_sale: first(sp.on_sale),
     category: first(sp.category),
+    publisher: first(sp.publisher),
+    age: first(sp.age),
     q: first(sp.q),
   };
 
