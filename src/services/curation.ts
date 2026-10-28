@@ -30,7 +30,7 @@ export interface CuratedShelfConfig {
 const DEFAULT_CONFIG: CuratedShelfConfig = {
   heroIds: [],
   heroBadge: "",
-  heroTitle: "Happy reading, friend",
+  heroTitle: "Buy Christian Books Online in India for Spiritual Growth",
   heroSubtitle: "",
   spineIds: [],
   spineBadge: "Browse the shelf",

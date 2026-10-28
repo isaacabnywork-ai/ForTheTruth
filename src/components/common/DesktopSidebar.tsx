@@ -369,33 +369,6 @@ export function DesktopSidebar({
             ))}
           </div>
         )}
-
-        <div className={!collapsed ? "border-t border-sand/60 pt-1.5" : "border-t border-sand/60 pt-1"}>
-          <Link
-            href="/faq"
-            className={`group flex items-center gap-3 rounded-xl px-2.5 py-2 text-sm font-semibold text-charcoal/50 transition-smooth hover:bg-cream hover:text-charcoal ${
-              collapsed ? "justify-center px-0" : ""
-            }`}
-            title={collapsed ? "Help & FAQ" : undefined}
-          >
-            <svg
-              width="16"
-              height="16"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="1.7"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              aria-hidden="true"
-            >
-              <circle cx="12" cy="12" r="10" />
-              <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3" />
-              <path d="M12 17h.01" />
-            </svg>
-            {!collapsed && <span>Help &amp; FAQ</span>}
-          </Link>
-        </div>
       </div>
     </aside>
   );

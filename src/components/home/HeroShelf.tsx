@@ -25,7 +25,7 @@ interface HeroShelfProps {
 export function HeroShelf({
   products = [],
   badge = "",
-  title = "Happy reading, friend",
+  title = "Buy Christian Books Online in India for Spiritual Growth",
   subtitle = "",
   autoPlayInterval = 5500,
 }: HeroShelfProps) {
@@ -134,7 +134,7 @@ export function HeroShelf({
               </p>
             )}
 
-            <h1 className="mt-5 font-display text-display-md font-black leading-tight text-charcoal">
+            <h1 className="mt-5 font-display text-2xl sm:text-3xl lg:text-[2.2rem] xl:text-[2.65rem] font-black leading-[1.15] text-charcoal">
               {titleParts[0]}
               {titleParts[1] ? (
                 <>

@@ -141,7 +141,7 @@ export function ShelfCuratorClient({ initialProducts, initialConfig }: ShelfCura
       key: "hero",
       label: "⭐ 1. Top Hero Section",
       badge: `${config.heroIds.length} Books`,
-      desc: "Above-the-fold main banner ('Happy reading, friend') & rotating book display.",
+      desc: "Above-the-fold main banner ('Buy Christian Books Online in India for Spiritual Growth') & rotating book display.",
     },
     {
       key: "spine",
