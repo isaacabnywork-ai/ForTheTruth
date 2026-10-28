@@ -6,20 +6,19 @@ import { SITE_NAME, COLLECTIONS } from "@/utils/constants";
 
 const COMPANY_LINKS = [
   { label: "About Us", href: "/about" },
-  { label: "Authors", href: "/authors" },
-  { label: "Why Choose Us", href: "/about#why" },
-  { label: "Contact", href: "/contact" },
+  { label: "Statement of Faith", href: "/statement-of-faith" },
+  { label: "Contact Us", href: "/contact" },
   { label: "Privacy Policy", href: "/privacy" },
-  { label: "Terms of Service", href: "/terms" },
+  { label: "Terms and Conditions", href: "/terms" },
 ];
 
 const QUICK_LINKS = [
   { label: "Out of Stock", href: "/products?availability=outofstock" },
   { label: "My Account", href: "/account/dashboard" },
   { label: "My Cart", href: "/cart" },
-  { label: "Free ebooks", href: "/free-ebooks" },
-  { label: "Hindi Books", href: "/products?category=hindi" },
-  { label: "FAQ’s", href: "/faq" },
+  { label: "Free E-Books", href: "/free-ebooks" },
+  { label: "Hindi Books", href: "https://margsatyajeevan.com/shop/", external: true },
+  { label: "FAQ's", href: "/faq" },
 ];
 
 const TRUST = [
@@ -67,7 +66,7 @@ export function Footer() {
       {/* Link columns (Hidden on mobile/tablet as requested) */}
       <div className="hidden mx-auto lg:grid max-w-7xl gap-10 px-4 py-14 lg:grid-cols-4 lg:px-8">
         <FooterNav title="Shop" links={COLLECTIONS.map((c) => ({ ...c }))} />
-        <FooterNav title="Company" links={COMPANY_LINKS} />
+        <FooterNav title="Our Company" links={COMPANY_LINKS} />
         <FooterNav title="Quick Links" links={QUICK_LINKS} />
         <div>
           <p className="mb-5 text-xs font-semibold uppercase tracking-[0.28em] text-gold-light">
@@ -135,7 +134,7 @@ function FooterNav({
   links,
 }: {
   title: string;
-  links: readonly { label: string; href: string }[];
+  links: readonly { label: string; href: string; external?: boolean }[];
 }) {
   return (
     <nav aria-label={title}>
@@ -143,16 +142,31 @@ function FooterNav({
         {title}
       </p>
       <ul className="space-y-3 text-sm">
-        {links.map((link) => (
-          <li key={link.href + link.label}>
-            <Link
-              href={link.href}
-              className="text-white/55 transition-smooth hover:text-gold-light"
-            >
-              {link.label}
-            </Link>
-          </li>
-        ))}
+        {links.map((link) => {
+          const isExternal = "external" in link ? link.external : link.href.startsWith("http");
+          return (
+            <li key={link.href + link.label}>
+              {isExternal ? (
+                <a
+                  href={link.href}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-white/55 transition-smooth hover:text-gold-light inline-flex items-center gap-1.5"
+                >
+                  <span>{link.label}</span>
+                  <span aria-hidden="true" className="text-xs opacity-60">↗</span>
+                </a>
+              ) : (
+                <Link
+                  href={link.href}
+                  className="text-white/55 transition-smooth hover:text-gold-light"
+                >
+                  {link.label}
+                </Link>
+              )}
+            </li>
+          );
+        })}
       </ul>
     </nav>
   );

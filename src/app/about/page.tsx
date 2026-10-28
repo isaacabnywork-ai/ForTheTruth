@@ -4,7 +4,7 @@ import Link from "next/link";
 export const metadata: Metadata = {
   title: "About Us | For The Truth",
   description:
-    "FOR THE TRUTH is a publishing ministry that exists to publish, distribute, and develop faithful biblical resources for the Church in India.",
+    "For The Truth is an online Christian Bookstore in India. FOR THE TRUTH is a publishing ministry that exists to publish, distribute, and develop faithful biblical resources for the Church in India.",
 };
 
 const GOALS = [
@@ -40,7 +40,10 @@ export default function AboutPage() {
           <h1 className="mt-4 font-display text-3xl font-black text-white sm:text-4xl md:text-5xl lg:text-6xl tracking-tight">
             FOR THE <span className="text-gradient-gold">TRUTH</span>
           </h1>
-          <p className="mx-auto mt-6 max-w-2xl text-base leading-relaxed text-white/85 sm:text-lg md:text-xl font-medium">
+          <p className="mx-auto mt-4 text-base font-semibold text-gold-light sm:text-lg">
+            For The Truth is an online Christian Bookstore in India.
+          </p>
+          <p className="mx-auto mt-3 max-w-2xl text-base leading-relaxed text-white/85 sm:text-lg md:text-xl font-medium">
             FOR THE TRUTH is a publishing ministry that exists to publish, distribute, and develop faithful biblical resources for the Church in India.
           </p>
         </div>
@@ -98,14 +101,17 @@ export default function AboutPage() {
             Explore our curated resources
           </h3>
           <p className="mt-2 text-xs sm:text-sm text-charcoal/65">
-            Discover sound biblical books published and distributed for the church in India.
+            Discover classic and contemporary Christian literature chosen with theological discernment.
           </p>
-          <div className="mt-6 flex flex-wrap justify-center gap-4">
-            <Link href="/products" className="btn-gold !px-7 !py-3">
-              Browse Catalog
+          <div className="mt-6 flex flex-wrap items-center justify-center gap-3">
+            <Link href="/products" className="btn-cta text-sm px-6 py-2.5">
+              Browse Books <span aria-hidden="true">→</span>
             </Link>
-            <Link href="/church-resources" className="btn-navy !px-7 !py-3">
-              Church Resources
+            <Link href="/statement-of-faith" className="btn-outline text-sm px-6 py-2.5">
+              Statement of Faith
+            </Link>
+            <Link href="/contact" className="btn-outline text-sm px-6 py-2.5">
+              Contact Us
             </Link>
           </div>
         </div>

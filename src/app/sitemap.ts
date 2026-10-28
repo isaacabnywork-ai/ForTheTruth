@@ -10,6 +10,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
     "/authors",
     "/church-resources",
     "/about",
+    "/statement-of-faith",
     "/contact",
     "/faq",
     "/shipping",
