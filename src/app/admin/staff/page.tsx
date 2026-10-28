@@ -6,8 +6,8 @@ export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
 export const metadata = {
-  title: "Staff & Access — ABNY Admin",
-  description: "Manage who has access to the ABNY admin portal.",
+  title: "Staff & Access — For The Truth Admin",
+  description: "Manage who has access to the For The Truth admin portal.",
 };
 
 export default async function StaffPage() {

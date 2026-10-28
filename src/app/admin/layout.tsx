@@ -3,7 +3,7 @@ import { AdminShell } from "@/components/admin/AdminShell";
 
 export const metadata: Metadata = {
   title: "Retail POS Terminal & Admin | For The Truth",
-  description: "Point of Sale Cashier Terminal and Retail Management Hub for ABNY Books.",
+  description: "Point of Sale Cashier Terminal and Retail Management Hub for For The Truth.",
 };
 
 export default function AdminLayout({

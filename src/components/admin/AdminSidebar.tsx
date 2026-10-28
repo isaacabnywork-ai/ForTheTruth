@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { useState, useEffect } from "react";
 
@@ -168,12 +169,18 @@ export function AdminSidebar({ onLock }: { onLock: () => void }) {
       {/* ── Mobile / Tablet Top Bar (hidden on xl+) ─────────────────────── */}
       <div className="sticky top-0 z-50 flex items-center justify-between border-b border-white/10 bg-navy px-4 py-3 text-white xl:hidden">
         <Link href="/admin/pos" className="flex items-center gap-2.5">
-          <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-gradient-to-tr from-gold-dark to-gold-light font-display text-base font-black text-navy shadow">
-            A
+          <div className="relative h-8 w-8 shrink-0 overflow-hidden rounded-full shadow">
+            <Image
+              src="/logo.png"
+              alt="For The Truth"
+              fill
+              className="object-contain"
+              priority
+            />
           </div>
           <div>
-            <p className="font-display text-sm font-bold tracking-tight text-white">
-              ABNY <span className="text-gold-light">Admin</span>
+            <p className="font-display text-sm font-bold tracking-tight text-white leading-tight">
+              For The Truth
             </p>
             <p className="text-[9px] uppercase tracking-widest text-white/50">
               Retail Command Hub
@@ -303,12 +310,18 @@ export function AdminSidebar({ onLock }: { onLock: () => void }) {
         {/* Brand Header */}
         <div className="flex h-[72px] items-center justify-between border-b border-white/10 px-6">
           <Link href="/admin/pos" className="flex items-center gap-2.5">
-            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-tr from-gold-dark to-gold-light font-display text-lg font-black text-navy shadow-lg">
-              A
+            <div className="relative h-9 w-9 shrink-0 overflow-hidden rounded-full shadow-md">
+              <Image
+                src="/logo.png"
+                alt="For The Truth"
+                fill
+                className="object-contain"
+                priority
+              />
             </div>
             <div>
-              <p className="font-display text-base font-bold tracking-tight text-white">
-                ABNY <span className="text-gold-light">Admin</span>
+              <p className="font-display text-base font-bold tracking-tight text-white leading-tight">
+                For The Truth
               </p>
               <p className="text-[10px] uppercase tracking-widest text-white/50">
                 Retail Command Hub

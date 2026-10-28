@@ -166,7 +166,7 @@ export function ReceiptPrinter({
         <div className="mt-6 border-t border-dashed border-slate-300 pt-4 text-center text-[10px] text-slate-500">
           <p className="font-semibold text-charcoal">Thank you for investing in faithful Christian resources!</p>
           <p className="mt-0.5">Please retain this cash memo for exchange within 7 days in original condition.</p>
-          <p className="mt-2 text-[9px] text-slate-400">Powered by ABNY Retail Command System</p>
+          <p className="mt-2 text-[9px] text-slate-400">Powered by For The Truth Retail Command System</p>
         </div>
       </div>
     </div>
