@@ -84,9 +84,9 @@ export function SingleBookPaymentTrust({ product, inStock }: SingleBookPaymentTr
       <div className="mt-2.5 flex items-center gap-1.5 text-xs text-charcoal/65">
         <span className="text-[11px] text-charcoal/55 font-medium">Secured by</span>
         <img
-          src="https://admin.forthetruth.in/wp-content/uploads/2026/10/png-transparent-razorpay-logo-tech-companies-thumbnail.png"
+          src="/images/razorpay-logo.png"
           alt="Razorpay"
-          className="h-4 w-auto object-contain inline-block opacity-90"
+          className="h-4.5 w-auto object-contain inline-block"
         />
       </div>
 

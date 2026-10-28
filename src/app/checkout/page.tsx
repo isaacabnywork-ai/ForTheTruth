@@ -464,9 +464,14 @@ export default function CheckoutPage() {
               ✓ No payment required — your e-book is completely free!
             </p>
           ) : (
-            <p className="mt-3 text-center text-[11px] text-charcoal/40">
-              UPI · Cards · Netbanking · Wallets — secured by Razorpay
-            </p>
+            <div className="mt-3 flex items-center justify-center gap-1.5 text-[11px] text-charcoal/50">
+              <span>UPI · Cards · Netbanking · Wallets — secured by</span>
+              <img
+                src="/images/razorpay-logo.png"
+                alt="Razorpay"
+                className="h-3.5 w-auto object-contain inline-block"
+              />
+            </div>
           )}
         </aside>
       </form>
