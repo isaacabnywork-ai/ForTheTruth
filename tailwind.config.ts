@@ -37,10 +37,10 @@ const config: Config = {
       },
       fontSize: {
         // Display scale for headings
-        "display-sm": ["2rem", { lineHeight: "1.15", letterSpacing: "-0.02em" }],
-        "display-md": ["2.75rem", { lineHeight: "1.08", letterSpacing: "-0.025em" }],
-        "display-lg": ["3.75rem", { lineHeight: "1.02", letterSpacing: "-0.03em" }],
-        "display-xl": ["5rem", { lineHeight: "0.98", letterSpacing: "-0.035em" }],
+        "display-sm": ["2rem", { lineHeight: "1.3", letterSpacing: "-0.02em" }],
+        "display-md": ["2.75rem", { lineHeight: "1.25", letterSpacing: "-0.025em" }],
+        "display-lg": ["3.75rem", { lineHeight: "1.2", letterSpacing: "-0.03em" }],
+        "display-xl": ["5rem", { lineHeight: "1.15", letterSpacing: "-0.035em" }],
       },
       boxShadow: {
         book: "0 12px 24px -8px rgba(22, 50, 79, 0.30)",
