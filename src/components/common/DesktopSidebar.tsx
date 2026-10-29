@@ -130,7 +130,7 @@ export function DesktopSidebar({
             <div className="relative h-9 w-9 shrink-0">
               <Image src="/logo.png" alt="For The Truth" fill className="object-contain" priority />
             </div>
-            <span className="font-display text-sm font-black uppercase tracking-wider text-charcoal">
+            <span className="font-display text-base font-bold text-charcoal">
               For The Truth
             </span>
           </Link>
