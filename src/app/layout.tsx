@@ -6,6 +6,7 @@ import { MobileNav } from "@/components/common/MobileNav";
 import { DesktopSidebar } from "@/components/common/DesktopSidebar";
 import { CartNotification } from "@/components/common/CartNotification";
 import { AppSplashScreen } from "@/components/common/AppSplashScreen";
+import { ReformationOfferPopup } from "@/components/common/ReformationOfferPopup";
 import { Providers } from "./providers";
 import { isWooConfigured } from "@/config/env";
 import { getCategories } from "@/services/woocommerce";
@@ -110,6 +111,7 @@ export default async function RootLayout({
           <MobileNav categories={categories} />
           <CartNotification />
           <AppSplashScreen />
+          <ReformationOfferPopup />
         </Providers>
       </body>
     </html>
