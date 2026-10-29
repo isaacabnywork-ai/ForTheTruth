@@ -8,6 +8,7 @@ import {
 } from "@/components/home/CategoryBookRows";
 import { Testimonials } from "@/components/home/Testimonials";
 import { SpineSlider } from "@/components/home/SpineSlider";
+import { CollectionsGrid } from "@/components/home/CollectionsGrid";
 import { isWooConfigured } from "@/config/env";
 import { getCategories, getProducts } from "@/services/woocommerce";
 import { getCuratedShelfConfig } from "@/services/curation";
@@ -171,7 +172,10 @@ export default async function HomePage() {
         />
       )}
 
-      {/* 6 — Social proof */}
+      {/* 7 — Curated Collections */}
+      <CollectionsGrid />
+
+      {/* 8 — Social proof */}
       <Testimonials />
     </>
   );

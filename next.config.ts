@@ -11,6 +11,7 @@ const nextConfig: NextConfig = {
   images: {
     remotePatterns: [
       { protocol: "https", hostname: wpHost },
+      { protocol: "https", hostname: "demos.abnyweb.in" },
       { protocol: "https", hostname: "**.wp.com" },
       { protocol: "https", hostname: "images.unsplash.com" },
       { protocol: "https", hostname: "**.googleusercontent.com" },
