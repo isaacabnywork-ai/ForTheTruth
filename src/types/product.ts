@@ -40,6 +40,7 @@ export interface Product {
   on_sale: boolean;
   stock_status: "instock" | "outofstock" | "onbackorder";
   stock_quantity: number | null;
+  manage_stock?: boolean;
   average_rating: string;
   rating_count: number;
   images: WCImage[];

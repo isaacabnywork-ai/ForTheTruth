@@ -189,7 +189,10 @@ function BookRowCard({
     (product as unknown as { image?: string }).image ||
     "";
   const imageAlt = product.images?.[0]?.alt || product.name;
-  const inStock = product.stock_status !== "outofstock";
+  const inStock =
+    product.stock_status !== "outofstock" &&
+    product.stock_status !== "onbackorder" &&
+    !(product.manage_stock && typeof product.stock_quantity === "number" && product.stock_quantity <= 0);
 
   const { displayTitle, fullTitle } = formatCardTitle(product.name);
 

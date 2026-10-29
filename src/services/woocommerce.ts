@@ -146,7 +146,7 @@ export async function getProducts(q: ProductQuery = {}): Promise<Product[]> {
   try {
     return await wcFetch<Product[]>("/products", {
       searchParams: productParams(q),
-      revalidate: q.revalidate,
+      revalidate: q.revalidate ?? 60,
     });
   } catch (err) {
     console.error("Failed to fetch WooCommerce products:", err);

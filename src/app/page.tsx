@@ -14,7 +14,7 @@ import { getCuratedShelfConfig } from "@/services/curation";
 import categoryRowsFallbackData from "@/data/category_rows_fallback.json";
 import type { Product, WCCategory } from "@/types/product";
 
-export const revalidate = 3600;
+export const revalidate = 60;
 
 function sortByIdList(products: Product[], ids: number[]): Product[] {
   const map = new Map(products.map((p) => [p.id, p]));
@@ -35,13 +35,13 @@ export default async function HomePage() {
 
   if (isWooConfigured()) {
     try {
-      const heroQuery = curated.heroIds.length > 0 ? { include: curated.heroIds, perPage: curated.heroIds.length } : { featured: true, perPage: 9 };
-      const newQuery = curated.newArrivalsIds.length > 0 ? { include: curated.newArrivalsIds, perPage: curated.newArrivalsIds.length } : { perPage: 6, orderby: "date" as const, order: "desc" as const };
-      const bestQuery = curated.bestsellersIds.length > 0 ? { include: curated.bestsellersIds, perPage: curated.bestsellersIds.length } : { perPage: 6, orderby: "popularity" as const, order: "desc" as const };
+      const heroQuery = curated.heroIds.length > 0 ? { include: curated.heroIds, perPage: curated.heroIds.length, revalidate: 60 } : { featured: true, perPage: 9, revalidate: 60 };
+      const newQuery = curated.newArrivalsIds.length > 0 ? { include: curated.newArrivalsIds, perPage: curated.newArrivalsIds.length, revalidate: 60 } : { perPage: 6, orderby: "date" as const, order: "desc" as const, revalidate: 60 };
+      const bestQuery = curated.bestsellersIds.length > 0 ? { include: curated.bestsellersIds, perPage: curated.bestsellersIds.length, revalidate: 60 } : { perPage: 6, orderby: "popularity" as const, order: "desc" as const, revalidate: 60 };
       const spineQuery = curated.spineIds.length > 0 
-        ? { include: curated.spineIds, perPage: curated.spineIds.length } 
-        : { category: 114, perPage: 10 };
-      const categoryRowsQuery = { include: allCategoryRowIds, perPage: allCategoryRowIds.length };
+        ? { include: curated.spineIds, perPage: curated.spineIds.length, revalidate: 60 } 
+        : { category: 114, perPage: 10, revalidate: 60 };
+      const categoryRowsQuery = { include: allCategoryRowIds, perPage: allCategoryRowIds.length, revalidate: 60 };
 
       const results = await Promise.all([
         getProducts(heroQuery),
