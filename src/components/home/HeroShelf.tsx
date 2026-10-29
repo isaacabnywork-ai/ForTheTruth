@@ -127,14 +127,14 @@ export function HeroShelf({
 
         <div className="relative grid items-center gap-8 sm:gap-10 px-5 sm:px-8 py-8 sm:py-12 md:px-12 grid-cols-1 lg:grid-cols-[1.05fr_auto_0.95fr] lg:gap-8 lg:px-14 lg:py-16">
           {/* ---------- LEFT: Headline & Actions ---------- */}
-          <div className="hidden lg:block text-left">
+          <div className="hidden lg:block text-left max-w-sm xl:max-w-md">
             {badge && (
               <p className="text-xs font-semibold uppercase tracking-[0.28em] text-gold-dark">
                 {badge}
               </p>
             )}
 
-            <h1 className="mt-5 font-display text-xl sm:text-2xl lg:text-[1.65rem] xl:text-[1.85rem] font-bold leading-normal sm:leading-relaxed lg:leading-[1.55] text-charcoal">
+            <h1 className="mt-5 font-display text-xl sm:text-2xl lg:text-[1.7rem] xl:text-[1.9rem] font-bold leading-[1.35] lg:leading-[1.4] text-charcoal max-w-[340px] xl:max-w-[380px] [text-wrap:balance]">
               {titleParts[0]}
               {titleParts[1] ? (
                 <>
