@@ -121,13 +121,13 @@ export function HeroShelf({
       aria-roledescription="carousel"
       aria-label="Featured Books Hero Slider"
     >
-      <div className="relative overflow-hidden rounded-3xl md:rounded-[2.5rem] bg-white shadow-panel group/hero">
+      <div className="mx-auto max-w-6xl relative overflow-hidden rounded-3xl md:rounded-[2.5rem] border border-sand bg-white shadow-panel group/hero">
         <div className="pointer-events-none absolute inset-0 bg-cream-mesh opacity-80" />
         <div className="pointer-events-none absolute inset-0 bg-paper-texture opacity-50" />
 
-        <div className="relative grid items-center gap-8 sm:gap-10 px-5 sm:px-8 py-8 sm:py-12 md:px-12 grid-cols-1 lg:grid-cols-[1.05fr_auto_0.95fr] lg:gap-8 lg:px-14 lg:py-16">
+        <div className="relative grid items-center gap-8 sm:gap-10 px-5 sm:px-8 py-8 sm:py-12 md:px-10 grid-cols-1 lg:grid-cols-[1.1fr_auto_1fr] lg:gap-8 lg:px-12 lg:py-14">
           {/* ---------- LEFT: Headline & Actions ---------- */}
-          <div className="hidden lg:block text-left">
+          <div className="hidden lg:block text-left max-w-md">
             {badge && (
               <p className="text-xs font-semibold uppercase tracking-[0.28em] text-gold-dark">
                 {badge}
@@ -198,7 +198,7 @@ export function HeroShelf({
 
           {/* ---------- RIGHT: Featured Book Summary & Slide Controls ---------- */}
           {hero && (
-            <div className="text-center lg:text-left lg:col-span-1 flex flex-col justify-between min-h-[340px]">
+            <div className="text-center lg:text-left lg:col-span-1 flex flex-col justify-between min-h-[340px] max-w-md mx-auto lg:mx-0">
               <AnimatePresence mode="wait" custom={direction}>
                 <motion.div
                   key={hero.id}
