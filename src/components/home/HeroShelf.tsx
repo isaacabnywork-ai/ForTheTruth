@@ -121,20 +121,20 @@ export function HeroShelf({
       aria-roledescription="carousel"
       aria-label="Featured Books Hero Slider"
     >
-      <div className="mx-auto max-w-6xl relative overflow-hidden rounded-3xl md:rounded-[2.5rem] border border-sand bg-white shadow-panel group/hero">
+      <div className="relative overflow-hidden rounded-3xl md:rounded-[2.5rem] bg-white shadow-panel group/hero w-full">
         <div className="pointer-events-none absolute inset-0 bg-cream-mesh opacity-80" />
         <div className="pointer-events-none absolute inset-0 bg-paper-texture opacity-50" />
 
-        <div className="relative grid items-center gap-8 sm:gap-10 px-5 sm:px-8 py-8 sm:py-12 md:px-10 grid-cols-1 lg:grid-cols-[1.1fr_auto_1fr] lg:gap-8 lg:px-12 lg:py-14">
-          {/* ---------- LEFT: Headline & Actions ---------- */}
-          <div className="hidden lg:block text-left max-w-md">
+        <div className="relative grid items-center gap-8 sm:gap-10 px-5 sm:px-8 py-8 sm:py-12 md:px-10 grid-cols-1 lg:grid-cols-[1.1fr_auto_1fr] lg:gap-8 lg:px-12 lg:py-14 max-w-6xl mx-auto">
+          {/* ---------- LEFT: Headline & Actions in Border Box ---------- */}
+          <div className="hidden lg:block text-left max-w-md rounded-2xl border border-sand bg-white/80 backdrop-blur-xs p-6 xl:p-8 shadow-xs">
             {badge && (
               <p className="text-xs font-semibold uppercase tracking-[0.28em] text-gold-dark">
                 {badge}
               </p>
             )}
 
-            <h1 className="mt-5 font-display text-xl sm:text-2xl lg:text-[1.65rem] xl:text-[1.85rem] font-bold leading-normal sm:leading-relaxed lg:leading-[1.55] text-charcoal">
+            <h1 className="mt-4 font-display text-xl sm:text-2xl lg:text-[1.65rem] xl:text-[1.85rem] font-bold leading-normal sm:leading-relaxed lg:leading-[1.5] text-charcoal">
               {titleParts[0]}
               {titleParts[1] ? (
                 <>
@@ -147,21 +147,21 @@ export function HeroShelf({
             </h1>
 
             {subtitle && (
-              <p className="mt-5 max-w-md text-[15px] leading-relaxed text-charcoal/65">
+              <p className="mt-4 max-w-md text-[14px] leading-relaxed text-charcoal/65">
                 {subtitle}
               </p>
             )}
 
-            <div className="mt-8 flex flex-wrap items-center gap-3 justify-start">
-              <Link href="/products" className="btn-cta text-sm px-8 py-3.5">
+            <div className="mt-6 flex flex-wrap items-center gap-3 justify-start">
+              <Link href="/products" className="btn-cta text-sm px-7 py-3">
                 Start Browsing <span aria-hidden="true">↗</span>
               </Link>
-              <Link href="/products?orderby=popularity" className="btn-outline text-sm px-8 py-3.5">
+              <Link href="/products?orderby=popularity" className="btn-outline text-sm px-7 py-3">
                 Bestsellers
               </Link>
             </div>
 
-            <ul className="mt-8 space-y-2 max-w-sm">
+            <ul className="mt-6 space-y-2 max-w-sm">
               {READER_TRUST.map((t) => (
                 <li
                   key={t.title}
@@ -196,9 +196,9 @@ export function HeroShelf({
             )}
           </div>
 
-          {/* ---------- RIGHT: Featured Book Summary & Slide Controls ---------- */}
+          {/* ---------- RIGHT: Featured Book Summary & Slide Controls in Border Box ---------- */}
           {hero && (
-            <div className="text-center lg:text-left lg:col-span-1 flex flex-col justify-between min-h-[340px] max-w-md mx-auto lg:mx-0">
+            <div className="text-center lg:text-left lg:col-span-1 flex flex-col justify-between min-h-[340px] max-w-md mx-auto lg:mx-0 rounded-2xl border border-sand bg-white/80 backdrop-blur-xs p-6 xl:p-8 shadow-xs">
               <AnimatePresence mode="wait" custom={direction}>
                 <motion.div
                   key={hero.id}
