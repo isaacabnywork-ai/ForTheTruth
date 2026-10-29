@@ -43,5 +43,83 @@
     35647,
     20507
   ],
-  "bestsellersTitle": "Children Books"
+  "bestsellersTitle": "Children Books",
+  "bibleSpeaksTodayIds": [
+    36313,
+    36309,
+    36306,
+    36302,
+    36294,
+    36285
+  ],
+  "bibleSpeaksTodayTitle": "The Bible Speaks Today",
+  "christianLivingIds": [
+    38336,
+    31266,
+    46237,
+    38662,
+    4793,
+    53424
+  ],
+  "christianLivingTitle": "Christian Living",
+  "ministryIds": [
+    44354,
+    14694,
+    22394,
+    14678,
+    14669,
+    4958
+  ],
+  "ministryTitle": "Ministry",
+  "theologyIds": [
+    31091,
+    31117,
+    31424,
+    52810,
+    31100,
+    31155
+  ],
+  "theologyTitle": "Theology",
+  "reviews": [
+    {
+      "id": "rev-1",
+      "quote": "The devotionals I ordered changed how I approach my quiet time. Genuinely thoughtful curation — not the usual shelf filler.",
+      "name": "Priya M.",
+      "role": "Reader · Chennai",
+      "rating": 5,
+      "audience": "reader"
+    },
+    {
+      "id": "rev-2",
+      "quote": "We ordered copies for our small groups. Honest, transparent pricing made it affordable for every family, and delivery was quick.",
+      "name": "Pastor James",
+      "role": "Grace Church · Bangalore",
+      "rating": 5,
+      "audience": "church"
+    },
+    {
+      "id": "rev-3",
+      "quote": "Sound theology, fair prices, no gimmicks. This is the bookstore I recommend to everyone in our community.",
+      "name": "Rev. Maria",
+      "role": "Youth Ministry · Chennai",
+      "rating": 5,
+      "audience": "church"
+    },
+    {
+      "id": "rev-4",
+      "quote": "Finding faithful reformed books in India used to be so difficult. For The Truth has made these treasures accessible and affordable.",
+      "name": "Dr. Samuel K.",
+      "role": "Theologian · New Delhi",
+      "rating": 5,
+      "audience": "reader"
+    },
+    {
+      "id": "rev-5",
+      "quote": "Prompt dispatch and great book condition. The children's books have been a huge blessing to our Sunday school kids.",
+      "name": "Rachel Thomas",
+      "role": "Sunday School Director · Mumbai",
+      "rating": 5,
+      "audience": "church"
+    }
+  ]
 }

@@ -32,7 +32,50 @@ export default async function HomePage() {
   let fetchedCategoryRows: Product[] = [];
   const curated = getCuratedShelfConfig();
 
-  const allCategoryRowIds = CATEGORY_ROWS_CONFIG.flatMap((c) => c.ids);
+  const dynamicCategoryConfigs = [
+    {
+      title: curated.bibleSpeaksTodayTitle || "The Bible Speaks Today",
+      slug: "bible-speaks-today",
+      viewMoreHref: "/categories/bible-commentary",
+      badge: "BIBLE SPEAKS TODAY",
+      ids:
+        curated.bibleSpeaksTodayIds && curated.bibleSpeaksTodayIds.length > 0
+          ? curated.bibleSpeaksTodayIds
+          : [36313, 36309, 36306, 36302, 36294, 36285],
+    },
+    {
+      title: curated.christianLivingTitle || "Christian Living",
+      slug: "christian-living",
+      viewMoreHref: "/categories/christian-living",
+      badge: "CHRISTIAN LIVING",
+      ids:
+        curated.christianLivingIds && curated.christianLivingIds.length > 0
+          ? curated.christianLivingIds
+          : [38336, 31266, 46237, 38662, 4793, 53424],
+    },
+    {
+      title: curated.ministryTitle || "Ministry",
+      slug: "ministry",
+      viewMoreHref: "/categories/ministry",
+      badge: "MINISTRY",
+      ids:
+        curated.ministryIds && curated.ministryIds.length > 0
+          ? curated.ministryIds
+          : [44354, 14694, 22394, 14678, 14669, 4958],
+    },
+    {
+      title: curated.theologyTitle || "Theology",
+      slug: "theology",
+      viewMoreHref: "/categories/theology",
+      badge: "THEOLOGY",
+      ids:
+        curated.theologyIds && curated.theologyIds.length > 0
+          ? curated.theologyIds
+          : [31091, 31117, 31424, 52810, 31100, 31155],
+    },
+  ];
+
+  const allCategoryRowIds = dynamicCategoryConfigs.flatMap((c) => c.ids);
 
   if (isWooConfigured()) {
     try {
@@ -108,12 +151,14 @@ export default async function HomePage() {
     productsMap.set(p.id, p);
   });
 
-  const categoryRows: CategoryRowItem[] = CATEGORY_ROWS_CONFIG.map((cfg) => ({
+  const categoryRows: CategoryRowItem[] = dynamicCategoryConfigs.map((cfg) => ({
     title: cfg.title,
     slug: cfg.slug,
     viewMoreHref: cfg.viewMoreHref,
     badge: cfg.badge,
-    products: cfg.ids.map((id) => productsMap.get(id)).filter(Boolean) as Product[],
+    products: cfg.ids
+      .map((id) => productsMap.get(id))
+      .filter(Boolean) as Product[],
   }));
 
   const storeReady = newArrivals.length > 0 || bestsellers.length > 0;
@@ -176,7 +221,7 @@ export default async function HomePage() {
       <CollectionsGrid />
 
       {/* 8 — Social proof */}
-      <Testimonials />
+      <Testimonials reviews={curated.reviews} />
     </>
   );
 }

@@ -13,8 +13,15 @@ import { useAuthStore } from "@/store/authStore";
 import { useAuth } from "@/hooks/useAuth";
 import type { WCCategory } from "@/types/product";
 import { ANNOUNCEMENT, NAV_LINKS, SITE_NAME } from "@/utils/constants";
+import type { SiteMenusConfig } from "@/types/menus";
 
-export function Header({ categories }: { categories: WCCategory[] }) {
+export function Header({
+  categories,
+  menusConfig,
+}: {
+  categories: WCCategory[];
+  menusConfig?: SiteMenusConfig;
+}) {
   const pathname = usePathname();
   const [openMenu, setOpenMenu] = useState<"books" | "categories" | null>(null);
   const [mounted, setMounted] = useState(false);
@@ -65,10 +72,19 @@ export function Header({ categories }: { categories: WCCategory[] }) {
   const isSingleBookPage =
     pathname?.startsWith("/products/") && !pathname?.startsWith("/products/search");
 
+  const announcementText = menusConfig?.announcement || ANNOUNCEMENT;
+  const navLinks = menusConfig?.headerNav && menusConfig.headerNav.length > 0
+    ? menusConfig.headerNav.map((item) => ({
+        label: item.label,
+        href: item.href,
+        menu: item.menuType === "books" ? ("books" as const) : item.menuType === "categories" ? ("categories" as const) : undefined,
+      }))
+    : NAV_LINKS;
+
   return (
     <header className="sticky top-0 z-[100] w-full">
       <div className="bg-gold-gradient py-1.5 px-2 text-center text-[11px] sm:text-xs font-bold tracking-wide text-white truncate [text-shadow:0_1px_2px_rgba(120,85,40,0.35)]">
-        {ANNOUNCEMENT}
+        {announcementText}
       </div>
 
       <div className={`border-b border-sand bg-white/95 shadow-[0_8px_30px_-12px_rgba(120,95,55,0.15)] backdrop-blur-md supports-[backdrop-filter]:bg-white/85 w-full max-w-full ${isSingleBookPage ? "hidden lg:block" : ""}`}>
@@ -86,7 +102,7 @@ export function Header({ categories }: { categories: WCCategory[] }) {
           </Link>
 
           <nav className="hidden flex-1 items-center gap-7 lg:flex lg:ml-10 xl:ml-16">
-            {NAV_LINKS.map((link) => {
+            {navLinks.map((link) => {
               const menu = "menu" in link ? link.menu : null;
               if (!menu) {
                 return (

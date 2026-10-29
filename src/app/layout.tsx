@@ -10,6 +10,7 @@ import { ReformationOfferPopup } from "@/components/common/ReformationOfferPopup
 import { Providers } from "./providers";
 import { isWooConfigured } from "@/config/env";
 import { getCategories } from "@/services/woocommerce";
+import { getSiteMenusConfig } from "@/services/menus";
 import type { WCCategory } from "@/types/product";
 import { SITE_NAME, SITE_DESCRIPTION } from "@/utils/constants";
 import "@/styles/globals.css";
@@ -62,6 +63,7 @@ export default async function RootLayout({
 }: {
   children: React.ReactNode;
 }) {
+  const menusConfig = getSiteMenusConfig();
   let categories: WCCategory[] = [];
   if (isWooConfigured()) {
     try {
@@ -102,10 +104,10 @@ export default async function RootLayout({
                 </a>
               </div>
             )}
-            <Header categories={categories} />
+            <Header categories={categories} menusConfig={menusConfig} />
             {/* bottom padding so the docked mobile bar never covers content */}
             <main className="flex-1 w-full max-w-full pb-28 lg:pb-0">{children}</main>
-            <Footer />
+            <Footer menusConfig={menusConfig} />
           </div>
 
           <MobileNav categories={categories} />

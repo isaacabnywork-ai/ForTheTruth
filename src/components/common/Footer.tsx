@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { SITE_NAME, COLLECTIONS } from "@/utils/constants";
+import type { SiteMenusConfig } from "@/types/menus";
 
 const COMPANY_LINKS = [
   { label: "About Us", href: "/about" },
@@ -31,9 +32,22 @@ const TRUST = [
   },
 ];
 
-export function Footer() {
+export function Footer({ menusConfig }: { menusConfig?: SiteMenusConfig }) {
   const pathname = usePathname();
   if (pathname?.startsWith("/admin")) return null;
+
+  const shopLinks = menusConfig?.footerShop && menusConfig.footerShop.length > 0
+    ? menusConfig.footerShop
+    : COLLECTIONS.map((c) => ({ ...c }));
+  const companyLinks = menusConfig?.footerCompany && menusConfig.footerCompany.length > 0
+    ? menusConfig.footerCompany
+    : COMPANY_LINKS;
+  const quickLinks = menusConfig?.footerQuick && menusConfig.footerQuick.length > 0
+    ? menusConfig.footerQuick
+    : QUICK_LINKS;
+  const phone = menusConfig?.contactPhone || "+918604685533";
+  const email = menusConfig?.contactEmail || "contact@forthetruth.in";
+  const copyright = menusConfig?.copyrightText || `© ${new Date().getFullYear()} ${SITE_NAME}. All rights reserved.`;
 
   return (
     <footer className="bg-navy-gradient text-white">
@@ -65,9 +79,9 @@ export function Footer() {
 
       {/* Link columns (Hidden on mobile/tablet as requested) */}
       <div className="hidden mx-auto lg:grid max-w-7xl gap-10 px-4 py-14 lg:grid-cols-4 lg:px-8">
-        <FooterNav title="Shop" links={COLLECTIONS.map((c) => ({ ...c }))} />
-        <FooterNav title="Our Company" links={COMPANY_LINKS} />
-        <FooterNav title="Quick Links" links={QUICK_LINKS} />
+        <FooterNav title="Shop" links={shopLinks} />
+        <FooterNav title="Our Company" links={companyLinks} />
+        <FooterNav title="Quick Links" links={quickLinks} />
         <div>
           <p className="mb-5 text-xs font-semibold uppercase tracking-[0.28em] text-gold-light">
             Contact Info
@@ -82,10 +96,10 @@ export function Footer() {
               <span>
                 Phone:{" "}
                 <a
-                  href="tel:+918604685533"
+                  href={`tel:${phone.replace(/\s+/g, "")}`}
                   className="transition-smooth hover:text-gold-light text-white/80 font-medium"
                 >
-                  +918604685533
+                  {phone}
                 </a>
               </span>
             </li>
@@ -99,10 +113,10 @@ export function Footer() {
               <span>
                 Email:{" "}
                 <a
-                  href="mailto:contact@forthetruth.in"
+                  href={`mailto:${email}`}
                   className="transition-smooth hover:text-gold-light text-white/80 font-medium"
                 >
-                  contact@forthetruth.in
+                  {email}
                 </a>
               </span>
             </li>
@@ -112,7 +126,7 @@ export function Footer() {
 
       <div className="border-t border-white/10">
         <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-3 px-4 pt-5 pb-28 text-xs text-white/40 lg:px-8 lg:py-5">
-          <p>© {new Date().getFullYear()} {SITE_NAME}. All rights reserved.</p>
+          <p>{copyright}</p>
           <p className="flex flex-wrap items-center gap-2">
             {["UPI", "Visa", "Mastercard", "RuPay", "Netbanking"].map((m) => (
               <span
