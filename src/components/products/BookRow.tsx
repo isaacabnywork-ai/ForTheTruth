@@ -118,20 +118,15 @@ export function BookRowSkeleton({ title }: { title: string }) {
           {[...Array(6)].map((_, idx) => (
             <div
               key={idx}
-              className="flex flex-col h-full w-[148px] sm:w-[165px] md:w-[175px] lg:w-auto shrink-0 lg:shrink"
+              className="flex flex-col w-[148px] sm:w-[165px] md:w-[175px] lg:w-auto shrink-0 lg:shrink"
             >
               <div className="skeleton aspect-[2/3] w-full rounded-[3px]" />
-              <div className="flex flex-col items-center pt-2.5 pb-1">
-                <div className="skeleton h-2.5 w-16 rounded-full mb-1.5" />
-                <div className="skeleton h-4 w-4/5 rounded mb-1" />
-                <div className="skeleton h-4 w-3/5 rounded" />
-              </div>
-              <div className="mt-auto pt-2 flex items-center justify-between w-full border-t border-sand/40">
-                <div className="flex flex-col gap-1">
-                  <div className="skeleton h-4 w-12 rounded" />
-                  <div className="skeleton h-3 w-8 rounded" />
+              <div className="mt-2.5 sm:mt-3 flex items-center justify-center gap-2.5 sm:gap-3">
+                <div className="flex flex-col gap-1 items-start">
+                  <div className="skeleton h-3.5 w-12 rounded" />
+                  <div className="skeleton h-2.5 w-8 rounded" />
                 </div>
-                <div className="skeleton h-8 w-8 sm:h-9 sm:w-9 rounded-full shrink-0" />
+                <div className="skeleton h-8 w-8 sm:h-8.5 sm:w-8.5 rounded-full shrink-0" />
               </div>
             </div>
           ))}
@@ -143,10 +138,9 @@ export function BookRowSkeleton({ title }: { title: string }) {
 
 function BookRowCard({
   product,
-  badge,
 }: {
   product: Product;
-  badge: string;
+  badge?: string;
 }) {
   const [isAdded, setIsAdded] = useState(false);
   const addToCart = useCartStore((s) => s.addToCart);
@@ -187,83 +181,70 @@ function BookRowCard({
   }
 
   return (
-    <article className="group flex flex-col h-full w-[148px] sm:w-[165px] md:w-[175px] lg:w-auto shrink-0 lg:shrink select-none">
+    <article className="group flex flex-col w-[148px] sm:w-[165px] md:w-[175px] lg:w-auto shrink-0 lg:shrink select-none">
+      {/* Book Cover */}
       <Link
         href={`/products/${product.slug}`}
-        className="flex flex-col flex-1"
+        className="block relative aspect-[2/3] w-full overflow-hidden rounded-[3px] bg-neutral-100 shadow-xs border border-black/[0.06] transition-all duration-300 group-hover:-translate-y-1.5 group-hover:shadow-md"
         title={fullTitle}
       >
-        {/* Book Cover */}
-        <div className="relative aspect-[2/3] w-full overflow-hidden rounded-[3px] bg-neutral-100 shadow-xs border border-black/[0.06] transition-all duration-300 group-hover:-translate-y-1.5 group-hover:shadow-md">
-          {imageSrc ? (
-            <img
-              src={imageSrc}
-              alt={imageAlt || fullTitle}
-              loading="lazy"
-              className="h-full w-full object-cover object-center block"
-            />
-          ) : (
-            <div className="flex h-full w-full items-center justify-center bg-gold-gradient p-3 text-center">
-              <span className="font-serif text-xs italic leading-snug text-white [text-shadow:0_1px_2px_rgba(120,85,40,0.4)]">
-                {displayTitle}
-              </span>
-            </div>
-          )}
-
-          {/* Book spine crease */}
-          <div className="pointer-events-none absolute inset-y-0 left-0 w-[4px] bg-gradient-to-r from-black/20 via-black/5 to-transparent" />
-
-          {/* Subtle sheen */}
-          <div className="pointer-events-none absolute inset-0 bg-gradient-to-tr from-transparent via-white/5 to-white/10 opacity-30" />
-        </div>
-
-        {/* Metadata & Title Container with Fixed Height for Pixel-Perfect Row Alignment */}
-        <div className="flex flex-col flex-1 pt-2.5 pb-1 text-center">
-          {/* Category / Badge Overline */}
-          <p className="text-[9.5px] sm:text-[10px] font-semibold uppercase tracking-[0.14em] text-[#967850] truncate px-1 mb-1">
-            {badge}
-          </p>
-
-          {/* Title: 2-line maximum in fixed-height box so all cards align evenly */}
-          <div className="h-[2.5rem] sm:h-[2.75rem] flex items-center justify-center">
-            <h3
-              className="font-serif text-[13px] sm:text-[14px] font-medium text-charcoal leading-snug line-clamp-2 text-center transition-colors duration-200 group-hover:text-gold-dark"
-              title={fullTitle}
-            >
+        {imageSrc ? (
+          <img
+            src={imageSrc}
+            alt={imageAlt || fullTitle}
+            loading="lazy"
+            className="h-full w-full object-cover object-center block"
+          />
+        ) : (
+          <div className="flex h-full w-full items-center justify-center bg-gold-gradient p-3 text-center">
+            <span className="font-serif text-xs italic leading-snug text-white [text-shadow:0_1px_2px_rgba(120,85,40,0.4)]">
               {displayTitle}
-            </h3>
+            </span>
           </div>
-        </div>
+        )}
+
+        {/* Book spine crease */}
+        <div className="pointer-events-none absolute inset-y-0 left-0 w-[4px] bg-gradient-to-r from-black/20 via-black/5 to-transparent" />
+
+        {/* Subtle sheen */}
+        <div className="pointer-events-none absolute inset-0 bg-gradient-to-tr from-transparent via-white/5 to-white/10 opacity-30" />
+
+        {!inStock && (
+          <div className="absolute inset-0 bg-white/70 backdrop-blur-[1px] flex items-center justify-center">
+            <span className="bg-charcoal/90 text-white text-[9.5px] font-semibold uppercase tracking-wider px-2 py-0.5 rounded-full shadow-xs">
+              Out of Stock
+            </span>
+          </div>
+        )}
       </Link>
 
-      {/* Bottom Row: Price & Cart Button — Pinned at bottom with identical vertical baseline */}
-      <div className="mt-auto pt-2 flex items-center justify-between w-full border-t border-sand/40">
-        {/* Fixed height price stack ensures consistent alignment whether discounted or not */}
-        <div className="flex flex-col justify-center min-h-[34px] text-left">
-          <span className="font-sans text-[14px] sm:text-[15px] font-extrabold text-charcoal tracking-tight leading-tight">
+      {/* Bottom Row: Price & Add to Cart — Centered and brought close together */}
+      <div className="mt-2.5 sm:mt-3 flex items-center justify-center gap-2.5 sm:gap-3 w-full">
+        <Link
+          href={`/products/${product.slug}`}
+          className="flex flex-col text-left justify-center min-h-[30px] group/price"
+          title={fullTitle}
+        >
+          <span className="font-sans text-[13.5px] sm:text-[14px] font-normal text-charcoal leading-tight group-hover/price:text-gold-dark transition-colors">
             {formatPrice(currentPrice)}
           </span>
           {hasDiscount ? (
-            <span className="font-sans text-[11px] font-medium text-charcoal/45 line-through tracking-tight leading-none mt-0.5">
+            <span className="font-sans text-[11px] font-normal text-charcoal/45 line-through leading-none mt-0.5">
               {formatPrice(regularPrice)}
             </span>
-          ) : (
-            <span className="text-[10px] text-transparent select-none leading-none mt-0.5" aria-hidden="true">
-              —
-            </span>
-          )}
-        </div>
+          ) : null}
+        </Link>
 
-        {/* Redesigned Premium Cart Button */}
+        {/* Add to Cart Button */}
         <button
           type="button"
           onClick={handleAdd}
-          aria-label={`Add ${displayTitle} to cart`}
-          title={inStock ? (isAdded ? "Added to cart" : `Add ${displayTitle} to cart`) : "Out of stock"}
+          aria-label={`Add ${fullTitle} to cart`}
+          title={inStock ? (isAdded ? "Added to cart" : `Add ${fullTitle} to cart`) : "Out of stock"}
           disabled={!inStock}
-          className={`group/btn relative flex h-8 w-8 sm:h-9 sm:w-9 shrink-0 items-center justify-center rounded-full border transition-all duration-200 shadow-2xs active:scale-95 ${
+          className={`group/btn relative flex h-8 w-8 sm:h-8.5 sm:w-8.5 shrink-0 items-center justify-center rounded-full border transition-all duration-200 shadow-2xs active:scale-95 ${
             !inStock
-              ? "border-neutral-200 bg-neutral-100 text-neutral-400 cursor-not-allowed"
+              ? "border-neutral-200 bg-neutral-100 text-neutral-300 cursor-not-allowed"
               : isAdded
               ? "border-emerald-600 bg-emerald-600 text-white shadow-xs"
               : "border-sand bg-white text-charcoal hover:bg-cta hover:border-cta hover:text-white hover:shadow-xs hover:scale-105"
