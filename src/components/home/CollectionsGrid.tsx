@@ -51,7 +51,7 @@ export function CollectionsGrid({
   return (
     <section className="mx-auto max-w-7xl px-4 py-14 sm:py-16 lg:px-8">
       {/* Section Header */}
-      <div className="mb-10 sm:mb-12 text-left">
+      <div className="mb-10 sm:mb-12 text-center">
         <p className="overline-label mb-2">{badge}</p>
         <h2 className="section-title">{title}</h2>
       </div>
@@ -81,10 +81,10 @@ export function CollectionsGrid({
               <span className="text-[11px] font-bold uppercase tracking-[0.2em] text-[#8C6B2D]">
                 {col.subheading}
               </span>
-              <h3 className="mt-2 font-display text-2xl sm:text-[26px] font-bold text-charcoal leading-snug transition-colors duration-200 group-hover:text-gold-dark">
+              <h3 className="mt-2 font-display text-lg sm:text-xl font-bold text-charcoal leading-snug transition-colors duration-200 group-hover:text-gold-dark">
                 {col.heading}
               </h3>
-              <span className="mt-4 inline-flex items-center gap-1.5 text-xs font-bold uppercase tracking-widest text-charcoal/90 transition-all duration-300 group-hover:gap-2.5 group-hover:text-gold-dark">
+              <span className="mt-3.5 inline-flex items-center gap-1.5 text-xs font-bold uppercase tracking-widest text-charcoal/90 transition-all duration-300 group-hover:gap-2.5 group-hover:text-gold-dark">
                 Explore Collection{" "}
                 <span aria-hidden="true" className="text-sm font-semibold transition-transform duration-300 group-hover:translate-x-1">
                   →
