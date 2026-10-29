@@ -10,7 +10,7 @@ import { ReformationOfferPopup } from "@/components/common/ReformationOfferPopup
 import { Providers } from "./providers";
 import { isWooConfigured } from "@/config/env";
 import { getCategories } from "@/services/woocommerce";
-import { getSiteMenusConfig } from "@/services/menus";
+import { fetchSiteMenusConfigFromCloud } from "@/services/menus";
 import type { WCCategory } from "@/types/product";
 import { SITE_NAME, SITE_DESCRIPTION } from "@/utils/constants";
 import "@/styles/globals.css";
@@ -63,7 +63,7 @@ export default async function RootLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const menusConfig = getSiteMenusConfig();
+  const menusConfig = await fetchSiteMenusConfigFromCloud();
   let categories: WCCategory[] = [];
   if (isWooConfigured()) {
     try {

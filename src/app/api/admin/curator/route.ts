@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import {
   getCuratedShelfConfig,
+  fetchCuratedShelfConfigFromCloud,
   saveCuratedShelfConfig,
   type CuratedShelfConfig,
 } from "@/services/curation";
@@ -9,7 +10,7 @@ import { requireAdmin } from "@/lib/adminGuard";
 export const revalidate = 0;
 
 export async function GET() {
-  const config = getCuratedShelfConfig();
+  const config = await fetchCuratedShelfConfigFromCloud();
   return NextResponse.json({ success: true, config });
 }
 
@@ -86,7 +87,7 @@ export async function POST(req: Request) {
       reviews: Array.isArray(body.reviews) ? body.reviews : current.reviews,
     };
 
-    saveCuratedShelfConfig(nextConfig);
+    await saveCuratedShelfConfig(nextConfig);
 
     return NextResponse.json({ success: true, config: nextConfig });
   } catch (err: unknown) {

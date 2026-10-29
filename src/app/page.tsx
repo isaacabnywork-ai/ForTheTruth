@@ -11,7 +11,7 @@ import { SpineSlider } from "@/components/home/SpineSlider";
 import { StoreMaintenancePage } from "@/components/common/StoreMaintenancePage";
 import { isWooConfigured } from "@/config/env";
 import { getCategories, getProducts } from "@/services/woocommerce";
-import { getCuratedShelfConfig } from "@/services/curation";
+import { fetchCuratedShelfConfigFromCloud } from "@/services/curation";
 import categoryRowsFallbackData from "@/data/category_rows_fallback.json";
 import type { Product, WCCategory } from "@/types/product";
 
@@ -30,7 +30,7 @@ export default async function HomePage() {
   let categories: WCCategory[] = [];
   let coversByCategory: Record<number, Product[]> = {};
   let fetchedCategoryRows: Product[] = [];
-  const curated = getCuratedShelfConfig();
+  const curated = await fetchCuratedShelfConfigFromCloud();
 
   const dynamicCategoryConfigs = [
     {

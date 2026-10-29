@@ -1,13 +1,13 @@
 import { getProducts } from "@/services/woocommerce";
-import { getCuratedShelfConfig } from "@/services/curation";
+import { fetchCuratedShelfConfigFromCloud } from "@/services/curation";
 import { ShelfCuratorClient } from "@/components/admin/ShelfCuratorClient";
 
-export const revalidate = 30;
+export const revalidate = 0;
 
 export default async function AdminCuratorPage() {
   const [products, config] = await Promise.all([
     getProducts({ perPage: 100, revalidate: 60 }),
-    Promise.resolve(getCuratedShelfConfig()),
+    fetchCuratedShelfConfigFromCloud(),
   ]);
 
   return <ShelfCuratorClient initialProducts={products} initialConfig={config} />;

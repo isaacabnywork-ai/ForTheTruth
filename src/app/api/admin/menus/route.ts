@@ -1,11 +1,16 @@
 import { NextResponse } from "next/server";
-import { getSiteMenusConfig, saveSiteMenusConfig, type SiteMenusConfig } from "@/services/menus";
+import {
+  getSiteMenusConfig,
+  fetchSiteMenusConfigFromCloud,
+  saveSiteMenusConfig,
+  type SiteMenusConfig,
+} from "@/services/menus";
 import { requireAdmin } from "@/lib/adminGuard";
 
 export const revalidate = 0;
 
 export async function GET() {
-  const config = getSiteMenusConfig();
+  const config = await fetchSiteMenusConfigFromCloud();
   return NextResponse.json({ success: true, config });
 }
 
@@ -28,7 +33,7 @@ export async function POST(req: Request) {
       copyrightText: body.copyrightText ?? current.copyrightText,
     };
 
-    saveSiteMenusConfig(nextConfig);
+    await saveSiteMenusConfig(nextConfig);
 
     return NextResponse.json({ success: true, config: nextConfig });
   } catch (err: unknown) {
