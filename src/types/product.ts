@@ -38,6 +38,7 @@ export interface Product {
   regular_price: string;
   sale_price: string;
   on_sale: boolean;
+  status?: "publish" | "draft" | "private" | "trash" | "pending" | string;
   stock_status: "instock" | "outofstock" | "onbackorder";
   stock_quantity: number | null;
   manage_stock?: boolean;

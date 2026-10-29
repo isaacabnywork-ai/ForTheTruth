@@ -140,6 +140,7 @@ export interface ProductQuery {
   minPrice?: number;
   maxPrice?: number;
   stockStatus?: "instock" | "outofstock" | "onbackorder";
+  status?: "publish" | "draft" | "private" | "trash" | "any" | string;
   include?: number[];
   revalidate?: number;
   attribute?: string;
@@ -162,7 +163,7 @@ function productParams(q: ProductQuery = {}) {
     include: q.include?.join(","),
     attribute: q.attribute,
     attribute_term: q.attributeTerm,
-    status: "publish",
+    status: q.status ?? "publish",
   };
 }
 
@@ -208,13 +209,14 @@ export async function getProductsPaged(
 }
 
 export const CATALOG_FIELDS =
-  "id,name,slug,permalink,sku,price,regular_price,sale_price,on_sale,stock_status,stock_quantity,average_rating,rating_count,images,categories,attributes,meta_data,weight,dimensions";
+  "id,name,slug,permalink,sku,price,regular_price,sale_price,on_sale,status,stock_status,stock_quantity,average_rating,rating_count,images,categories,attributes,meta_data,weight,dimensions";
 
 const REQUIRED_FIELDS =
-  "id,name,slug,permalink,description,short_description,sku,price,regular_price,sale_price,on_sale,stock_status,stock_quantity,average_rating,rating_count,images,categories,attributes,meta_data,weight,dimensions";
+  "id,name,slug,permalink,description,short_description,sku,price,regular_price,sale_price,on_sale,status,stock_status,stock_quantity,average_rating,rating_count,images,categories,attributes,meta_data,weight,dimensions";
 
 const globalForCache = globalThis as unknown as {
   _wcProductsCache?: { data: Product[]; time: number };
+  _wcProductsCacheMap?: Record<string, { data: Product[]; time: number }>;
   _wcCategoriesCache?: { data: WCCategory[]; time: number };
 };
 
@@ -230,12 +232,14 @@ export async function getAllProducts(
   if (!isWooConfigured()) return [];
   const CACHE_TTL = (q.revalidate ?? 300) * 1000;
   const now = Date.now();
+  const cacheKey = `${q.status || "publish"}_${q.category || ""}`;
+
   if (
     !q.forceRefresh &&
-    globalForCache._wcProductsCache &&
-    now - globalForCache._wcProductsCache.time < CACHE_TTL
+    globalForCache._wcProductsCacheMap?.[cacheKey] &&
+    now - globalForCache._wcProductsCacheMap[cacheKey].time < CACHE_TTL
   ) {
-    return globalForCache._wcProductsCache.data;
+    return globalForCache._wcProductsCacheMap[cacheKey].data;
   }
 
   const PER_PAGE = 100;
@@ -253,11 +257,33 @@ export async function getAllProducts(
     const firstBatch = (await firstRes.json()) as Product[];
     const totalPages = parseInt(firstRes.headers.get("x-wp-totalpages") ?? "1", 10);
 
-    if (totalPages <= 1) {
-      if (firstBatch.length > 0) {
-        globalForCache._wcProductsCache = { data: firstBatch, time: Date.now() };
+    // If fetching all/any statuses, also optionally fetch trash items
+    let trashBatch: Product[] = [];
+    if (q.status === "any") {
+      try {
+        const trashRes = await wcFetchRaw("/products", {
+          searchParams: {
+            ...productParams({ ...q, status: "trash", page: 1, perPage: 100 }),
+            _fields: CATALOG_FIELDS,
+          },
+          revalidate: q.revalidate ?? 300,
+          timeout: 10000,
+        });
+        if (trashRes.ok) {
+          trashBatch = (await trashRes.json()) as Product[];
+        }
+      } catch (err) {
+        console.warn("Could not fetch trash products:", err);
       }
-      return firstBatch;
+    }
+
+    if (totalPages <= 1) {
+      const combined = [...firstBatch, ...trashBatch];
+      if (combined.length > 0) {
+        if (!globalForCache._wcProductsCacheMap) globalForCache._wcProductsCacheMap = {};
+        globalForCache._wcProductsCacheMap[cacheKey] = { data: combined, time: Date.now() };
+      }
+      return combined;
     }
 
     // Fetch remaining pages in controlled chunks of 2 to avoid WordPress PHP exhaustion
@@ -282,14 +308,15 @@ export async function getAllProducts(
       rest.push(...chunkResults);
     }
 
-    const allProducts = [firstBatch, ...rest].flat();
+    const allProducts = [firstBatch, ...rest, ...trashBatch].flat();
     if (allProducts.length > 0) {
-      globalForCache._wcProductsCache = { data: allProducts, time: Date.now() };
+      if (!globalForCache._wcProductsCacheMap) globalForCache._wcProductsCacheMap = {};
+      globalForCache._wcProductsCacheMap[cacheKey] = { data: allProducts, time: Date.now() };
     }
     return allProducts;
   } catch (err) {
     console.error("Failed to fetch all products:", err);
-    return globalForCache._wcProductsCache?.data ?? [];
+    return globalForCache._wcProductsCacheMap?.[cacheKey]?.data ?? [];
   }
 }
 

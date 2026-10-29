@@ -1,4 +1,4 @@
-import { getProducts } from "@/services/woocommerce";
+import { getAllProducts, getProducts } from "@/services/woocommerce";
 import { fetchCuratedShelfConfigFromCloud } from "@/services/curation";
 import { ShelfCuratorClient } from "@/components/admin/ShelfCuratorClient";
 import type { Product } from "@/types/product";
@@ -25,8 +25,8 @@ export default async function AdminCuratorPage() {
     )
   );
 
-  const [recentProducts, specificConfigProducts] = await Promise.all([
-    getProducts({ perPage: 100, revalidate: 0 }).catch(() => []),
+  const [allStoreProducts, specificConfigProducts] = await Promise.all([
+    getAllProducts({ status: "any", revalidate: 60 }).catch(() => []),
     configuredIds.length > 0
       ? getProducts({
           include: configuredIds,
@@ -37,7 +37,7 @@ export default async function AdminCuratorPage() {
   ]);
 
   const productMap = new Map<number, Product>();
-  recentProducts.forEach((p) => productMap.set(p.id, p));
+  allStoreProducts.forEach((p) => productMap.set(p.id, p));
   specificConfigProducts.forEach((p) => productMap.set(p.id, p));
 
   return (

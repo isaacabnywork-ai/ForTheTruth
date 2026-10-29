@@ -5,9 +5,12 @@ import Image from "next/image";
 import { getAuthor, type Product } from "@/types/product";
 import { formatPrice } from "@/utils/currency";
 
+type ProductStatusFilter = "all" | "publish" | "draft" | "private" | "trash";
+
 export function ProductManagerClient({ initialProducts }: { initialProducts: Product[] }) {
   const [products, setProducts] = useState<Product[]>(initialProducts);
   const [search, setSearch] = useState("");
+  const [statusFilter, setStatusFilter] = useState<ProductStatusFilter>("all");
   const [editingId, setEditingId] = useState<number | null>(null);
   const [stockVal, setStockVal] = useState("");
   const [priceVal, setPriceVal] = useState("");
@@ -18,7 +21,7 @@ export function ProductManagerClient({ initialProducts }: { initialProducts: Pro
   const syncCatalog = async (forceRefresh = false) => {
     setSyncing(true);
     try {
-      const url = `/api/admin/products${forceRefresh ? "?refresh=true" : ""}`;
+      const url = `/api/admin/products?status=any${forceRefresh ? "&refresh=true" : ""}`;
       const res = await fetch(url, { cache: "no-store" });
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const data = await res.json();
@@ -42,10 +45,28 @@ export function ProductManagerClient({ initialProducts }: { initialProducts: Pro
     }
   }, []);
 
+  // Filter products by post status and search term
+  const publishedCount = products.filter((p) => p.status === "publish").length;
+  const draftsCount = products.filter((p) => p.status === "draft").length;
+  const privateCount = products.filter((p) => p.status === "private").length;
+  const trashCount = products.filter((p) => p.status === "trash").length;
+  const allCount = products.length;
+
   const filtered = products.filter((p) => {
+    // 1. Status Filter
+    if (statusFilter !== "all") {
+      if (p.status !== statusFilter) return false;
+    }
+
+    // 2. Search Query
     if (!search.trim()) return true;
     const q = search.toLowerCase();
-    return (p.name || "").toLowerCase().includes(q) || (p.sku || "").toLowerCase().includes(q) || (getAuthor(p) || "").toLowerCase().includes(q);
+    return (
+      (p.name || "").toLowerCase().includes(q) ||
+      (p.sku || "").toLowerCase().includes(q) ||
+      (getAuthor(p) || "").toLowerCase().includes(q) ||
+      p.id.toString().includes(q)
+    );
   });
 
   const startEdit = (p: Product) => {
@@ -101,7 +122,7 @@ export function ProductManagerClient({ initialProducts }: { initialProducts: Pro
             Book Catalog &amp; Stock Manager
           </h1>
           <p className="text-sm text-slate-500 mt-1">
-            Inline update of physical retail unit stock counts and pricing without WordPress admin.
+            Complete inventory overview across all WooCommerce catalog statuses (Published, Drafts, Private, Trash).
           </p>
         </div>
         <div className="flex flex-col sm:flex-row items-center gap-3 w-full md:w-auto">
@@ -129,13 +150,113 @@ export function ProductManagerClient({ initialProducts }: { initialProducts: Pro
           <div className="w-full sm:w-80">
             <input
               type="text"
-              placeholder="Search titles, authors, SKUs..."
+              placeholder="Search titles, authors, IDs, SKUs..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               className="w-full rounded-2xl border border-slate-300 bg-white px-4 py-2.5 text-sm outline-none focus:border-gold shadow-xs"
             />
           </div>
         </div>
+      </div>
+
+      {/* WooCommerce-Style Post Status Filter Tabs */}
+      <div className="flex flex-wrap items-center gap-2 mb-6">
+        <button
+          type="button"
+          onClick={() => setStatusFilter("all")}
+          className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+            statusFilter === "all"
+              ? "bg-navy text-white shadow-xs"
+              : "bg-white border border-slate-200 text-slate-600 hover:bg-slate-50"
+          }`}
+        >
+          <span>All</span>
+          <span
+            className={`rounded-full px-1.5 py-0.2 text-[10px] ${
+              statusFilter === "all" ? "bg-white/20 text-white" : "bg-slate-100 text-slate-600"
+            }`}
+          >
+            {allCount}
+          </span>
+        </button>
+
+        <button
+          type="button"
+          onClick={() => setStatusFilter("publish")}
+          className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+            statusFilter === "publish"
+              ? "bg-emerald-600 text-white shadow-xs"
+              : "bg-white border border-slate-200 text-emerald-800 hover:bg-emerald-50/50"
+          }`}
+        >
+          <span>Published</span>
+          <span
+            className={`rounded-full px-1.5 py-0.2 text-[10px] ${
+              statusFilter === "publish" ? "bg-white/20 text-white" : "bg-emerald-100 text-emerald-800"
+            }`}
+          >
+            {publishedCount}
+          </span>
+        </button>
+
+        <button
+          type="button"
+          onClick={() => setStatusFilter("draft")}
+          className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+            statusFilter === "draft"
+              ? "bg-amber-600 text-white shadow-xs"
+              : "bg-white border border-slate-200 text-amber-800 hover:bg-amber-50/50"
+          }`}
+        >
+          <span>Drafts</span>
+          <span
+            className={`rounded-full px-1.5 py-0.2 text-[10px] ${
+              statusFilter === "draft" ? "bg-white/20 text-white" : "bg-amber-100 text-amber-800"
+            }`}
+          >
+            {draftsCount}
+          </span>
+        </button>
+
+        <button
+          type="button"
+          onClick={() => setStatusFilter("private")}
+          className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+            statusFilter === "private"
+              ? "bg-purple-600 text-white shadow-xs"
+              : "bg-white border border-slate-200 text-purple-800 hover:bg-purple-50/50"
+          }`}
+        >
+          <span>Private</span>
+          <span
+            className={`rounded-full px-1.5 py-0.2 text-[10px] ${
+              statusFilter === "private" ? "bg-white/20 text-white" : "bg-purple-100 text-purple-800"
+            }`}
+          >
+            {privateCount}
+          </span>
+        </button>
+
+        {trashCount > 0 && (
+          <button
+            type="button"
+            onClick={() => setStatusFilter("trash")}
+            className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+              statusFilter === "trash"
+                ? "bg-rose-600 text-white shadow-xs"
+                : "bg-white border border-slate-200 text-rose-800 hover:bg-rose-50/50"
+            }`}
+          >
+            <span>Trash</span>
+            <span
+              className={`rounded-full px-1.5 py-0.2 text-[10px] ${
+                statusFilter === "trash" ? "bg-white/20 text-white" : "bg-rose-100 text-rose-800"
+              }`}
+            >
+              {trashCount}
+            </span>
+          </button>
+        )}
       </div>
 
       {toastMsg && (
@@ -194,7 +315,7 @@ export function ProductManagerClient({ initialProducts }: { initialProducts: Pro
                         </button>
                       </div>
                     ) : (
-                      "No books matching your query."
+                      "No books matching your status and search filters."
                     )}
                   </td>
                 </tr>
@@ -204,6 +325,7 @@ export function ProductManagerClient({ initialProducts }: { initialProducts: Pro
                   const isEditing = editingId === p.id;
                   const qty = typeof p.stock_quantity === "number" ? p.stock_quantity : 0;
                   const thumb = p.images?.[0]?.src || "/images/placeholder.jpg";
+                  const postStatus = p.status || "publish";
 
                   return (
                     <tr key={p.id} className="hover:bg-slate-50/70 transition-colors">
@@ -249,17 +371,36 @@ export function ProductManagerClient({ initialProducts }: { initialProducts: Pro
                         )}
                       </td>
                       <td className="py-4 px-6">
-                        <span
-                          className={`rounded-full px-2.5 py-1 text-[10px] font-black tracking-wider uppercase ${
-                            qty <= 0
-                              ? "bg-rose-100 text-rose-800"
-                              : qty <= 5
-                              ? "bg-amber-100 text-amber-800 animate-pulse"
-                              : "bg-emerald-100 text-emerald-800"
-                          }`}
-                        >
-                          {qty <= 0 ? "Out of Stock" : qty <= 5 ? "Low Stock" : "In Stock"}
-                        </span>
+                        <div className="flex flex-col gap-1 items-start">
+                          <span
+                            className={`rounded-full px-2.5 py-0.5 text-[10px] font-black tracking-wider uppercase ${
+                              qty <= 0
+                                ? "bg-rose-100 text-rose-800"
+                                : qty <= 5
+                                ? "bg-amber-100 text-amber-800 animate-pulse"
+                                : "bg-emerald-100 text-emerald-800"
+                            }`}
+                          >
+                            {qty <= 0 ? "Out of Stock" : qty <= 5 ? "Low Stock" : "In Stock"}
+                          </span>
+
+                          {/* Post Status Badge */}
+                          {postStatus === "draft" && (
+                            <span className="rounded-md bg-amber-50 px-2 py-0.2 text-[9px] font-bold text-amber-800 border border-amber-200">
+                              DRAFT
+                            </span>
+                          )}
+                          {postStatus === "private" && (
+                            <span className="rounded-md bg-purple-50 px-2 py-0.2 text-[9px] font-bold text-purple-800 border border-purple-200">
+                              PRIVATE
+                            </span>
+                          )}
+                          {postStatus === "trash" && (
+                            <span className="rounded-md bg-rose-50 px-2 py-0.2 text-[9px] font-bold text-rose-800 border border-rose-200">
+                              TRASH
+                            </span>
+                          )}
+                        </div>
                       </td>
                       <td className="py-4 px-6 text-right">
                         {isEditing ? (
@@ -267,14 +408,14 @@ export function ProductManagerClient({ initialProducts }: { initialProducts: Pro
                             <button
                               onClick={() => setEditingId(null)}
                               disabled={saving}
-                              className="rounded-xl border border-slate-200 px-3 py-1.5 text-xs font-extrabold text-slate-600 hover:bg-slate-100"
+                              className="rounded-xl border border-slate-200 px-3 py-1.5 text-xs font-extrabold text-slate-600 hover:bg-slate-100 cursor-pointer"
                             >
                               Cancel
                             </button>
                             <button
                               onClick={() => handleSave(p.id)}
                               disabled={saving}
-                              className="rounded-xl bg-cta px-4 py-1.5 font-display text-xs font-black text-white hover:bg-cta-dark shadow-sm"
+                              className="rounded-xl bg-cta px-4 py-1.5 font-display text-xs font-black text-white hover:bg-cta-dark shadow-sm cursor-pointer"
                             >
                               {saving ? "..." : "Save"}
                             </button>
@@ -282,7 +423,7 @@ export function ProductManagerClient({ initialProducts }: { initialProducts: Pro
                         ) : (
                           <button
                             onClick={() => startEdit(p)}
-                            className="rounded-xl border border-slate-200 bg-slate-50 px-3.5 py-1.5 font-display text-xs font-bold text-navy hover:bg-navy hover:text-white transition-all shadow-2xs"
+                            className="rounded-xl border border-slate-200 bg-slate-50 px-3.5 py-1.5 font-display text-xs font-bold text-navy hover:bg-navy hover:text-white transition-all shadow-2xs cursor-pointer"
                           >
                             Edit Stock →
                           </button>

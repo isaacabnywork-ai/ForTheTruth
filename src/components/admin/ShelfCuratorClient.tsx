@@ -99,6 +99,9 @@ export function ShelfCuratorClient({
   const [activeCategoryShelf, setActiveCategoryShelf] =
     useState<CategoryShelfKey>("newArrivalsIds");
   const [search, setSearch] = useState("");
+  const [catalogStatusFilter, setCatalogStatusFilter] = useState<
+    "all" | "publish" | "draft" | "private"
+  >("all");
   const [saving, setSaving] = useState(false);
   const [toastMsg, setToastMsg] = useState("");
 
@@ -290,7 +293,15 @@ export function ShelfCuratorClient({
 
   // Filter products for catalog selector
   const catalogList = Array.from(productCatalogMap.values());
+  const catalogPublishedCount = catalogList.filter((p) => (p.status || "publish") === "publish").length;
+  const catalogDraftCount = catalogList.filter((p) => p.status === "draft").length;
+  const catalogPrivateCount = catalogList.filter((p) => p.status === "private").length;
+
   const filteredProducts = catalogList.filter((p) => {
+    if (catalogStatusFilter !== "all") {
+      const pStatus = p.status || "publish";
+      if (pStatus !== catalogStatusFilter) return false;
+    }
     if (!search.trim()) return true;
     const q = search.toLowerCase();
     return (
@@ -1118,12 +1129,64 @@ export function ShelfCuratorClient({
                 <h2 className="font-display text-base font-black text-navy flex items-center justify-between">
                   <span>📖 Live Book Catalog</span>
                   <span className="rounded-full bg-slate-100 px-2.5 py-0.5 text-[11px] font-bold text-slate-600 font-mono">
-                    {filteredProducts.length} books
+                    {filteredProducts.length} of {catalogList.length} books
                   </span>
                 </h2>
                 <p className="text-xs text-slate-400 mt-1 font-medium">
                   Search &amp; click &ldquo;+ Select&rdquo; to add any title to the currently active section.
                 </p>
+              </div>
+
+              {/* Status Filter Tabs */}
+              <div className="flex flex-wrap items-center gap-1.5 mb-3">
+                <button
+                  type="button"
+                  onClick={() => setCatalogStatusFilter("all")}
+                  className={`px-2.5 py-1 rounded-lg text-[10px] font-bold cursor-pointer transition-all ${
+                    catalogStatusFilter === "all"
+                      ? "bg-navy text-white shadow-2xs"
+                      : "bg-slate-100 text-slate-600 hover:bg-slate-200"
+                  }`}
+                >
+                  All ({catalogList.length})
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setCatalogStatusFilter("publish")}
+                  className={`px-2.5 py-1 rounded-lg text-[10px] font-bold cursor-pointer transition-all ${
+                    catalogStatusFilter === "publish"
+                      ? "bg-emerald-600 text-white shadow-2xs"
+                      : "bg-emerald-50 text-emerald-800 hover:bg-emerald-100"
+                  }`}
+                >
+                  Published ({catalogPublishedCount})
+                </button>
+                {catalogDraftCount > 0 && (
+                  <button
+                    type="button"
+                    onClick={() => setCatalogStatusFilter("draft")}
+                    className={`px-2.5 py-1 rounded-lg text-[10px] font-bold cursor-pointer transition-all ${
+                      catalogStatusFilter === "draft"
+                        ? "bg-amber-600 text-white shadow-2xs"
+                        : "bg-amber-50 text-amber-800 hover:bg-amber-100"
+                    }`}
+                  >
+                    Drafts ({catalogDraftCount})
+                  </button>
+                )}
+                {catalogPrivateCount > 0 && (
+                  <button
+                    type="button"
+                    onClick={() => setCatalogStatusFilter("private")}
+                    className={`px-2.5 py-1 rounded-lg text-[10px] font-bold cursor-pointer transition-all ${
+                      catalogStatusFilter === "private"
+                        ? "bg-purple-600 text-white shadow-2xs"
+                        : "bg-purple-50 text-purple-800 hover:bg-purple-100"
+                    }`}
+                  >
+                    Private ({catalogPrivateCount})
+                  </button>
+                )}
               </div>
 
               {/* Search Bar */}
@@ -1179,12 +1242,25 @@ export function ShelfCuratorClient({
                           <h5 className="font-display text-xs font-bold text-navy line-clamp-1">
                             {p.name}
                           </h5>
-                          <p className="text-[11px] text-slate-400 font-medium">
+                          <p className="text-[11px] text-slate-400 font-medium flex items-center gap-1.5 flex-wrap">
                             <span className="font-mono font-bold text-slate-600">
                               #{p.id}
                             </span>{" "}
-                            | {formatPrice(p.price || p.regular_price || 0)}{" "}
-                            {author ? `· ${author}` : ""}
+                            <span>| {formatPrice(p.price || p.regular_price || 0)}</span>{" "}
+                            {author ? <span>· {author}</span> : null}
+                            {p.status && p.status !== "publish" && (
+                              <span
+                                className={`rounded px-1.5 py-0.2 text-[9px] font-bold uppercase ${
+                                  p.status === "draft"
+                                    ? "bg-amber-100 text-amber-800"
+                                    : p.status === "private"
+                                    ? "bg-purple-100 text-purple-800"
+                                    : "bg-rose-100 text-rose-800"
+                                }`}
+                              >
+                                {p.status}
+                              </span>
+                            )}
                           </p>
                         </div>
                       </div>

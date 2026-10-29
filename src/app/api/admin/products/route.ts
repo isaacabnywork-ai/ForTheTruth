@@ -12,8 +12,9 @@ export async function GET(req: NextRequest) {
   try {
     const searchParams = req.nextUrl.searchParams;
     const forceRefresh = searchParams.get("refresh") === "true";
+    const statusParam = searchParams.get("status") || "any";
 
-    const products = await getAllProducts({ forceRefresh });
+    const products = await getAllProducts({ forceRefresh, status: statusParam });
 
     return NextResponse.json({
       success: true,
