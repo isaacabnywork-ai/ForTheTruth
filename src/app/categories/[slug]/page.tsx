@@ -72,7 +72,7 @@ export default async function CategoryPage({ params, searchParams }: Props) {
 
       <div className="mb-10">
         <Suspense>
-          <ProductFilters categories={[]} />
+          <ProductFilters categories={[]} layout="topbar" />
         </Suspense>
       </div>
 

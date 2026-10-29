@@ -10,7 +10,6 @@ import { formatPrice } from "@/utils/currency";
 import { getAuthor, type Product, type ProductReview } from "@/types/product";
 import { RatingStars } from "./RatingStars";
 import { ReviewForm } from "./ReviewForm";
-import { SingleBookPaymentTrust } from "./SingleBookPaymentTrust";
 import { triggerHaptic } from "@/utils/haptics";
 import { useWishlistSync } from "@/hooks/useWishlistSync";
 
@@ -396,9 +395,6 @@ export function ProductDetail({ product, reviews = [] }: ProductDetailProps) {
                 </svg>
               </button>
             </div>
-
-            {/* Single Book Payment & Trust Details */}
-            <SingleBookPaymentTrust product={product} inStock={inStock} />
           </div>
         </div>
       </div>

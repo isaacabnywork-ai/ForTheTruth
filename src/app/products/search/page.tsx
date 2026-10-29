@@ -60,7 +60,7 @@ export default async function SearchPage({
       {q && (
         <div className="mb-10">
           <Suspense>
-            <ProductFilters categories={[]} />
+            <ProductFilters categories={[]} layout="topbar" />
           </Suspense>
         </div>
       )}
