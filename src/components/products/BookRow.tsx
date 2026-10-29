@@ -154,7 +154,9 @@ export function BookRowSkeleton({ title }: { title: string }) {
               key={idx}
               className="flex flex-col w-[148px] sm:w-[165px] md:w-[175px] lg:w-auto shrink-0 lg:shrink"
             >
-              <div className="skeleton aspect-[2/3] w-full rounded-[3px]" />
+              <div className="h-[210px] sm:h-[235px] md:h-[250px] lg:h-[260px] w-full flex items-end justify-center">
+                <div className="skeleton h-[90%] w-[90%] rounded-[3px]" />
+              </div>
               <div className="mt-2.5 flex items-center justify-between w-full pt-0.5">
                 <div className="flex flex-col gap-1.5">
                   <div className="skeleton h-4 w-20 rounded" />
@@ -237,40 +239,42 @@ function BookRowCard({
 
   return (
     <article className="group flex flex-col w-[148px] sm:w-[165px] md:w-[175px] lg:w-auto shrink-0 lg:shrink select-none">
-      {/* Book Cover */}
+      {/* Book Cover Container with Natural Aspect Ratio & Bottom Baseline Alignment */}
       <Link
         href={`/products/${product.slug}`}
-        className="block relative aspect-[2/3] w-full overflow-hidden rounded-[3px] bg-neutral-100 shadow-xs border border-black/[0.06] transition-all duration-300 group-hover:-translate-y-1.5 group-hover:shadow-md"
+        className="relative flex items-end justify-center h-[210px] sm:h-[235px] md:h-[250px] lg:h-[260px] w-full"
         title={fullTitle}
       >
-        {imageSrc ? (
-          <img
-            src={imageSrc}
-            alt={imageAlt || fullTitle}
-            loading="lazy"
-            className="h-full w-full object-cover object-center block"
-          />
-        ) : (
-          <div className="flex h-full w-full items-center justify-center bg-gold-gradient p-3 text-center">
-            <span className="font-serif text-xs italic leading-snug text-white [text-shadow:0_1px_2px_rgba(120,85,40,0.4)]">
-              {displayTitle}
-            </span>
-          </div>
-        )}
+        <div className="relative inline-block max-h-full max-w-full transition-all duration-300 group-hover:-translate-y-1.5">
+          {imageSrc ? (
+            <img
+              src={imageSrc}
+              alt={imageAlt || fullTitle}
+              loading="lazy"
+              className="max-h-[210px] sm:max-h-[235px] md:max-h-[250px] lg:max-h-[260px] w-auto max-w-full rounded-[3px] shadow-xs border border-black/[0.06] object-contain block group-hover:shadow-md transition-shadow"
+            />
+          ) : (
+            <div className="flex aspect-[2/3] h-[210px] sm:h-[235px] md:h-[250px] lg:h-[260px] items-center justify-center bg-gold-gradient p-3 text-center rounded-[3px]">
+              <span className="font-serif text-xs italic leading-snug text-white [text-shadow:0_1px_2px_rgba(120,85,40,0.4)]">
+                {displayTitle}
+              </span>
+            </div>
+          )}
 
-        {/* Book spine crease */}
-        <div className="pointer-events-none absolute inset-y-0 left-0 w-[4px] bg-gradient-to-r from-black/20 via-black/5 to-transparent" />
+          {/* Book spine crease */}
+          <div className="pointer-events-none absolute inset-y-0 left-0 w-[4px] bg-gradient-to-r from-black/20 via-black/5 to-transparent rounded-l-[3px]" />
 
-        {/* Subtle sheen */}
-        <div className="pointer-events-none absolute inset-0 bg-gradient-to-tr from-transparent via-white/5 to-white/10 opacity-30" />
+          {/* Subtle sheen */}
+          <div className="pointer-events-none absolute inset-0 bg-gradient-to-tr from-transparent via-white/5 to-white/10 opacity-30 rounded-[3px]" />
 
-        {!inStock && (
-          <div className="absolute inset-0 bg-white/70 backdrop-blur-[1px] flex items-center justify-center">
-            <span className="bg-charcoal/90 text-white text-[9.5px] font-semibold uppercase tracking-wider px-2 py-0.5 rounded-full shadow-xs">
-              Out of Stock
-            </span>
-          </div>
-        )}
+          {!inStock && (
+            <div className="absolute top-2 left-2 z-10">
+              <span className="bg-charcoal/90 text-white text-[9.5px] font-bold uppercase tracking-wider px-2 py-0.5 rounded shadow-xs">
+                SOLD OUT
+              </span>
+            </div>
+          )}
+        </div>
       </Link>
 
       {/* Bottom Row: Price, Discount Badge & Squircle Cart / Notify Button */}
