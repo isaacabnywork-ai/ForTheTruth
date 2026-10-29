@@ -44,6 +44,7 @@
     20507
   ],
   "bestsellersTitle": "Children Books",
+  "bestsellersMode": "category",
   "bibleSpeaksTodayIds": [
     36313,
     36309,
@@ -62,6 +63,7 @@
     53424
   ],
   "christianLivingTitle": "Christian Living",
+  "christianLivingMode": "category",
   "ministryIds": [
     44354,
     14694,
@@ -71,6 +73,7 @@
     4958
   ],
   "ministryTitle": "Ministry",
+  "ministryMode": "category",
   "theologyIds": [
     31091,
     31117,
@@ -80,6 +83,7 @@
     31155
   ],
   "theologyTitle": "Theology",
+  "theologyMode": "category",
   "reviews": [
     {
       "id": "rev-1",

@@ -7,6 +7,8 @@ export interface TestimonialItem {
   audience?: "reader" | "church";
 }
 
+export type ShelfDisplayMode = "manual" | "category";
+
 export interface CuratedShelfConfig {
   // 1. Top Hero Section
   heroIds: number[];
@@ -32,18 +34,22 @@ export interface CuratedShelfConfig {
 
   bestsellersIds: number[]; // Children books shelf
   bestsellersTitle?: string;
+  bestsellersMode?: ShelfDisplayMode;
 
   bibleSpeaksTodayIds: number[];
   bibleSpeaksTodayTitle?: string;
 
   christianLivingIds: number[];
   christianLivingTitle?: string;
+  christianLivingMode?: ShelfDisplayMode;
 
   ministryIds: number[];
   ministryTitle?: string;
+  ministryMode?: ShelfDisplayMode;
 
   theologyIds: number[];
   theologyTitle?: string;
+  theologyMode?: ShelfDisplayMode;
 
   // 5. Testimonials / Reviews
   reviews: TestimonialItem[];

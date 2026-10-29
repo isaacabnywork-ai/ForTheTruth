@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Image from "next/image";
 import type { Product } from "@/types/product";
 import { getAuthor } from "@/types/product";
@@ -22,6 +22,74 @@ type CategoryShelfKey =
   | "theologyIds"
   | "bestsellersIds";
 
+interface CategoryShelfDef {
+  key: CategoryShelfKey;
+  label: string;
+  titleField: keyof CuratedShelfConfig;
+  defaultTitle: string;
+  modeField?: "christianLivingMode" | "ministryMode" | "theologyMode" | "bestsellersMode";
+  categoryId?: number;
+  categoryName?: string;
+  allowCategoryMode: boolean;
+}
+
+const CATEGORY_SHELVES: CategoryShelfDef[] = [
+  {
+    key: "newArrivalsIds",
+    label: "1. New Arrivals",
+    titleField: "newArrivalsTitle",
+    defaultTitle: "New Arrivals",
+    allowCategoryMode: false,
+  },
+  {
+    key: "bibleSpeaksTodayIds",
+    label: "2. The Bible Speaks Today",
+    titleField: "bibleSpeaksTodayTitle",
+    defaultTitle: "The Bible Speaks Today",
+    allowCategoryMode: false,
+  },
+  {
+    key: "christianLivingIds",
+    label: "3. Christian Living",
+    titleField: "christianLivingTitle",
+    defaultTitle: "Christian Living",
+    modeField: "christianLivingMode",
+    categoryId: 112,
+    categoryName: "Christian Living",
+    allowCategoryMode: true,
+  },
+  {
+    key: "ministryIds",
+    label: "4. Ministry",
+    titleField: "ministryTitle",
+    defaultTitle: "Ministry",
+    modeField: "ministryMode",
+    categoryId: 1727,
+    categoryName: "Ministry",
+    allowCategoryMode: true,
+  },
+  {
+    key: "theologyIds",
+    label: "5. Theology",
+    titleField: "theologyTitle",
+    defaultTitle: "Theology",
+    modeField: "theologyMode",
+    categoryId: 1717,
+    categoryName: "Theology",
+    allowCategoryMode: true,
+  },
+  {
+    key: "bestsellersIds",
+    label: "6. Children Books Shelf",
+    titleField: "bestsellersTitle",
+    defaultTitle: "Children Books",
+    modeField: "bestsellersMode",
+    categoryId: 114,
+    categoryName: "Children",
+    allowCategoryMode: true,
+  },
+];
+
 export function ShelfCuratorClient({
   initialProducts,
   initialConfig,
@@ -33,6 +101,13 @@ export function ShelfCuratorClient({
   const [search, setSearch] = useState("");
   const [saving, setSaving] = useState(false);
   const [toastMsg, setToastMsg] = useState("");
+
+  // Catalog products map for instant lookup by ID
+  const [productCatalogMap, setProductCatalogMap] = useState<Map<number, Product>>(() => {
+    const map = new Map<number, Product>();
+    initialProducts.forEach((p) => map.set(p.id, p));
+    return map;
+  });
 
   // Helper to determine which array of IDs we are currently editing
   const getCurrentArrayKey = ():
@@ -119,6 +194,33 @@ export function ShelfCuratorClient({
     setRawInput(list.join(", "));
   };
 
+  // Fetch missing book details automatically if an entered ID is not in productCatalogMap
+  useEffect(() => {
+    const idsToCheck = [...currentArray];
+    if (activeTab === "editor" && config.featuredPickId) {
+      idsToCheck.push(config.featuredPickId);
+    }
+    const missingIds = idsToCheck.filter((id) => !productCatalogMap.has(id));
+    if (missingIds.length === 0) return;
+
+    let cancelled = false;
+    fetch(`/api/products?include=${missingIds.join(",")}`)
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data) => {
+        if (cancelled || !data?.products || !Array.isArray(data.products)) return;
+        setProductCatalogMap((prev) => {
+          const next = new Map(prev);
+          data.products.forEach((p: Product) => next.set(p.id, p));
+          return next;
+        });
+      })
+      .catch((err) => console.warn("Failed to fetch missing book details:", err));
+
+    return () => {
+      cancelled = true;
+    };
+  }, [currentArray, activeTab, config.featuredPickId, productCatalogMap]);
+
   // Review management handlers
   const handleAddReview = () => {
     const newRev: TestimonialItem = {
@@ -176,7 +278,7 @@ export function ShelfCuratorClient({
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Failed to save settings");
       setToastMsg(
-        "🎉 All book IDs, 6 category shelves, titles & reviews saved! Homepage is updated live!"
+        "🎉 All book curation settings & category modes saved! Homepage is updated live!"
       );
       setTimeout(() => setToastMsg(""), 6000);
     } catch (err: unknown) {
@@ -187,7 +289,8 @@ export function ShelfCuratorClient({
   };
 
   // Filter products for catalog selector
-  const filteredProducts = initialProducts.filter((p) => {
+  const catalogList = Array.from(productCatalogMap.values());
+  const filteredProducts = catalogList.filter((p) => {
     if (!search.trim()) return true;
     const q = search.toLowerCase();
     return (
@@ -198,58 +301,9 @@ export function ShelfCuratorClient({
     );
   });
 
-  // Map active IDs to actual product objects
-  const activeProducts = currentArray
-    .map((id) => initialProducts.find((p) => p.id === id))
-    .filter(Boolean) as Product[];
-
-  const editorProduct = initialProducts.find(
-    (p) => p.id === config.featuredPickId
-  );
-
-  const CATEGORY_SHELVES: {
-    key: CategoryShelfKey;
-    label: string;
-    titleField: keyof CuratedShelfConfig;
-    defaultTitle: string;
-  }[] = [
-    {
-      key: "newArrivalsIds",
-      label: "1. New Arrivals",
-      titleField: "newArrivalsTitle",
-      defaultTitle: "New Arrivals",
-    },
-    {
-      key: "bibleSpeaksTodayIds",
-      label: "2. The Bible Speaks Today",
-      titleField: "bibleSpeaksTodayTitle",
-      defaultTitle: "The Bible Speaks Today",
-    },
-    {
-      key: "christianLivingIds",
-      label: "3. Christian Living",
-      titleField: "christianLivingTitle",
-      defaultTitle: "Christian Living",
-    },
-    {
-      key: "ministryIds",
-      label: "4. Ministry",
-      titleField: "ministryTitle",
-      defaultTitle: "Ministry",
-    },
-    {
-      key: "theologyIds",
-      label: "5. Theology",
-      titleField: "theologyTitle",
-      defaultTitle: "Theology",
-    },
-    {
-      key: "bestsellersIds",
-      label: "6. Children Books Shelf",
-      titleField: "bestsellersTitle",
-      defaultTitle: "Children Books",
-    },
-  ];
+  const editorProduct = config.featuredPickId
+    ? productCatalogMap.get(config.featuredPickId)
+    : null;
 
   const currentShelfMeta = CATEGORY_SHELVES.find(
     (s) => s.key === activeCategoryShelf
@@ -271,7 +325,7 @@ export function ShelfCuratorClient({
       key: "categories",
       label: "📚 2. Six Category Shelves",
       badge: "6 Shelves",
-      desc: "Customize book IDs & titles for New Arrivals, Bible Speaks Today, Christian Living, Ministry, Theology & Children.",
+      desc: "Customize book IDs, titles & dynamic category auto-rotation for homepage rows.",
     },
     {
       key: "spine",
@@ -307,7 +361,7 @@ export function ShelfCuratorClient({
                 Homepage Curation &amp; Text Studio
               </h1>
               <p className="text-xs sm:text-sm text-slate-500 font-medium">
-                Change, replace, or remove books across all homepage sections &amp; categories using their book IDs!
+                Change, replace, or rotate books across all homepage shelves dynamically through categories or exact book IDs!
               </p>
             </div>
           </div>
@@ -448,14 +502,14 @@ export function ShelfCuratorClient({
                       onChange={(e) =>
                         handleUpdateReview(rev.id, { quote: e.target.value })
                       }
-                      className="w-full rounded-xl border border-slate-300 bg-white px-3 py-1.5 text-xs text-slate-800 outline-none focus:border-gold"
+                      className="w-full rounded-xl border border-slate-300 px-3 py-2 text-xs text-slate-700 outline-none focus:border-gold"
                     />
                   </div>
 
                   <div className="grid grid-cols-1 sm:grid-cols-4 gap-3">
                     <div>
                       <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider block mb-1">
-                        Reviewer Name
+                        Name
                       </label>
                       <input
                         type="text"
@@ -463,13 +517,13 @@ export function ShelfCuratorClient({
                         onChange={(e) =>
                           handleUpdateReview(rev.id, { name: e.target.value })
                         }
-                        className="w-full rounded-xl border border-slate-300 bg-white px-3 py-1.5 text-xs font-semibold text-navy outline-none"
+                        className="w-full rounded-xl border border-slate-300 px-2.5 py-1.5 text-xs font-semibold text-navy outline-none"
                       />
                     </div>
 
                     <div>
                       <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider block mb-1">
-                        Role / Location / Church
+                        Role &amp; City
                       </label>
                       <input
                         type="text"
@@ -477,13 +531,13 @@ export function ShelfCuratorClient({
                         onChange={(e) =>
                           handleUpdateReview(rev.id, { role: e.target.value })
                         }
-                        className="w-full rounded-xl border border-slate-300 bg-white px-3 py-1.5 text-xs text-slate-700 outline-none"
+                        className="w-full rounded-xl border border-slate-300 px-2.5 py-1.5 text-xs font-semibold text-slate-600 outline-none"
                       />
                     </div>
 
                     <div>
                       <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider block mb-1">
-                        Rating (Stars)
+                        Rating (1-5)
                       </label>
                       <select
                         value={rev.rating || 5}
@@ -492,11 +546,11 @@ export function ShelfCuratorClient({
                             rating: Number(e.target.value),
                           })
                         }
-                        className="w-full rounded-xl border border-slate-300 bg-white px-2 py-1.5 text-xs font-medium text-slate-700 outline-none"
+                        className="w-full rounded-xl border border-slate-300 bg-white px-2 py-1.5 text-xs font-bold text-gold-dark outline-none"
                       >
-                        <option value={5}>⭐⭐⭐⭐⭐ (5 Stars)</option>
-                        <option value={4}>⭐⭐⭐⭐ (4 Stars)</option>
-                        <option value={3}>⭐⭐⭐ (3 Stars)</option>
+                        <option value="5">⭐⭐⭐⭐⭐ (5 Stars)</option>
+                        <option value="4">⭐⭐⭐⭐ (4 Stars)</option>
+                        <option value="3">⭐⭐⭐ (3 Stars)</option>
                       </select>
                     </div>
 
@@ -579,7 +633,7 @@ export function ShelfCuratorClient({
               )}
 
               {activeTab === "categories" && currentShelfMeta && (
-                <div className="space-y-4">
+                <div className="space-y-5">
                   <div>
                     <label className="text-xs font-bold text-slate-600 block mb-1">
                       Shelf Title for &ldquo;{currentShelfMeta.label}&rdquo;:
@@ -599,6 +653,82 @@ export function ShelfCuratorClient({
                       className="w-full rounded-xl border border-slate-300 px-3.5 py-2 font-display text-sm font-extrabold text-navy outline-none focus:border-gold"
                     />
                   </div>
+
+                  {/* Dynamic Category Mode vs Specific Book IDs Selection */}
+                  {currentShelfMeta.allowCategoryMode && currentShelfMeta.modeField ? (
+                    <div className="rounded-2xl border border-slate-200 bg-slate-50/80 p-4 space-y-3">
+                      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                        <div>
+                          <span className="text-xs font-black uppercase tracking-wider text-navy">
+                            Homepage Display Mode
+                          </span>
+                          <p className="text-xs text-slate-500 mt-0.5">
+                            Rotate books dynamically from category on refresh, or lock to specific book IDs.
+                          </p>
+                        </div>
+                        <div className="flex items-center gap-1.5 bg-white p-1 rounded-xl border border-slate-200 shrink-0">
+                          <button
+                            type="button"
+                            onClick={() =>
+                              setConfig({
+                                ...config,
+                                [currentShelfMeta.modeField!]: "category",
+                              })
+                            }
+                            className={`px-3 py-1.5 rounded-lg text-xs font-extrabold transition-all cursor-pointer ${
+                              config[currentShelfMeta.modeField!] !== "manual"
+                                ? "bg-emerald-600 text-white shadow-xs"
+                                : "text-slate-600 hover:text-navy"
+                            }`}
+                          >
+                            🎲 Dynamic Category (Auto-rotates)
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() =>
+                              setConfig({
+                                ...config,
+                                [currentShelfMeta.modeField!]: "manual",
+                              })
+                            }
+                            className={`px-3 py-1.5 rounded-lg text-xs font-extrabold transition-all cursor-pointer ${
+                              config[currentShelfMeta.modeField!] === "manual"
+                                ? "bg-navy text-white shadow-xs"
+                                : "text-slate-600 hover:text-navy"
+                            }`}
+                          >
+                            📌 Specific Book IDs
+                          </button>
+                        </div>
+                      </div>
+
+                      {config[currentShelfMeta.modeField!] !== "manual" ? (
+                        <div className="flex items-start gap-2.5 rounded-xl bg-emerald-50 border border-emerald-200 p-3 text-xs text-emerald-900 font-medium leading-relaxed">
+                          <span className="text-base shrink-0">🎲</span>
+                          <div>
+                            <strong>Dynamic Category Auto-Rotation Active:</strong> Every visitor page refresh displays 6 freshly shuffled books from the <strong>{currentShelfMeta.categoryName}</strong> category ({currentShelfMeta.categoryId ? `ID: ${currentShelfMeta.categoryId}` : ""}).
+                            <span className="text-emerald-700 block mt-1">
+                              Your {currentArray.length} book IDs below are preserved and used as fallback if WooCommerce is offline.
+                            </span>
+                          </div>
+                        </div>
+                      ) : (
+                        <div className="flex items-start gap-2.5 rounded-xl bg-blue-50 border border-blue-200 p-3 text-xs text-blue-900 font-medium leading-relaxed">
+                          <span className="text-base shrink-0">📌</span>
+                          <div>
+                            <strong>Specific Book IDs Mode Active:</strong> Only the {currentArray.length} books selected below will be displayed in this shelf on the homepage in exact order.
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  ) : (
+                    <div className="rounded-2xl border border-slate-200 bg-slate-50/80 p-3.5 flex items-center gap-2.5 text-xs text-slate-700 font-medium">
+                      <span className="text-base">📌</span>
+                      <div>
+                        <strong>Curated by Book IDs Only:</strong> This shelf ({currentShelfMeta.label}) displays strictly by the exact book IDs specified below. (Category auto-rotation is not applicable).
+                      </div>
+                    </div>
+                  )}
                 </div>
               )}
 
@@ -708,9 +838,14 @@ export function ShelfCuratorClient({
                   <div className="flex flex-wrap gap-1.5 bg-slate-100 p-1.5 rounded-2xl">
                     {CATEGORY_SHELVES.map((shelf) => {
                       const isSel = activeCategoryShelf === shelf.key;
+                      const isCatMode =
+                        shelf.allowCategoryMode &&
+                        shelf.modeField &&
+                        config[shelf.modeField] !== "manual";
                       const count = (
                         (config[shelf.key] as number[]) || []
                       ).length;
+
                       return (
                         <button
                           key={shelf.key}
@@ -724,13 +859,17 @@ export function ShelfCuratorClient({
                         >
                           <span>{shelf.label}</span>
                           <span
-                            className={`rounded-full px-1.5 py-0.2 text-[10px] ${
+                            className={`rounded-full px-2 py-0.5 text-[10px] font-bold ${
                               isSel
-                                ? "bg-gold-light text-navy"
+                                ? isCatMode
+                                  ? "bg-emerald-400 text-navy"
+                                  : "bg-gold-light text-navy"
+                                : isCatMode
+                                ? "bg-emerald-100 text-emerald-800"
                                 : "bg-white text-slate-600"
                             }`}
                           >
-                            {count}
+                            {isCatMode ? "🎲 Dynamic" : `${count} IDs`}
                           </span>
                         </button>
                       );
@@ -759,7 +898,7 @@ export function ShelfCuratorClient({
                   </div>
 
                   <div className="space-y-3 max-h-[460px] overflow-y-auto pr-1">
-                    {activeProducts.length === 0 ? (
+                    {currentArray.length === 0 ? (
                       <div className="rounded-2xl border-2 border-dashed border-slate-200 p-8 text-center text-slate-400">
                         <p className="font-display text-sm font-bold text-slate-600">
                           No Custom Books Added Yet
@@ -769,19 +908,80 @@ export function ShelfCuratorClient({
                         </p>
                       </div>
                     ) : (
-                      activeProducts.map((p, idx) => {
+                      currentArray.map((id, idx) => {
+                        const p = productCatalogMap.get(id);
+                        const isFirst = idx === 0;
+                        const isLast = idx === currentArray.length - 1;
+
+                        if (!p) {
+                          return (
+                            <div
+                              key={`${id}-${idx}`}
+                              className="flex items-center justify-between gap-3 rounded-2xl border border-slate-200 bg-white p-3.5 shadow-2xs hover:border-slate-300 transition-all"
+                            >
+                              <div className="flex items-center gap-3.5 min-w-0">
+                                <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-navy font-mono text-xs font-black text-white">
+                                  #{idx + 1}
+                                </span>
+                                <div className="relative h-14 w-10 shrink-0 overflow-hidden rounded-md border border-slate-200 bg-slate-100 flex items-center justify-center">
+                                  <span className="text-slate-400 text-xs font-mono font-bold animate-pulse">
+                                    📖
+                                  </span>
+                                </div>
+                                <div className="min-w-0">
+                                  <h4 className="font-display text-sm font-bold text-navy line-clamp-1 flex items-center gap-2">
+                                    <span>Book #{id}</span>
+                                    <span className="text-[10px] font-sans font-medium text-amber-600 bg-amber-50 border border-amber-200 px-1.5 py-0.2 rounded">
+                                      Loading details...
+                                    </span>
+                                  </h4>
+                                  <p className="text-xs text-slate-400 font-medium mt-0.5 font-mono">
+                                    ID: #{id}
+                                  </p>
+                                </div>
+                              </div>
+
+                              <div className="flex items-center gap-1 shrink-0">
+                                <button
+                                  type="button"
+                                  onClick={() => handleMove(idx, "up")}
+                                  disabled={isFirst}
+                                  title="Move Up"
+                                  className="flex h-8 w-8 items-center justify-center rounded-lg border border-slate-200 text-slate-600 hover:bg-slate-100 disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer"
+                                >
+                                  ▲
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={() => handleMove(idx, "down")}
+                                  disabled={isLast}
+                                  title="Move Down"
+                                  className="flex h-8 w-8 items-center justify-center rounded-lg border border-slate-200 text-slate-600 hover:bg-slate-100 disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer"
+                                >
+                                  ▼
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={() => handleRemoveBook(id)}
+                                  title="Remove Book"
+                                  className="flex h-8 w-8 items-center justify-center rounded-lg border border-rose-200 bg-rose-50 text-rose-700 font-bold hover:bg-rose-100 ml-1.5 cursor-pointer"
+                                >
+                                  ✕
+                                </button>
+                              </div>
+                            </div>
+                          );
+                        }
+
                         const author = getAuthor(p);
                         const thumb =
                           p.images?.[0]?.src || "/images/placeholder.jpg";
-                        const isFirst = idx === 0;
-                        const isLast = idx === activeProducts.length - 1;
 
                         return (
                           <div
                             key={`${p.id}-${idx}`}
                             className="flex items-center justify-between gap-3 rounded-2xl border border-slate-200 bg-white p-3.5 shadow-2xs hover:border-slate-300 transition-all"
                           >
-                            {/* Extracted Book Details */}
                             <div className="flex items-center gap-3.5 min-w-0">
                               <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-navy font-mono text-xs font-black text-white">
                                 #{idx + 1}
@@ -819,7 +1019,6 @@ export function ShelfCuratorClient({
                               </div>
                             </div>
 
-                            {/* Reorder and Remove Controls */}
                             <div className="flex items-center gap-1 shrink-0">
                               <button
                                 type="button"

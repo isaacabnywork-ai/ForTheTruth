@@ -57,6 +57,10 @@ export async function POST(req: Request) {
       bestsellersIds: cleanNumArray(body.bestsellersIds, current.bestsellersIds),
       bestsellersTitle:
         body.bestsellersTitle !== undefined ? body.bestsellersTitle : current.bestsellersTitle,
+      bestsellersMode:
+        body.bestsellersMode === "manual" || body.bestsellersMode === "category"
+          ? body.bestsellersMode
+          : current.bestsellersMode ?? "category",
 
       bibleSpeaksTodayIds: cleanNumArray(
         body.bibleSpeaksTodayIds,
@@ -75,14 +79,26 @@ export async function POST(req: Request) {
         body.christianLivingTitle !== undefined
           ? body.christianLivingTitle
           : current.christianLivingTitle,
+      christianLivingMode:
+        body.christianLivingMode === "manual" || body.christianLivingMode === "category"
+          ? body.christianLivingMode
+          : current.christianLivingMode ?? "category",
 
       ministryIds: cleanNumArray(body.ministryIds, current.ministryIds),
       ministryTitle:
         body.ministryTitle !== undefined ? body.ministryTitle : current.ministryTitle,
+      ministryMode:
+        body.ministryMode === "manual" || body.ministryMode === "category"
+          ? body.ministryMode
+          : current.ministryMode ?? "category",
 
       theologyIds: cleanNumArray(body.theologyIds, current.theologyIds),
       theologyTitle:
         body.theologyTitle !== undefined ? body.theologyTitle : current.theologyTitle,
+      theologyMode:
+        body.theologyMode === "manual" || body.theologyMode === "category"
+          ? body.theologyMode
+          : current.theologyMode ?? "category",
 
       reviews: Array.isArray(body.reviews) ? body.reviews : current.reviews,
     };

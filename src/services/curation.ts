@@ -27,18 +27,22 @@ const DEFAULT_CONFIG: CuratedShelfConfig = {
   newArrivalsTitle: "New Arrivals",
   bestsellersIds: [35262, 13148, 12833, 34468, 35647, 20507],
   bestsellersTitle: "Children Books",
+  bestsellersMode: "category",
 
   bibleSpeaksTodayIds: [36313, 36309, 36306, 36302, 36294, 36285],
   bibleSpeaksTodayTitle: "The Bible Speaks Today",
 
   christianLivingIds: [38336, 31266, 46237, 38662, 4793, 53424],
   christianLivingTitle: "Christian Living",
+  christianLivingMode: "category",
 
   ministryIds: [44354, 14694, 22394, 14678, 14669, 4958],
   ministryTitle: "Ministry",
+  ministryMode: "category",
 
   theologyIds: [31091, 31117, 31424, 52810, 31100, 31155],
   theologyTitle: "Theology",
+  theologyMode: "category",
 
   reviews: DEFAULT_REVIEWS,
 };
@@ -85,6 +89,8 @@ function parseConfig(data: any): CuratedShelfConfig {
       : DEFAULT_CONFIG.bestsellersIds,
     bestsellersTitle:
       data.bestsellersTitle ?? DEFAULT_CONFIG.bestsellersTitle,
+    bestsellersMode:
+      data.bestsellersMode === "manual" ? "manual" : "category",
 
     bibleSpeaksTodayIds: Array.isArray(data.bibleSpeaksTodayIds)
       ? data.bibleSpeaksTodayIds.map(Number)
@@ -97,16 +103,22 @@ function parseConfig(data: any): CuratedShelfConfig {
       : DEFAULT_CONFIG.christianLivingIds,
     christianLivingTitle:
       data.christianLivingTitle ?? DEFAULT_CONFIG.christianLivingTitle,
+    christianLivingMode:
+      data.christianLivingMode === "manual" ? "manual" : "category",
 
     ministryIds: Array.isArray(data.ministryIds)
       ? data.ministryIds.map(Number)
       : DEFAULT_CONFIG.ministryIds,
     ministryTitle: data.ministryTitle ?? DEFAULT_CONFIG.ministryTitle,
+    ministryMode:
+      data.ministryMode === "manual" ? "manual" : "category",
 
     theologyIds: Array.isArray(data.theologyIds)
       ? data.theologyIds.map(Number)
       : DEFAULT_CONFIG.theologyIds,
     theologyTitle: data.theologyTitle ?? DEFAULT_CONFIG.theologyTitle,
+    theologyMode:
+      data.theologyMode === "manual" ? "manual" : "category",
 
     reviews:
       Array.isArray(data.reviews) && data.reviews.length > 0
