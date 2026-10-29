@@ -245,16 +245,20 @@ function BookRowCard({
         className="relative flex items-end justify-center h-[210px] sm:h-[235px] md:h-[250px] lg:h-[260px] w-full"
         title={fullTitle}
       >
-        <div className="relative inline-block max-h-full max-w-full transition-all duration-300 group-hover:-translate-y-1.5">
+        <div className="relative inline-block max-h-full max-w-full transition-all duration-300 group-hover:-translate-y-1.5 overflow-hidden rounded-[3px]">
           {imageSrc ? (
             <img
               src={imageSrc}
               alt={imageAlt || fullTitle}
               loading="lazy"
-              className="max-h-[210px] sm:max-h-[235px] md:max-h-[250px] lg:max-h-[260px] w-auto max-w-full rounded-[3px] shadow-xs border border-black/[0.06] object-contain block group-hover:shadow-md transition-shadow"
+              className={`max-h-[210px] sm:max-h-[235px] md:max-h-[250px] lg:max-h-[260px] w-auto max-w-full rounded-[3px] shadow-xs border border-black/[0.06] object-contain block group-hover:shadow-md transition-all duration-300 ${
+                !inStock ? "opacity-40" : ""
+              }`}
             />
           ) : (
-            <div className="flex aspect-[2/3] h-[210px] sm:h-[235px] md:h-[250px] lg:h-[260px] items-center justify-center bg-gold-gradient p-3 text-center rounded-[3px]">
+            <div className={`flex aspect-[2/3] h-[210px] sm:h-[235px] md:h-[250px] lg:h-[260px] items-center justify-center bg-gold-gradient p-3 text-center rounded-[3px] ${
+              !inStock ? "opacity-40" : ""
+            }`}>
               <span className="font-serif text-xs italic leading-snug text-white [text-shadow:0_1px_2px_rgba(120,85,40,0.4)]">
                 {displayTitle}
               </span>
@@ -268,8 +272,8 @@ function BookRowCard({
           <div className="pointer-events-none absolute inset-0 bg-gradient-to-tr from-transparent via-white/5 to-white/10 opacity-30 rounded-[3px]" />
 
           {!inStock && (
-            <div className="absolute top-2 left-2 z-10">
-              <span className="bg-charcoal/90 text-white text-[9.5px] font-bold uppercase tracking-wider px-2 py-0.5 rounded shadow-xs">
+            <div className="absolute inset-0 flex items-center justify-center p-2 pointer-events-none z-10">
+              <span className="bg-[#212121]/90 text-white text-[9.5px] sm:text-[10px] font-bold uppercase tracking-wider px-3 py-1 rounded-full shadow-md backdrop-blur-xs whitespace-nowrap">
                 SOLD OUT
               </span>
             </div>
