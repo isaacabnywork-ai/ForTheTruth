@@ -9,6 +9,7 @@ import {
 import { Testimonials } from "@/components/home/Testimonials";
 import { SpineSlider } from "@/components/home/SpineSlider";
 import { CollectionsGrid } from "@/components/home/CollectionsGrid";
+import { StoreMaintenancePage } from "@/components/common/StoreMaintenancePage";
 import { isWooConfigured } from "@/config/env";
 import { getCategories, getProducts } from "@/services/woocommerce";
 import { getCuratedShelfConfig } from "@/services/curation";
@@ -162,6 +163,16 @@ export default async function HomePage() {
   }));
 
   const storeReady = newArrivals.length > 0 || bestsellers.length > 0;
+  const hasAnyBooks =
+    featured.length > 0 ||
+    newArrivals.length > 0 ||
+    bestsellers.length > 0 ||
+    spineProducts.length > 0 ||
+    categoryRows.some((r) => r.products.length > 0);
+
+  if (!hasAnyBooks) {
+    return <StoreMaintenancePage />;
+  }
 
   return (
     <>

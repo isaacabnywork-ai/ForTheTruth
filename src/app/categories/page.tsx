@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 import { isWooConfigured } from "@/config/env";
+import { StoreMaintenancePage } from "@/components/common/StoreMaintenancePage";
 import { getCategories, getAllProducts } from "@/services/woocommerce";
 import type { WCCategory, Product } from "@/types/product";
 import { formatCategoryName } from "@/utils/text";
@@ -24,6 +25,10 @@ export default async function CategoriesPage() {
     ]);
     categories = results[0];
     allProducts = results[1];
+  }
+
+  if (!isWooConfigured() || (categories.length === 0 && allProducts.length === 0)) {
+    return <StoreMaintenancePage title="Categories Temporarily Unavailable" />;
   }
 
   // Pre-index up to 3 book cover images per category

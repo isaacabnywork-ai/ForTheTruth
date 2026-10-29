@@ -3,7 +3,13 @@ import { notFound } from "next/navigation";
 import { ProductDetail } from "@/components/products/ProductDetail";
 import { Bookshelf } from "@/components/products/Bookshelf";
 import { isWooConfigured } from "@/config/env";
-import { getProductBySlug, getProducts, getProductReviews } from "@/services/woocommerce";
+import { StoreMaintenancePage } from "@/components/common/StoreMaintenancePage";
+import {
+  getProductBySlug,
+  getProductBySlugWithStatus,
+  getProducts,
+  getProductReviews,
+} from "@/services/woocommerce";
 import type { Product, ProductReview } from "@/types/product";
 
 export const revalidate = 3600;
@@ -33,12 +39,16 @@ export default async function SingleProductPage({ params }: PageProps) {
   const { slug } = await params;
 
   let product: Product | null = null;
+  let isOffline = false;
   let reviews: ProductReview[] = [];
   let related: Product[] = [];
 
   if (isWooConfigured()) {
     try {
-      product = await getProductBySlug(slug);
+      const res = await getProductBySlugWithStatus(slug);
+      product = res.product;
+      isOffline = res.isOffline;
+
       if (product) {
         [reviews, related] = await Promise.all([
           getProductReviews(product.id).catch(() => []),
@@ -52,7 +62,19 @@ export default async function SingleProductPage({ params }: PageProps) {
       }
     } catch (err) {
       console.error("SingleProductPage fetch error:", err);
+      isOffline = true;
     }
+  } else {
+    isOffline = true;
+  }
+
+  if (isOffline && !product) {
+    return (
+      <StoreMaintenancePage
+        title="Book Details Temporarily Unavailable"
+        message="Our book database is currently undergoing synchronization or maintenance. We apologize for the inconvenience — please check back in a few minutes or order directly via WhatsApp or phone."
+      />
+    );
   }
 
   if (!product) {

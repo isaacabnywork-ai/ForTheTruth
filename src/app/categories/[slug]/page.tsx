@@ -6,8 +6,13 @@ import { ProductCard } from "@/components/products/ProductCard";
 import { ProductFilters } from "@/components/products/ProductFilters";
 import { Pagination } from "@/components/products/Pagination";
 import { isWooConfigured } from "@/config/env";
+import { StoreMaintenancePage } from "@/components/common/StoreMaintenancePage";
 import { parseProductQuery, type SearchParamsMap } from "@/lib/productQuery";
-import { getCategoryBySlug, getProductsPaged } from "@/services/woocommerce";
+import {
+  getCategoryBySlug,
+  getProductsPaged,
+  isWooCommerceOffline,
+} from "@/services/woocommerce";
 import { formatCategoryName } from "@/utils/text";
 
 export const revalidate = 3600;
@@ -31,10 +36,17 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 }
 
 export default async function CategoryPage({ params, searchParams }: Props) {
-  if (!isWooConfigured()) notFound();
+  if (!isWooConfigured() || isWooCommerceOffline()) {
+    return <StoreMaintenancePage title="Category Temporarily Unavailable" />;
+  }
   const [{ slug }, sp] = await Promise.all([params, searchParams]);
   const category = await getCategoryBySlug(slug).catch(() => null);
-  if (!category) notFound();
+  if (!category) {
+    if (isWooCommerceOffline()) {
+      return <StoreMaintenancePage title="Category Temporarily Unavailable" />;
+    }
+    notFound();
+  }
 
   const { query, page, plain } = parseProductQuery(sp, 24);
   const result = await getProductsPaged({

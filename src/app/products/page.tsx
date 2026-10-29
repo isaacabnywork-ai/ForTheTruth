@@ -5,6 +5,7 @@ import { ProductCard } from "@/components/products/ProductCard";
 import { ProductFilters } from "@/components/products/ProductFilters";
 import { Pagination } from "@/components/products/Pagination";
 import { isWooConfigured } from "@/config/env";
+import { StoreMaintenancePage } from "@/components/common/StoreMaintenancePage";
 import { parseProductQuery, type SearchParamsMap } from "@/lib/productQuery";
 import { getCategories, getProductsPaged } from "@/services/woocommerce";
 import type { WCCategory } from "@/types/product";
@@ -47,6 +48,23 @@ export default async function ProductsCatalogPage({
     } catch (err) {
       console.error("ProductsCatalogPage fetch error:", err);
     }
+  }
+
+  const isDefaultBrowse =
+    !sp.q &&
+    !sp.category &&
+    !sp.minPrice &&
+    !sp.maxPrice &&
+    !sp.availability &&
+    !sp.tag &&
+    !sp.author &&
+    !sp.orderby;
+
+  if (
+    !isWooConfigured() ||
+    (isDefaultBrowse && result.products.length === 0 && categories.length === 0)
+  ) {
+    return <StoreMaintenancePage />;
   }
 
   return (

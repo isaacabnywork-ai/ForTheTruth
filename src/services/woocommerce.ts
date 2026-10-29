@@ -18,6 +18,26 @@ interface FetchOptions {
   timeout?: number;
 }
 
+let recentApiError: { timestamp: number; message: string; status?: number } | null = null;
+
+export function recordApiError(err: unknown) {
+  const status = err instanceof WCApiError ? err.status : undefined;
+  const message = err instanceof Error ? err.message : String(err);
+  recentApiError = { timestamp: Date.now(), message, status };
+}
+
+export function clearApiError() {
+  recentApiError = null;
+}
+
+export function isWooCommerceOffline(): boolean {
+  if (!isWooConfigured()) return true;
+  if (recentApiError && Date.now() - recentApiError.timestamp < 120000) {
+    return true;
+  }
+  return false;
+}
+
 async function wcFetchRaw(
   path: string,
   opts: FetchOptions = {}
@@ -61,18 +81,23 @@ async function wcFetchRaw(
       if (!res.ok) {
         const text = await res.text().catch(() => "");
         console.error(`WooCommerce API Error (${res.status}):`, text);
-        throw new WCApiError(res.status, text);
+        const err = new WCApiError(res.status, text);
+        recordApiError(err);
+        throw err;
       }
+      clearApiError();
       return res;
     } catch (err) {
       clearTimeout(timeoutId);
       lastError = err;
+      recordApiError(err);
       if (err instanceof WCApiError) throw err; // don't retry client errors
       if (attempt < maxAttempts) {
         await new Promise((r) => setTimeout(r, 300 * (attempt + 1)));
       }
     }
   }
+  recordApiError(lastError);
   throw lastError;
 }
 
@@ -285,8 +310,34 @@ export async function getProductBySlug(slug: string): Promise<Product | null> {
       revalidate: 600,
     });
     return results.find((p) => decodeURIComponent(p.slug).toLowerCase() === cleanSlug) ?? results[0] ?? null;
-  } catch {
+  } catch (err) {
+    recordApiError(err);
     return null;
+  }
+}
+
+export async function getProductBySlugWithStatus(
+  slug: string
+): Promise<{ product: Product | null; isOffline: boolean }> {
+  if (!isWooConfigured()) return { product: null, isOffline: true };
+  try {
+    const cleanSlug = decodeURIComponent(slug).toLowerCase().trim();
+    let results = await wcFetch<Product[]>("/products", {
+      searchParams: { slug: cleanSlug, status: "publish" },
+      revalidate: 600,
+    });
+    if (results.length > 0) return { product: results[0], isOffline: false };
+
+    const keyword = cleanSlug.replace(/-/g, " ");
+    results = await wcFetch<Product[]>("/products", {
+      searchParams: { search: keyword, status: "publish", per_page: 5 },
+      revalidate: 600,
+    });
+    const found = results.find((p) => decodeURIComponent(p.slug).toLowerCase() === cleanSlug) ?? results[0] ?? null;
+    return { product: found, isOffline: false };
+  } catch (err) {
+    recordApiError(err);
+    return { product: null, isOffline: true };
   }
 }
 
