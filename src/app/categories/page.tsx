@@ -4,6 +4,7 @@ import Link from "next/link";
 import { isWooConfigured } from "@/config/env";
 import { getCategories, getAllProducts } from "@/services/woocommerce";
 import type { WCCategory, Product } from "@/types/product";
+import { formatCategoryName } from "@/utils/text";
 
 export const revalidate = 3600;
 
@@ -92,7 +93,7 @@ export default async function CategoriesPage() {
 
                 <div className="text-center">
                   <p className="font-display text-base font-bold text-charcoal transition-colors group-hover:text-gold-dark line-clamp-2">
-                    {cat.name}
+                    {formatCategoryName(cat.name)}
                   </p>
                   {cat.count != null && (
                     <p className="mt-1 text-[11px] uppercase tracking-wider text-charcoal/40">

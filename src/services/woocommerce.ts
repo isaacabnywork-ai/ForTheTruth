@@ -4,6 +4,7 @@
  */
 import { getServerEnv, isWooConfigured } from "@/config/env";
 import type { Product, ProductReview, WCCategory } from "@/types/product";
+import { formatCategoryName } from "@/utils/text";
 
 const API_BASE = "/wp-json/wc/v3";
 const MAX_RETRIES = 2;
@@ -305,11 +306,15 @@ export async function getCategories(): Promise<WCCategory[]> {
   }
 
   try {
-    const data = await wcFetch<WCCategory[]>("/products/categories", {
+    let data = await wcFetch<WCCategory[]>("/products/categories", {
       searchParams: { per_page: 100, hide_empty: true },
       revalidate: 86400,
     });
     if (data && data.length > 0) {
+      data = data.map((cat) => ({
+        ...cat,
+        name: formatCategoryName(cat.name),
+      }));
       globalForCache._wcCategoriesCache = { data, time: now };
     }
     return data;

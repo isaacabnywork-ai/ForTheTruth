@@ -8,6 +8,7 @@ import { Pagination } from "@/components/products/Pagination";
 import { isWooConfigured } from "@/config/env";
 import { parseProductQuery, type SearchParamsMap } from "@/lib/productQuery";
 import { getCategoryBySlug, getProductsPaged } from "@/services/woocommerce";
+import { formatCategoryName } from "@/utils/text";
 
 export const revalidate = 3600;
 
@@ -48,13 +49,13 @@ export default async function CategoryPage({ params, searchParams }: Props) {
         <span className="mx-2">/</span>
         <Link href="/categories" className="hover:text-gold-dark">Categories</Link>
         <span className="mx-2">/</span>
-        <span className="text-charcoal/80">{category.name}</span>
+        <span className="text-charcoal/80">{formatCategoryName(category.name)}</span>
       </nav>
 
       <div className="mb-8 border-b border-sand pb-6">
         <p className="overline-label">Category</p>
         <h1 className="mt-2 font-display text-3xl font-bold md:text-4xl">
-          {category.name}
+          {formatCategoryName(category.name)}
         </h1>
         <p className="mt-2 text-sm text-charcoal/60">
           {result.total} {result.total === 1 ? "title" : "titles"}

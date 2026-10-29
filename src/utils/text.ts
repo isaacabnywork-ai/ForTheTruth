@@ -70,3 +70,24 @@ export function cleanExcerpt(htmlOrText: string, maxLength?: number): string {
   }
   return decoded;
 }
+
+/**
+ * Formats a category name cleanly:
+ * - Decodes HTML entities
+ * - Converts "GOOD BOOK GUIDES" (or any accidental all-caps category) to Title Case "Good Book Guides"
+ */
+export function formatCategoryName(name: string): string {
+  if (!name) return "";
+  const cleaned = decodeHtmlEntities(name).trim();
+  if (cleaned.toUpperCase() === "GOOD BOOK GUIDES") {
+    return "Good Book Guides";
+  }
+  if (cleaned.length > 3 && cleaned === cleaned.toUpperCase() && !cleaned.includes("AIPC")) {
+    return cleaned
+      .toLowerCase()
+      .split(" ")
+      .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
+      .join(" ");
+  }
+  return cleaned;
+}

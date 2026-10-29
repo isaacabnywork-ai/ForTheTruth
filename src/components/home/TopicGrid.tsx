@@ -2,6 +2,7 @@ import Image from "next/image";
 import Link from "next/link";
 import type { WCCategory } from "@/types/product";
 import type { Product } from "@/types/product";
+import { formatCategoryName } from "@/utils/text";
 
 /**
  * Quick-browse topic cards with overlapping cover thumbnails,
@@ -71,7 +72,7 @@ export function TopicGrid({
               </div>
 
               <p className="mt-4 text-center font-display text-[15px] font-bold text-charcoal transition-colors group-hover:text-gold-dark">
-                {cat.name}
+                {formatCategoryName(cat.name)}
               </p>
               {cat.count != null && (
                 <p className="mt-0.5 text-center text-[11px] uppercase tracking-wider text-charcoal/40">
