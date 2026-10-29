@@ -1,4 +1,4 @@
-import { Bookshelf, BookshelfSkeleton } from "@/components/products/Bookshelf";
+import { BookRow, BookRowSkeleton } from "@/components/products/BookRow";
 import { HeroShelf } from "@/components/home/HeroShelf";
 import { TopicGrid } from "@/components/home/TopicGrid";
 import {
@@ -111,6 +111,7 @@ export default async function HomePage() {
     title: cfg.title,
     slug: cfg.slug,
     viewMoreHref: cfg.viewMoreHref,
+    badge: cfg.badge,
     products: cfg.ids.map((id) => productsMap.get(id)).filter(Boolean) as Product[],
   }));
 
@@ -129,33 +130,35 @@ export default async function HomePage() {
       {/* 2 — Quick browse by topic */}
       <TopicGrid categories={categories} coversByCategory={coversByCategory} />
 
-      {/* 3 — New Arrivals Shelf */}
+      {/* 3 — New Arrivals */}
       {storeReady ? (
         newArrivals.length > 0 && (
-          <Bookshelf
+          <BookRow
             title={curated.newArrivalsTitle || "New Arrivals"}
             href="/products?orderby=date"
+            badge="NEW ARRIVAL"
             products={newArrivals}
           />
         )
       ) : (
-        <BookshelfSkeleton title={curated.newArrivalsTitle || "New Arrivals"} />
+        <BookRowSkeleton title={curated.newArrivalsTitle || "New Arrivals"} />
       )}
 
       {/* 4 — 4 Categorical Rows: The Bible Speaks Today, Christian Living, Ministry, Theology */}
       <CategoryBookRows rows={categoryRows} />
 
-      {/* 5 — Children Books Shelf (replaces Bestsellers shelf) */}
+      {/* 5 — Children Books */}
       {storeReady ? (
         bestsellers.length > 0 && (
-          <Bookshelf
+          <BookRow
             title={curated.bestsellersTitle || "Children Books"}
             href="/categories/children"
+            badge="CHILDREN BOOKS"
             products={bestsellers}
           />
         )
       ) : (
-        <BookshelfSkeleton title={curated.bestsellersTitle || "Children Books"} />
+        <BookRowSkeleton title={curated.bestsellersTitle || "Children Books"} />
       )}
 
       {/* 6 — Explore Children Books (spine slider) with customizable titles & book selection */}

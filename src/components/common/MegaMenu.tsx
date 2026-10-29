@@ -23,7 +23,7 @@ const subHeaderCls =
 export function MegaMenu({ open, onNavigate, onMouseEnter, onMouseLeave }: MegaMenuProps) {
   return (
     <div
-      className={`fixed left-1/2 top-[88px] z-[100] w-[min(1080px,calc(100vw-3rem))] -translate-x-1/2 transition-all duration-300 before:absolute before:-top-5 before:inset-x-0 before:h-5 before:content-[''] ${
+      className={`fixed left-1/2 top-[88px] z-[100] w-[min(900px,calc(100vw-3rem))] -translate-x-1/2 transition-all duration-300 before:absolute before:-top-5 before:inset-x-0 before:h-5 before:content-[''] ${
         open
           ? "pointer-events-auto visible translate-y-0 opacity-100"
           : "pointer-events-none invisible -translate-y-2 opacity-0"
@@ -33,7 +33,7 @@ export function MegaMenu({ open, onNavigate, onMouseEnter, onMouseLeave }: MegaM
       onMouseLeave={onMouseLeave}
     >
       <div className="overflow-hidden rounded-2xl border border-sand bg-white shadow-2xl p-6">
-        <div className="grid grid-cols-4 gap-6">
+        <div className="grid grid-cols-3 gap-6">
           {/* Column 1: All Books Main Navigation & Publishers */}
           <div className="border-r border-sand pr-6">
             <p className={sectionHeaderCls}>All Books</p>
@@ -116,59 +116,7 @@ export function MegaMenu({ open, onNavigate, onMouseEnter, onMouseLeave }: MegaM
             </ul>
           </div>
 
-          {/* Column 3: Highlights & Formats */}
-          <div className="border-r border-sand pr-6">
-            <p className={sectionHeaderCls}>Highlights</p>
-            <ul className="space-y-0.5">
-              <li>
-                <Link
-                  href="/products?orderby=date"
-                  onClick={onNavigate}
-                  className={itemCls}
-                >
-                  New Releases
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href="/products?orderby=popularity"
-                  onClick={onNavigate}
-                  className={itemCls}
-                >
-                  Popular Titles
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href="/products?orderby=rating"
-                  onClick={onNavigate}
-                  className={itemCls}
-                >
-                  Top Rated
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href="/free-ebooks"
-                  onClick={onNavigate}
-                  className={itemCls}
-                >
-                  Free E-Books
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href="/products?availability=outofstock"
-                  onClick={onNavigate}
-                  className={itemCls}
-                >
-                  Out of Stock
-                </Link>
-              </li>
-            </ul>
-          </div>
-
-          {/* Column 4: Recently Viewed */}
+          {/* Column 3: Recently Viewed */}
           <RecentlyViewedMegaSection onNavigate={onNavigate} />
         </div>
       </div>
