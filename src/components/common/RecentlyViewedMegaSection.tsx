@@ -41,14 +41,13 @@ export function RecentlyViewedMegaSection({
   // Avoid hydration mismatch by waiting for client mount
   if (!mounted) {
     return (
-      <div className={`flex flex-col justify-between p-6 bg-[#fcfbf9]/60 ${className}`}>
+      <div className={`flex flex-col justify-between h-full ${className}`}>
         <div>
-          <div className="flex items-center gap-2 mb-4">
-            <span className="h-1.5 w-1.5 rounded-full bg-gold/50" />
-            <p className="font-display text-sm font-bold text-charcoal">Recently Viewed</p>
+          <div className="flex items-center justify-between border-b border-sand pb-1 mb-3">
+            <p className="font-display text-sm font-bold tracking-normal text-charcoal">Recently Viewed</p>
           </div>
           <div className="space-y-2.5">
-            {[1, 2, 3].map((i) => (
+            {[1, 2].map((i) => (
               <div
                 key={i}
                 className="h-14 rounded-xl bg-sand/20 animate-pulse"
@@ -61,20 +60,20 @@ export function RecentlyViewedMegaSection({
   }
 
   const hasItems = items.length > 0;
-  // Display up to 3 most recently viewed books in the column
-  const displayItems = items.slice(0, 3);
+  // Display up to 2 most recently viewed books in the column (two rows)
+  const displayItems = items.slice(0, 2);
 
   return (
     <div
-      className={`flex flex-col justify-between p-6 bg-[#fcfbf9]/60 ${className}`}
+      className={`flex flex-col justify-between h-full ${className}`}
     >
       <div>
-        {/* Header */}
-        <div className="flex items-center justify-between mb-4">
+        {/* Header — aligned flush with other mega menu column headers */}
+        <div className="flex items-center justify-between border-b border-sand pb-1 mb-3">
           <div className="flex items-center gap-1.5">
-            <p className="font-display text-sm font-bold text-charcoal">Recently Viewed</p>
+            <p className="font-display text-sm font-bold tracking-normal text-charcoal">Recently Viewed</p>
             {hasItems && (
-              <span className="rounded-full bg-gold/15 px-1.5 py-0.2 text-[9px] font-bold text-gold-dark">
+              <span className="rounded-full bg-gold/15 px-1.5 py-0.5 text-[9px] font-bold text-gold-dark leading-none">
                 {items.length}
               </span>
             )}
