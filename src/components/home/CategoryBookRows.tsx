@@ -14,7 +14,7 @@ export const CATEGORY_ROWS_CONFIG: CategoryRowConfig[] = [
     title: "The Bible Speaks Today",
     slug: "bible-speaks-today",
     viewMoreHref: "/categories/bible-commentary",
-    badge: "THE BIBLE SPEAKS TODAY",
+    badge: "BIBLE SPEAKS TODAY",
     ids: [36313, 36309, 36306, 36302, 36294, 36285],
   },
   {
