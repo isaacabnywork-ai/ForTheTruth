@@ -68,6 +68,39 @@ function getSectionBadge(title: string): string {
   return title.toUpperCase();
 }
 
+const CARD_THEMES = [
+  {
+    btn: "bg-[#2D4436] hover:bg-[#22352A]", // Deep forest green
+    badgeBg: "bg-[#E6EFE5]",
+    badgeText: "text-[#2D4E35]",
+  },
+  {
+    btn: "bg-[#6E5039] hover:bg-[#583E2B]", // Warm leather brown
+    badgeBg: "bg-[#EFE9E0]",
+    badgeText: "text-[#6E4F35]",
+  },
+  {
+    btn: "bg-[#354332] hover:bg-[#283425]", // Deep olive
+    badgeBg: "bg-[#ECEFE4]",
+    badgeText: "text-[#3D4C2F]",
+  },
+  {
+    btn: "bg-[#A24632] hover:bg-[#8A3725]", // Terracotta / rust red
+    badgeBg: "bg-[#F8EAE5]",
+    badgeText: "text-[#9E3E2A]",
+  },
+  {
+    btn: "bg-[#4D3652] hover:bg-[#3D2942]", // Deep plum / aubergine
+    badgeBg: "bg-[#EFEAF4]",
+    badgeText: "text-[#4E3454]",
+  },
+  {
+    btn: "bg-[#283C4D] hover:bg-[#1D2E3D]", // Deep slate navy
+    badgeBg: "bg-[#E6ECF2]",
+    badgeText: "text-[#283B4C]",
+  },
+];
+
 export function BookRow({ title, href, badge, products }: BookRowProps) {
   const books = products.slice(0, MAX_PER_ROW);
   const rowBadge = badge || getSectionBadge(title);
@@ -92,10 +125,11 @@ export function BookRow({ title, href, badge, products }: BookRowProps) {
       {/* Books Display */}
       <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
         <div className="flex gap-4 sm:gap-5 overflow-x-auto scrollbar-hide pb-4 pt-1 lg:grid lg:grid-cols-6 lg:gap-6 lg:overflow-visible lg:pb-0">
-          {books.map((p) => (
+          {books.map((p, idx) => (
             <BookRowCard
               key={p.id}
               product={p}
+              colorIndex={idx}
               badge={rowBadge}
             />
           ))}
@@ -121,12 +155,12 @@ export function BookRowSkeleton({ title }: { title: string }) {
               className="flex flex-col w-[148px] sm:w-[165px] md:w-[175px] lg:w-auto shrink-0 lg:shrink"
             >
               <div className="skeleton aspect-[2/3] w-full rounded-[3px]" />
-              <div className="mt-2.5 sm:mt-3 flex items-center justify-center gap-2.5 sm:gap-3">
-                <div className="flex flex-col gap-1 items-start">
-                  <div className="skeleton h-3.5 w-12 rounded" />
-                  <div className="skeleton h-2.5 w-8 rounded" />
+              <div className="mt-2.5 flex items-center justify-between w-full pt-0.5">
+                <div className="flex flex-col gap-1.5">
+                  <div className="skeleton h-4 w-20 rounded" />
+                  <div className="skeleton h-3.5 w-14 rounded" />
                 </div>
-                <div className="skeleton h-8 w-8 sm:h-8.5 sm:w-8.5 rounded-full shrink-0" />
+                <div className="skeleton h-9 w-9 rounded-lg shrink-0" />
               </div>
             </div>
           ))}
@@ -138,12 +172,17 @@ export function BookRowSkeleton({ title }: { title: string }) {
 
 function BookRowCard({
   product,
+  colorIndex = 0,
 }: {
   product: Product;
+  colorIndex?: number;
   badge?: string;
 }) {
   const [isAdded, setIsAdded] = useState(false);
+  const [isNotified, setIsNotified] = useState(false);
   const addToCart = useCartStore((s) => s.addToCart);
+
+  const theme = CARD_THEMES[colorIndex % CARD_THEMES.length];
 
   const imageSrc =
     product.images?.[0]?.src ||
@@ -157,6 +196,9 @@ function BookRowCard({
   const currentPrice = parseFloat(product.price || product.sale_price || product.regular_price || "0");
   const regularPrice = parseFloat(product.regular_price || "0");
   const hasDiscount = regularPrice > currentPrice && currentPrice > 0;
+  const discountPercent = hasDiscount
+    ? Math.round(((regularPrice - currentPrice) / regularPrice) * 100)
+    : 0;
 
   function handleAdd(e: React.MouseEvent) {
     e.preventDefault();
@@ -178,6 +220,16 @@ function BookRowCard({
     setTimeout(() => {
       setIsAdded(false);
     }, 1800);
+  }
+
+  function handleNotify(e: React.MouseEvent) {
+    e.preventDefault();
+    e.stopPropagation();
+    triggerHaptic("tap");
+    setIsNotified(true);
+    setTimeout(() => {
+      setIsNotified(false);
+    }, 2400);
   }
 
   return (
@@ -218,66 +270,125 @@ function BookRowCard({
         )}
       </Link>
 
-      {/* Bottom Row: Price & Add to Cart — Centered and brought close together */}
-      <div className="mt-2.5 sm:mt-3 flex items-center justify-center gap-2.5 sm:gap-3 w-full">
+      {/* Bottom Row: Price, Discount Badge & Squircle Cart / Notify Button */}
+      <div className="mt-2.5 flex items-center justify-between w-full pt-0.5">
         <Link
           href={`/products/${product.slug}`}
-          className="flex flex-col text-left justify-center min-h-[30px] group/price"
+          className="flex flex-col text-left justify-center group/price min-h-[36px]"
           title={fullTitle}
         >
-          <span className="font-sans text-[13.5px] sm:text-[14px] font-normal text-charcoal leading-tight group-hover/price:text-gold-dark transition-colors">
-            {formatPrice(currentPrice)}
-          </span>
-          {hasDiscount ? (
-            <span className="font-sans text-[11px] font-normal text-charcoal/45 line-through leading-none mt-0.5">
-              {formatPrice(regularPrice)}
-            </span>
-          ) : null}
+          {!inStock ? (
+            /* Out of Stock: Stacked price so "Notify me" button has room */
+            <div className="flex flex-col leading-tight">
+              <span className="font-sans text-[15px] sm:text-[16px] font-bold text-charcoal tracking-tight group-hover/price:text-gold-dark transition-colors">
+                {formatPrice(currentPrice)}
+              </span>
+              {hasDiscount && (
+                <span className="font-sans text-[11px] sm:text-[12px] font-normal text-charcoal/45 line-through leading-none mt-0.5">
+                  {formatPrice(regularPrice)}
+                </span>
+              )}
+            </div>
+          ) : (
+            /* In Stock: Price + Regular Price inline, Discount % Badge below */
+            <div className="flex flex-col">
+              <div className="flex items-baseline gap-1.5 leading-tight">
+                <span className="font-sans text-[15px] sm:text-[16px] font-bold text-charcoal tracking-tight group-hover/price:text-gold-dark transition-colors">
+                  {formatPrice(currentPrice)}
+                </span>
+                {hasDiscount && (
+                  <span className="font-sans text-[11px] sm:text-[12px] font-normal text-charcoal/45 line-through">
+                    {formatPrice(regularPrice)}
+                  </span>
+                )}
+              </div>
+              {hasDiscount && (
+                <div className="mt-1">
+                  <span
+                    className={`inline-block text-[9.5px] sm:text-[10px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded-[4px] ${theme.badgeBg} ${theme.badgeText}`}
+                  >
+                    {discountPercent}% OFF
+                  </span>
+                </div>
+              )}
+            </div>
+          )}
         </Link>
 
-        {/* Add to Cart Button */}
-        <button
-          type="button"
-          onClick={handleAdd}
-          aria-label={`Add ${fullTitle} to cart`}
-          title={inStock ? (isAdded ? "Added to cart" : `Add ${fullTitle} to cart`) : "Out of stock"}
-          disabled={!inStock}
-          className={`group/btn relative flex h-8 w-8 sm:h-8.5 sm:w-8.5 shrink-0 items-center justify-center rounded-full border transition-all duration-200 shadow-2xs active:scale-95 ${
-            !inStock
-              ? "border-neutral-200 bg-neutral-100 text-neutral-300 cursor-not-allowed"
-              : isAdded
-              ? "border-emerald-600 bg-emerald-600 text-white shadow-xs"
-              : "border-sand bg-white text-charcoal hover:bg-cta hover:border-cta hover:text-white hover:shadow-xs hover:scale-105"
-          }`}
-        >
-          {isAdded ? (
-            <svg
-              className="w-4 h-4 text-white animate-in zoom-in-75 duration-200"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2.5"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            >
-              <polyline points="20 6 9 17 4 12" />
-            </svg>
-          ) : (
-            <svg
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="1.8"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              className="w-3.5 h-3.5 sm:w-4 sm:h-4 transition-transform duration-200 group-hover/btn:scale-110"
-            >
-              <circle cx="9" cy="21" r="1" />
-              <circle cx="20" cy="21" r="1" />
-              <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6" />
-            </svg>
-          )}
-        </button>
+        {/* Right Action: Squircle Cart Button or Notify Me */}
+        {!inStock ? (
+          <button
+            type="button"
+            onClick={handleNotify}
+            className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-white text-[11px] font-semibold shadow-2xs transition-all active:scale-95 shrink-0 ${
+              isNotified ? "bg-emerald-600" : "bg-[#9EA4A9] hover:bg-[#8B9298]"
+            }`}
+            title="Notify me when back in stock"
+          >
+            {isNotified ? (
+              <>
+                <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                  <polyline points="20 6 9 17 4 12" />
+                </svg>
+                <span>Notified!</span>
+              </>
+            ) : (
+              <>
+                <svg
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  className="w-3.5 h-3.5"
+                >
+                  <path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9" />
+                  <path d="M10.3 21a1.94 1.94 0 0 0 3.4 0" />
+                </svg>
+                <span>Notify me</span>
+              </>
+            )}
+          </button>
+        ) : (
+          <button
+            type="button"
+            onClick={handleAdd}
+            aria-label={`Add ${fullTitle} to cart`}
+            title={isAdded ? "Added to cart" : `Add ${fullTitle} to cart`}
+            className={`group/btn relative flex h-9 w-9 sm:h-9.5 sm:w-9.5 shrink-0 items-center justify-center rounded-lg text-white shadow-2xs transition-all duration-200 active:scale-95 hover:shadow-xs ${
+              isAdded ? "bg-emerald-600" : theme.btn
+            }`}
+          >
+            {isAdded ? (
+              <svg
+                className="w-4 h-4 text-white animate-in zoom-in-75 duration-200"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2.5"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <polyline points="20 6 9 17 4 12" />
+              </svg>
+            ) : (
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                className="w-4 h-4 transition-transform duration-200 group-hover/btn:scale-110"
+              >
+                <circle cx="9" cy="21" r="1" />
+                <circle cx="20" cy="21" r="1" />
+                <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6" />
+              </svg>
+            )}
+          </button>
+        )}
       </div>
     </article>
   );
