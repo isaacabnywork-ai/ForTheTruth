@@ -12,13 +12,7 @@ const SORTS = [
   { value: "price-desc", label: "Price: High to Low" },
 ] as const;
 
-const PRICES = [
-  { value: "", label: "Any price" },
-  { value: "0-299", label: "Under ₹299" },
-  { value: "300-499", label: "₹300 – ₹499" },
-  { value: "500-999", label: "₹500 – ₹999" },
-  { value: "1000-", label: "₹1000+" },
-] as const;
+const MAX_PRICE = 2500;
 
 const selectCls =
   "w-full sm:w-auto truncate rounded-full border border-sand bg-white px-3 sm:px-4 py-2 text-xs sm:text-sm font-medium text-charcoal shadow-sm transition-smooth hover:border-gold/50 focus:border-gold focus:outline-none focus:ring-2 focus:ring-gold/25";
@@ -37,13 +31,35 @@ export function ProductFilters({
   const searchParams = useSearchParams();
   const [isOpen, setIsOpen] = useState(false);
 
+  // Author input state & debounce
   const [authorInput, setAuthorInput] = useState(
     searchParams.get("author") ?? ""
   );
   const authorTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
+  // Price slider state & debounce
+  const [localMin, setLocalMin] = useState(0);
+  const [localMax, setLocalMax] = useState(MAX_PRICE);
+  const priceTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  // Sync author from URL
   useEffect(() => {
     setAuthorInput(searchParams.get("author") ?? "");
+  }, [searchParams]);
+
+  // Sync price from URL
+  useEffect(() => {
+    const priceParam = searchParams.get("price");
+    if (!priceParam) {
+      setLocalMin(0);
+      setLocalMax(MAX_PRICE);
+    } else {
+      const [minStr, maxStr] = priceParam.split("-");
+      const parsedMin = minStr ? parseInt(minStr, 10) : 0;
+      const parsedMax = maxStr ? parseInt(maxStr, 10) : MAX_PRICE;
+      setLocalMin(isNaN(parsedMin) ? 0 : parsedMin);
+      setLocalMax(isNaN(parsedMax) ? MAX_PRICE : parsedMax);
+    }
   }, [searchParams]);
 
   const setParam = useCallback(
@@ -65,6 +81,41 @@ export function ProductFilters({
     authorTimerRef.current = setTimeout(() => {
       setParam({ author: value.trim() || null });
     }, 400);
+  }
+
+  const applyPriceChange = useCallback(
+    (min: number, max: number, immediate = false) => {
+      if (priceTimerRef.current) clearTimeout(priceTimerRef.current);
+
+      const update = () => {
+        if (min <= 0 && max >= MAX_PRICE) {
+          setParam({ price: null });
+        } else if (max >= MAX_PRICE) {
+          setParam({ price: `${min}-` });
+        } else {
+          setParam({ price: `${min}-${max}` });
+        }
+      };
+
+      if (immediate) {
+        update();
+      } else {
+        priceTimerRef.current = setTimeout(update, 350);
+      }
+    },
+    [setParam]
+  );
+
+  function handleMinPriceChange(newVal: number) {
+    const clamped = Math.min(newVal, localMax - 50);
+    setLocalMin(clamped);
+    applyPriceChange(clamped, localMax);
+  }
+
+  function handleMaxPriceChange(newVal: number) {
+    const clamped = Math.max(newVal, localMin + 50);
+    setLocalMax(clamped);
+    applyPriceChange(localMin, clamped);
   }
 
   useEffect(() => {
@@ -93,17 +144,163 @@ export function ProductFilters({
     !!currentAuthor;
 
   const isCategoryPage = pathname.startsWith("/categories/");
-
-  // Active filter pills for the sidebar
   const activeCategory = categories.find((c) => c.slug === currentCategorySlug);
-  const activePrice = PRICES.find((p) => p.value === currentPrice);
+
+  // Readable price string
+  const getPriceLabel = () => {
+    if (localMin <= 0 && localMax >= MAX_PRICE) return "All prices";
+    if (localMax >= MAX_PRICE) return `₹${localMin.toLocaleString("en-IN")}+`;
+    if (localMin <= 0) return `Up to ₹${localMax.toLocaleString("en-IN")}`;
+    return `₹${localMin.toLocaleString("en-IN")} – ₹${localMax.toLocaleString("en-IN")}`;
+  };
+
+  // Reusable Price Slider JSX
+  const renderPriceSlider = () => (
+    <div className="space-y-2.5">
+      <div className="flex items-center justify-between">
+        <label className="text-[10.5px] font-bold uppercase tracking-wider text-charcoal/70">
+          Price Range
+        </label>
+        <span className="text-xs font-semibold text-charcoal font-mono">
+          {getPriceLabel()}
+        </span>
+      </div>
+
+      <div className="rounded-xl border border-sand bg-[#fbf9f5] p-3.5 shadow-2xs">
+        {/* Slider dual track */}
+        <div className="relative h-6 flex items-center">
+          {/* Background track */}
+          <div className="absolute h-1.5 w-full rounded-full bg-sand/70" />
+
+          {/* Active fill bar */}
+          <div
+            className="absolute h-1.5 rounded-full bg-gold transition-all duration-75"
+            style={{
+              left: `${(localMin / MAX_PRICE) * 100}%`,
+              right: `${100 - (localMax / MAX_PRICE) * 100}%`,
+            }}
+          />
+
+          {/* Min thumb */}
+          <input
+            type="range"
+            min={0}
+            max={MAX_PRICE}
+            step={25}
+            value={localMin}
+            onChange={(e) => handleMinPriceChange(Number(e.target.value))}
+            style={{ zIndex: localMin > MAX_PRICE - 100 ? 30 : 20 }}
+            className="absolute w-full pointer-events-none appearance-none bg-transparent focus:outline-none
+              [&::-webkit-slider-thumb]:pointer-events-auto
+              [&::-webkit-slider-thumb]:h-4
+              [&::-webkit-slider-thumb]:w-4
+              [&::-webkit-slider-thumb]:rounded-full
+              [&::-webkit-slider-thumb]:bg-white
+              [&::-webkit-slider-thumb]:border-2
+              [&::-webkit-slider-thumb]:border-gold
+              [&::-webkit-slider-thumb]:shadow-md
+              [&::-webkit-slider-thumb]:cursor-pointer
+              [&::-webkit-slider-thumb]:hover:scale-110
+              [&::-webkit-slider-thumb]:transition-transform
+              [&::-webkit-slider-thumb]:appearance-none
+              [&::-moz-range-thumb]:pointer-events-auto
+              [&::-moz-range-thumb]:h-4
+              [&::-moz-range-thumb]:w-4
+              [&::-moz-range-thumb]:rounded-full
+              [&::-moz-range-thumb]:bg-white
+              [&::-moz-range-thumb]:border-2
+              [&::-moz-range-thumb]:border-gold
+              [&::-moz-range-thumb]:shadow-md
+              [&::-moz-range-thumb]:cursor-pointer
+              [&::-moz-range-thumb]:hover:scale-110
+              [&::-moz-range-thumb]:transition-transform"
+            aria-label="Minimum price"
+          />
+
+          {/* Max thumb */}
+          <input
+            type="range"
+            min={0}
+            max={MAX_PRICE}
+            step={25}
+            value={localMax}
+            onChange={(e) => handleMaxPriceChange(Number(e.target.value))}
+            style={{ zIndex: localMin > MAX_PRICE - 100 ? 20 : 30 }}
+            className="absolute w-full pointer-events-none appearance-none bg-transparent focus:outline-none
+              [&::-webkit-slider-thumb]:pointer-events-auto
+              [&::-webkit-slider-thumb]:h-4
+              [&::-webkit-slider-thumb]:w-4
+              [&::-webkit-slider-thumb]:rounded-full
+              [&::-webkit-slider-thumb]:bg-white
+              [&::-webkit-slider-thumb]:border-2
+              [&::-webkit-slider-thumb]:border-gold
+              [&::-webkit-slider-thumb]:shadow-md
+              [&::-webkit-slider-thumb]:cursor-pointer
+              [&::-webkit-slider-thumb]:hover:scale-110
+              [&::-webkit-slider-thumb]:transition-transform
+              [&::-webkit-slider-thumb]:appearance-none
+              [&::-moz-range-thumb]:pointer-events-auto
+              [&::-moz-range-thumb]:h-4
+              [&::-moz-range-thumb]:w-4
+              [&::-moz-range-thumb]:rounded-full
+              [&::-moz-range-thumb]:bg-white
+              [&::-moz-range-thumb]:border-2
+              [&::-moz-range-thumb]:border-gold
+              [&::-moz-range-thumb]:shadow-md
+              [&::-moz-range-thumb]:cursor-pointer
+              [&::-moz-range-thumb]:hover:scale-110
+              [&::-moz-range-thumb]:transition-transform"
+            aria-label="Maximum price"
+          />
+        </div>
+
+        {/* Labels under slider */}
+        <div className="flex items-center justify-between pt-1 text-[10.5px] font-medium text-charcoal/50">
+          <span>₹0</span>
+          <span>₹1,250</span>
+          <span>₹2,500+</span>
+        </div>
+
+        {/* Quick Price Preset Chips */}
+        <div className="mt-3 flex flex-wrap gap-1.5 pt-2 border-t border-sand/50">
+          {[
+            { label: "< ₹300", min: 0, max: 300 },
+            { label: "₹300–₹500", min: 300, max: 500 },
+            { label: "₹500–₹1000", min: 500, max: 1000 },
+            { label: "₹1000+", min: 1000, max: MAX_PRICE },
+          ].map((preset) => {
+            const isSelected =
+              localMin === preset.min && localMax === preset.max;
+            return (
+              <button
+                key={preset.label}
+                type="button"
+                onClick={() => {
+                  setLocalMin(preset.min);
+                  setLocalMax(preset.max);
+                  applyPriceChange(preset.min, preset.max, true);
+                }}
+                className={`rounded-lg px-2 py-1 text-[10px] font-semibold transition-colors cursor-pointer ${
+                  isSelected
+                    ? "bg-gold text-white shadow-2xs font-bold"
+                    : "bg-white hover:bg-sand/60 text-charcoal/70 border border-sand/70"
+                }`}
+              >
+                {preset.label}
+              </button>
+            );
+          })}
+        </div>
+      </div>
+    </div>
+  );
 
   return (
     <>
       {/* Mobile/Tablet: Floating Filter Button */}
       <button
         onClick={() => setIsOpen(true)}
-        className="fixed bottom-24 left-1/2 -translate-x-1/2 z-50 flex h-12 w-12 items-center justify-center rounded-full bg-white text-gold-dark border border-sand shadow-xl transition-transform hover:scale-105 active:scale-95 lg:hidden"
+        className="fixed bottom-24 left-1/2 -translate-x-1/2 z-50 flex h-12 w-12 items-center justify-center rounded-full bg-white text-gold-dark border border-sand shadow-xl transition-transform hover:scale-105 active:scale-95 lg:hidden cursor-pointer"
         aria-label="Open Filters"
       >
         <svg
@@ -144,7 +341,7 @@ export function ProductFilters({
               </h3>
               <button
                 onClick={() => setIsOpen(false)}
-                className="rounded-full p-2 text-charcoal/60 hover:bg-sand/60 hover:text-charcoal transition-colors"
+                className="rounded-full p-2 text-charcoal/60 hover:bg-sand/60 hover:text-charcoal transition-colors cursor-pointer"
                 aria-label="Close Filters"
               >
                 <svg
@@ -180,7 +377,7 @@ export function ProductFilters({
                     <button
                       type="button"
                       onClick={() => handleAuthorChange("")}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 text-charcoal/40 hover:text-gold-dark transition-colors"
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-charcoal/40 hover:text-gold-dark transition-colors cursor-pointer"
                     >
                       <svg
                         width="14"
@@ -221,23 +418,8 @@ export function ProductFilters({
                 </div>
               )}
 
-              {/* Price */}
-              <div className="space-y-1.5">
-                <label className="text-[10px] font-bold uppercase tracking-wider text-charcoal/60">
-                  Price
-                </label>
-                <select
-                  className="w-full rounded-xl border border-sand bg-white px-3 py-2.5 text-sm font-medium text-charcoal shadow-sm transition-smooth hover:border-gold/50 focus:border-gold focus:outline-none focus:ring-2 focus:ring-gold/25"
-                  value={currentPrice ?? ""}
-                  onChange={(e) => setParam({ price: e.target.value || null })}
-                >
-                  {PRICES.map((p) => (
-                    <option key={p.value} value={p.value}>
-                      {p.label}
-                    </option>
-                  ))}
-                </select>
-              </div>
+              {/* Price Slider */}
+              {renderPriceSlider()}
 
               {/* Availability */}
               <div className="space-y-1.5">
@@ -291,7 +473,7 @@ export function ProductFilters({
               <div className="mt-3 flex gap-2 pt-3 border-t border-sand">
                 <button
                   onClick={() => setIsOpen(false)}
-                  className="flex-1 btn-gold py-2.5 text-sm shadow-md"
+                  className="flex-1 btn-gold py-2.5 text-sm shadow-md cursor-pointer"
                 >
                   Apply
                 </button>
@@ -299,6 +481,8 @@ export function ProductFilters({
                   <button
                     onClick={() => {
                       setAuthorInput("");
+                      setLocalMin(0);
+                      setLocalMax(MAX_PRICE);
                       setParam({
                         category: null,
                         price: null,
@@ -309,7 +493,7 @@ export function ProductFilters({
                       });
                       setIsOpen(false);
                     }}
-                    className="btn-outline py-2.5 px-4 text-sm whitespace-nowrap"
+                    className="btn-outline py-2.5 px-4 text-sm whitespace-nowrap cursor-pointer"
                   >
                     Clear All
                   </button>
@@ -362,6 +546,8 @@ export function ProductFilters({
                 type="button"
                 onClick={() => {
                   setAuthorInput("");
+                  setLocalMin(0);
+                  setLocalMax(MAX_PRICE);
                   setParam({
                     category: null,
                     price: null,
@@ -417,11 +603,15 @@ export function ProductFilters({
               {currentPrice && (
                 <button
                   type="button"
-                  onClick={() => setParam({ price: null })}
+                  onClick={() => {
+                    setLocalMin(0);
+                    setLocalMax(MAX_PRICE);
+                    setParam({ price: null });
+                  }}
                   className="inline-flex items-center gap-1 rounded-full bg-sand/60 hover:bg-sand px-2 py-0.5 text-[11px] font-medium text-charcoal transition-colors group cursor-pointer"
                   title="Remove price filter"
                 >
-                  <span>{activePrice?.label || currentPrice}</span>
+                  <span>{getPriceLabel()}</span>
                   <span className="text-charcoal/40 group-hover:text-charcoal font-bold">
                     ×
                   </span>
@@ -497,7 +687,7 @@ export function ProductFilters({
                   <button
                     type="button"
                     onClick={() => handleAuthorChange("")}
-                    className="absolute right-2.5 top-1/2 -translate-y-1/2 text-charcoal/40 hover:text-gold-dark transition-colors"
+                    className="absolute right-2.5 top-1/2 -translate-y-1/2 text-charcoal/40 hover:text-gold-dark transition-colors cursor-pointer"
                   >
                     <svg
                       width="12"
@@ -538,23 +728,8 @@ export function ProductFilters({
               </div>
             )}
 
-            {/* Price Range */}
-            <div className="space-y-1.5">
-              <label className="text-[10.5px] font-bold uppercase tracking-wider text-charcoal/70">
-                Price
-              </label>
-              <select
-                className="w-full rounded-xl border border-sand bg-[#fbf9f5] px-3 py-2 text-xs font-medium text-charcoal shadow-2xs transition-smooth hover:border-gold/50 focus:border-gold focus:outline-none focus:ring-2 focus:ring-gold/25"
-                value={currentPrice ?? ""}
-                onChange={(e) => setParam({ price: e.target.value || null })}
-              >
-                {PRICES.map((p) => (
-                  <option key={p.value} value={p.value}>
-                    {p.label}
-                  </option>
-                ))}
-              </select>
-            </div>
+            {/* Sliding Bar for Price Filtering */}
+            {renderPriceSlider()}
 
             {/* Availability */}
             <div className="space-y-1.5">
@@ -631,7 +806,7 @@ export function ProductFilters({
               <button
                 type="button"
                 onClick={() => handleAuthorChange("")}
-                className="absolute right-2.5 top-1/2 -translate-y-1/2 text-charcoal/40 hover:text-gold-dark"
+                className="absolute right-2.5 top-1/2 -translate-y-1/2 text-charcoal/40 hover:text-gold-dark cursor-pointer"
               >
                 <svg
                   width="12"
@@ -648,17 +823,18 @@ export function ProductFilters({
             )}
           </div>
 
+          {/* Topbar compact price filter */}
           <select
             className={selectCls}
             value={currentPrice ?? ""}
             onChange={(e) => setParam({ price: e.target.value || null })}
             aria-label="Price"
           >
-            {PRICES.map((p) => (
-              <option key={p.value} value={p.value}>
-                {p.label}
-              </option>
-            ))}
+            <option value="">Any price</option>
+            <option value="0-299">Under ₹300</option>
+            <option value="300-499">₹300 – ₹499</option>
+            <option value="500-999">₹500 – ₹999</option>
+            <option value="1000-">₹1000+</option>
           </select>
 
           <select
@@ -701,6 +877,8 @@ export function ProductFilters({
             <button
               onClick={() => {
                 setAuthorInput("");
+                setLocalMin(0);
+                setLocalMax(MAX_PRICE);
                 setParam({
                   category: null,
                   price: null,
@@ -710,7 +888,7 @@ export function ProductFilters({
                   orderby: null,
                 });
               }}
-              className="ml-auto text-[11px] font-bold uppercase tracking-widest text-royal hover:text-royal-dark"
+              className="ml-auto text-[11px] font-bold uppercase tracking-widest text-royal hover:text-royal-dark cursor-pointer"
             >
               Clear Filters
             </button>
