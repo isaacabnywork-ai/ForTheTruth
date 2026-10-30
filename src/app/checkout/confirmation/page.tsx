@@ -7,6 +7,7 @@ import { motion } from "framer-motion";
 import { formatPrice } from "@/utils/currency";
 
 import { InvoiceCard, type OrderInvoiceData } from "@/components/checkout/InvoiceCard";
+import { ReviewModal } from "@/components/reviews/ReviewModal";
 
 interface DownloadLink {
   download_url: string;
@@ -23,6 +24,10 @@ function Confirmation() {
   const [order, setOrder] = useState<OrderInvoiceData | null>(null);
   const [downloads, setDownloads] = useState<DownloadLink[]>([]);
   const [loadingDownloads, setLoadingDownloads] = useState(isFree);
+
+  // Review modal state
+  const [reviewTarget, setReviewTarget] = useState<{ productId: number; productName: string } | null>(null);
+  const [reviewBookSelectorOpen, setReviewBookSelectorOpen] = useState(false);
 
   useEffect(() => {
     // 1. Immediately read cached order details for instant 0ms invoice render
@@ -72,6 +77,37 @@ function Confirmation() {
   }, [isFree]);
 
   const isFreeOrder = isFree || (order && parseFloat(order.total) === 0);
+
+  // Determine reviewer customer details from order billing
+  const customerName = order?.billing?.first_name
+    ? `${order.billing.first_name} ${order.billing.last_name || ""}`.trim()
+    : "";
+  const customerEmail = order?.billing?.email || "";
+
+  // Available books to review from this order
+  const reviewableBooks = order?.line_items?.map((item) => ({
+    productId: item.product_id || 0,
+    productName: item.name,
+  })).filter((b) => b.productId > 0) || [];
+
+  function handleStartReview() {
+    if (reviewableBooks.length === 1) {
+      setReviewTarget(reviewableBooks[0]);
+    } else if (reviewableBooks.length > 1) {
+      setReviewBookSelectorOpen(true);
+    } else if (downloads.length > 0) {
+      setReviewTarget({
+        productId: downloads[0].product_id,
+        productName: downloads[0].product_name,
+      });
+    } else {
+      // General feedback on the latest order
+      setReviewTarget({
+        productId: 57010, // General catalog reference
+        productName: `Order #${orderId || "Recent"} Experience`,
+      });
+    }
+  }
 
   return (
     <div className="min-h-screen bg-offwhite px-4 py-16 md:py-24">
@@ -186,12 +222,149 @@ function Confirmation() {
           </motion.div>
         )}
 
+        {/* ── Post-Order Community & Feedback Options: A, B, C ── */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.4, duration: 0.5 }}
+          className="mt-8 overflow-hidden rounded-3xl border border-sand bg-white p-6 shadow-card md:p-8"
+        >
+          <div className="text-center max-w-lg mx-auto mb-6">
+            <span className="inline-block rounded-full bg-gold/15 px-3 py-1 text-xs font-bold uppercase tracking-wider text-gold-dark">
+              Stay Connected &amp; Fellowship
+            </span>
+            <h3 className="mt-2 font-display text-2xl font-bold text-charcoal md:text-3xl">
+              Connect With Us &amp; Share Your Review
+            </h3>
+            <p className="mt-1.5 text-sm text-charcoal/60">
+              Join fellow readers across India, get daily sound encouragement, and share your feedback.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            {/* A) Join WhatsApp */}
+            <a
+              href="https://wa.me/918604685533?text=Hi%20For%20The%20Truth%20Team!%20I%20just%20placed%20an%20order%20and%20would%20love%20to%20join%20the%20community."
+              target="_blank"
+              rel="noopener noreferrer"
+              className="group flex flex-col items-center justify-between rounded-2xl border border-emerald-200 bg-emerald-50/60 p-5 text-center transition hover:border-emerald-400 hover:bg-emerald-50 hover:shadow-md"
+            >
+              <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-emerald-500 text-white shadow-sm mb-3 group-hover:scale-105 transition-transform">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/>
+                </svg>
+              </div>
+              <div>
+                <h4 className="font-bold text-emerald-950 text-base">A) Join WhatsApp</h4>
+                <p className="mt-1 text-xs text-emerald-800/80 leading-relaxed">
+                  Join our reader community for sound devotions, book drops, and updates.
+                </p>
+              </div>
+              <span className="mt-4 inline-flex items-center gap-1.5 rounded-full bg-emerald-600 px-3.5 py-1.5 text-xs font-bold text-white shadow-sm group-hover:bg-emerald-700 transition">
+                Join Community →
+              </span>
+            </a>
+
+            {/* B) Follow us Instagram */}
+            <a
+              href="https://www.instagram.com/forthetruthindia/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="group flex flex-col items-center justify-between rounded-2xl border border-pink-200 bg-pink-50/50 p-5 text-center transition hover:border-pink-400 hover:bg-pink-50 hover:shadow-md"
+            >
+              <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-tr from-amber-500 via-rose-500 to-purple-600 text-white shadow-sm mb-3 group-hover:scale-105 transition-transform">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <rect width="20" height="20" x="2" y="2" rx="5" ry="5"/>
+                  <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/>
+                  <line x1="17.5" x2="17.51" y1="6.5" y2="6.5"/>
+                </svg>
+              </div>
+              <div>
+                <h4 className="font-bold text-charcoal text-base">B) Follow Instagram</h4>
+                <p className="mt-1 text-xs text-charcoal/70 leading-relaxed">
+                  Quotes from Spurgeon, Sproul, Calvin &amp; video book walk-throughs.
+                </p>
+              </div>
+              <span className="mt-4 inline-flex items-center gap-1.5 rounded-full bg-gradient-to-r from-amber-600 via-rose-600 to-purple-600 px-3.5 py-1.5 text-xs font-bold text-white shadow-sm group-hover:opacity-95 transition">
+                Follow @forthetruthindia →
+              </span>
+            </a>
+
+            {/* C) Feedback and review */}
+            <button
+              onClick={handleStartReview}
+              className="group flex flex-col items-center justify-between rounded-2xl border border-gold/40 bg-gold/10 p-5 text-center transition hover:border-gold hover:bg-gold/20 hover:shadow-md text-left"
+            >
+              <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-gold-gradient text-white shadow-sm mb-3 group-hover:scale-105 transition-transform">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
+                </svg>
+              </div>
+              <div>
+                <h4 className="font-bold text-charcoal text-base">C) Feedback &amp; Review</h4>
+                <p className="mt-1 text-xs text-charcoal/70 leading-relaxed">
+                  Rate your books or shopping experience to help fellow believers.
+                </p>
+              </div>
+              <span className="mt-4 inline-flex items-center gap-1.5 rounded-full bg-gold-gradient px-3.5 py-1.5 text-xs font-bold text-white shadow-sm group-hover:opacity-95 transition">
+                Write a Review →
+              </span>
+            </button>
+          </div>
+
+          {/* Selector modal if order has multiple books */}
+          {reviewBookSelectorOpen && (
+            <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-charcoal/60 backdrop-blur-sm">
+              <div className="relative w-full max-w-md rounded-3xl border border-sand bg-white p-6 shadow-2xl">
+                <button
+                  onClick={() => setReviewBookSelectorOpen(false)}
+                  className="absolute top-4 right-4 text-charcoal/40 hover:text-charcoal"
+                >
+                  ✕
+                </button>
+                <h4 className="font-display text-xl font-bold text-charcoal mb-2">
+                  Select a Book to Review
+                </h4>
+                <p className="text-xs text-charcoal/60 mb-4">
+                  Which book from your order would you like to review first?
+                </p>
+                <div className="space-y-2 max-h-60 overflow-y-auto">
+                  {reviewableBooks.map((b) => (
+                    <button
+                      key={b.productId}
+                      onClick={() => {
+                        setReviewTarget(b);
+                        setReviewBookSelectorOpen(false);
+                      }}
+                      className="w-full text-left rounded-xl border border-sand bg-cream/40 p-3 text-sm font-semibold text-charcoal hover:border-gold hover:bg-gold/10 transition"
+                    >
+                      {b.productName}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
+          )}
+        </motion.div>
+
+        {/* Review Modal */}
+        {reviewTarget && (
+          <ReviewModal
+            isOpen={Boolean(reviewTarget)}
+            onClose={() => setReviewTarget(null)}
+            productId={reviewTarget.productId}
+            productName={reviewTarget.productName}
+            defaultReviewerName={customerName}
+            defaultReviewerEmail={customerEmail}
+          />
+        )}
+
         {/* Official Tax Invoice & Order Summary */}
         {order ? (
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.4, duration: 0.5 }}
+            transition={{ delay: 0.45, duration: 0.5 }}
             className="mt-8"
           >
             <InvoiceCard order={order} isFree={Boolean(isFreeOrder)} />

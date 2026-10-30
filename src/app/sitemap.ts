@@ -1,8 +1,8 @@
 import type { MetadataRoute } from "next";
 import { isWooConfigured } from "@/config/env";
-import { wcFetch } from "@/services/woocommerce";
 import { AUTHORS } from "@/data/authors";
 
+export const dynamic = "force-dynamic";
 export const revalidate = 86400; // Cache sitemap for 24 hours
 
 interface SitemapCategory {
@@ -43,63 +43,85 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     priority: route === "" ? 1.0 : route === "/products" ? 0.9 : 0.8,
   }));
 
+  // Authors
+  for (const author of AUTHORS) {
+    entries.push({
+      url: `${baseUrl}/authors/${author.slug}`,
+      lastModified: new Date(),
+      changeFrequency: "monthly",
+      priority: 0.6,
+    });
+  }
+
   if (isWooConfigured()) {
     try {
-      // 1. Fetch categories
-      const categories = await wcFetch<SitemapCategory[]>("/products/categories", {
-        searchParams: { per_page: 100, _fields: "id,slug" },
-        revalidate: 86400,
-      }).catch(() => []);
+      const wpUrl = process.env.NEXT_PUBLIC_WORDPRESS_URL || "https://admin.forthetruth.in";
+      const authHeader =
+        "Basic " +
+        Buffer.from(
+          `${process.env.WOOCOMMERCE_API_KEY}:${process.env.WOOCOMMERCE_API_SECRET}`
+        ).toString("base64");
 
-      for (const cat of categories) {
-        if (cat.slug) {
-          entries.push({
-            url: `${baseUrl}/categories/${cat.slug}`,
-            lastModified: new Date(),
-            changeFrequency: "weekly",
-            priority: 0.7,
-          });
+      // 1. Fetch categories with 5s timeout
+      const catRes = await fetch(
+        `${wpUrl}/wp-json/wc/v3/products/categories?per_page=100&_fields=id,slug`,
+        {
+          headers: { Authorization: authHeader },
+          signal: AbortSignal.timeout(5000),
+          next: { revalidate: 86400 },
+        }
+      ).catch(() => null);
+
+      if (catRes?.ok) {
+        const categories = (await catRes.json()) as SitemapCategory[];
+        for (const cat of categories) {
+          if (cat.slug) {
+            entries.push({
+              url: `${baseUrl}/categories/${cat.slug}`,
+              lastModified: new Date(),
+              changeFrequency: "weekly",
+              priority: 0.7,
+            });
+          }
         }
       }
 
-      // 2. Fetch all published products via lightweight pagination
+      // 2. Fetch page 1 of products
       const page1Res = await fetch(
-        `${process.env.NEXT_PUBLIC_WORDPRESS_URL || "https://admin.forthetruth.in"}/wp-json/wc/v3/products?status=publish&per_page=100&_fields=id,slug,date_modified&page=1`,
+        `${wpUrl}/wp-json/wc/v3/products?status=publish&per_page=100&_fields=id,slug,date_modified&page=1`,
         {
-          headers: {
-            Authorization:
-              "Basic " +
-              Buffer.from(
-                `${process.env.WOOCOMMERCE_API_KEY}:${process.env.WOOCOMMERCE_API_SECRET}`
-              ).toString("base64"),
-          },
+          headers: { Authorization: authHeader },
+          signal: AbortSignal.timeout(5000),
           next: { revalidate: 86400 },
         }
-      );
+      ).catch(() => null);
 
-      if (page1Res.ok) {
+      if (page1Res?.ok) {
         const page1 = (await page1Res.json()) as SitemapProduct[];
-        const totalPages = parseInt(page1Res.headers.get("x-wp-totalpages") || "1", 10);
+        const totalPages = Math.min(
+          parseInt(page1Res.headers.get("x-wp-totalpages") || "1", 10),
+          10
+        );
         let allProducts = [...page1];
 
         if (totalPages > 1) {
           const remainingPages = Array.from({ length: totalPages - 1 }, (_, i) => i + 2);
           const batches = await Promise.all(
-            remainingPages.map((page) =>
-              fetch(
-                `${process.env.NEXT_PUBLIC_WORDPRESS_URL || "https://admin.forthetruth.in"}/wp-json/wc/v3/products?status=publish&per_page=100&_fields=id,slug,date_modified&page=${page}`,
-                {
-                  headers: {
-                    Authorization:
-                      "Basic " +
-                      Buffer.from(
-                        `${process.env.WOOCOMMERCE_API_KEY}:${process.env.WOOCOMMERCE_API_SECRET}`
-                      ).toString("base64"),
-                  },
-                  next: { revalidate: 86400 },
-                }
-              ).then((r) => (r.ok ? (r.json() as Promise<SitemapProduct[]>) : []))
-            )
+            remainingPages.map(async (page) => {
+              try {
+                const res = await fetch(
+                  `${wpUrl}/wp-json/wc/v3/products?status=publish&per_page=100&_fields=id,slug,date_modified&page=${page}`,
+                  {
+                    headers: { Authorization: authHeader },
+                    signal: AbortSignal.timeout(5000),
+                    next: { revalidate: 86400 },
+                  }
+                );
+                return res.ok ? ((await res.json()) as SitemapProduct[]) : [];
+              } catch {
+                return [];
+              }
+            })
           );
           allProducts = [...allProducts, ...batches.flat()];
         }
@@ -118,16 +140,6 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     } catch (err) {
       console.warn("Failed to generate dynamic sitemap items:", err);
     }
-  }
-
-  // 3. Authors
-  for (const author of AUTHORS) {
-    entries.push({
-      url: `${baseUrl}/authors/${author.slug}`,
-      lastModified: new Date(),
-      changeFrequency: "monthly",
-      priority: 0.6,
-    });
   }
 
   return entries;

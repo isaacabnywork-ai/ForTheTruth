@@ -15,6 +15,7 @@ import categoryRowsFallbackData from "@/data/category_rows_fallback.json";
 import { pruneProducts } from "@/utils/pruneProduct";
 import type { Product, WCCategory } from "@/types/product";
 
+export const dynamic = "force-dynamic";
 export const revalidate = 300; // 5-minute Edge cache (ISR) for fast initial paint across India
 
 function sortByIdList(products: Product[], ids: number[]): Product[] {

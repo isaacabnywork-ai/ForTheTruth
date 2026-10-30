@@ -126,11 +126,15 @@ export async function POST(req: NextRequest) {
         let customer = await getCustomerByUsernameOrEmail(checkoutEmail);
         if (!customer?.id && user?.email) {
           try {
+            const tempPass =
+              (typeof crypto !== "undefined" && crypto.randomUUID
+                ? crypto.randomUUID()
+                : Math.random().toString(36).slice(2) + Date.now().toString(36)) + "!Aa1";
             customer = await createCustomer({
               email: checkoutEmail,
               first_name: bill.firstName || user.firstName || "Reader",
               last_name: bill.lastName || user.lastName || "",
-              password: crypto.randomUUID() + "!Aa1",
+              password: tempPass,
             });
           } catch {
             customer = await getCustomerByEmail(checkoutEmail).catch(() => null);

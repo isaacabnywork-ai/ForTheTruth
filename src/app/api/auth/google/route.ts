@@ -75,11 +75,15 @@ export async function POST(req: NextRequest) {
     // If customer doesn't exist yet, create them in WooCommerce
     if (!wcCustomer?.id) {
       try {
+        const tempPass =
+          (typeof crypto !== "undefined" && crypto.randomUUID
+            ? crypto.randomUUID()
+            : Math.random().toString(36).slice(2) + Date.now().toString(36)) + "!Aa1";
         wcCustomer = await createCustomer({
           email,
           first_name: finalFirst,
           last_name: finalLast,
-          password: crypto.randomUUID() + "!Aa1",
+          password: tempPass,
         });
       } catch {
         // If registration error (e.g. account already exists), query by email

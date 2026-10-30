@@ -46,6 +46,7 @@ export default function OrdersPage() {
                   <th className="hidden px-6 py-4 sm:table-cell">Items</th>
                   <th className="px-6 py-4">Status</th>
                   <th className="px-6 py-4 text-right">Total</th>
+                  <th className="px-6 py-4 text-center">Action</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-sand/70">
@@ -74,6 +75,14 @@ export default function OrdersPage() {
                     </td>
                     <td className="px-6 py-4 text-right font-bold">
                       {formatPrice(o.total)}
+                    </td>
+                    <td className="px-6 py-4 text-center">
+                      <Link
+                        href={`/account/orders/${o.id}`}
+                        className="inline-flex items-center gap-1 rounded-full border border-gold/40 bg-gold/10 px-3 py-1 text-xs font-semibold text-gold-deep hover:bg-gold hover:text-white transition"
+                      >
+                        ★ Review Books
+                      </Link>
                     </td>
                   </tr>
                 ))}
