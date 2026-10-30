@@ -57,8 +57,8 @@ async function wcFetchRaw(
   const isGet = (opts.method ?? "GET") === "GET";
 
   const isBuild = process.env.NEXT_PHASE === "phase-production-build";
-  const maxAttempts = isBuild ? 0 : MAX_RETRIES;
-  const timeoutMs = opts.timeout ?? (isBuild ? 8000 : 25000);
+  const maxAttempts = isBuild ? 0 : 1;
+  const timeoutMs = opts.timeout ?? (isBuild ? 6000 : 10000);
 
   let lastError: unknown;
   for (let attempt = 0; attempt <= maxAttempts; attempt++) {
@@ -167,16 +167,42 @@ function productParams(q: ProductQuery = {}) {
   };
 }
 
+const globalQueryMemCache = globalThis as unknown as {
+  _productsQueryCache?: Map<string, { data: Product[]; time: number }>;
+  _pagedQueryCache?: Map<string, { data: PagedProducts; time: number }>;
+};
+
+if (!globalQueryMemCache._productsQueryCache) {
+  globalQueryMemCache._productsQueryCache = new Map();
+}
+if (!globalQueryMemCache._pagedQueryCache) {
+  globalQueryMemCache._pagedQueryCache = new Map();
+}
+
 export async function getProducts(q: ProductQuery = {}): Promise<Product[]> {
   if (!isWooConfigured()) return [];
+  const params = productParams(q);
+  const cacheKey = JSON.stringify(params);
+  const now = Date.now();
+  const ttl = (q.revalidate ?? 120) * 1000;
+
+  const cached = globalQueryMemCache._productsQueryCache?.get(cacheKey);
+  if (cached && now - cached.time < ttl) {
+    return cached.data;
+  }
+
   try {
-    return await wcFetch<Product[]>("/products", {
-      searchParams: productParams(q),
-      revalidate: q.revalidate ?? 60,
+    const data = await wcFetch<Product[]>("/products", {
+      searchParams: params,
+      revalidate: q.revalidate ?? 120,
     });
+    if (Array.isArray(data)) {
+      globalQueryMemCache._productsQueryCache?.set(cacheKey, { data, time: now });
+    }
+    return data;
   } catch (err) {
     console.error("Failed to fetch WooCommerce products:", err);
-    return [];
+    return cached?.data || [];
   }
 }
 
@@ -192,19 +218,33 @@ export async function getProductsPaged(
   if (!isWooConfigured()) {
     return { products: [], total: 0, totalPages: 1 };
   }
+  const params = productParams(q);
+  const cacheKey = JSON.stringify(params);
+  const now = Date.now();
+  const ttl = (q.revalidate ?? 120) * 1000;
+
+  const cached = globalQueryMemCache._pagedQueryCache?.get(cacheKey);
+  if (cached && now - cached.time < ttl) {
+    return cached.data;
+  }
+
   try {
     const res = await wcFetchRaw("/products", {
-      searchParams: productParams(q),
-      revalidate: q.revalidate ?? 600,
+      searchParams: params,
+      revalidate: q.revalidate ?? 120,
     });
-    return {
+    const paged: PagedProducts = {
       products: (await res.json()) as Product[],
       total: parseInt(res.headers.get("x-wp-total") ?? "0", 10),
       totalPages: parseInt(res.headers.get("x-wp-totalpages") ?? "1", 10),
     };
+    if (Array.isArray(paged.products)) {
+      globalQueryMemCache._pagedQueryCache?.set(cacheKey, { data: paged, time: now });
+    }
+    return paged;
   } catch (err) {
     console.error("Failed to fetch paged products:", err);
-    return { products: [], total: 0, totalPages: 1 };
+    return cached?.data || { products: [], total: 0, totalPages: 1 };
   }
 }
 

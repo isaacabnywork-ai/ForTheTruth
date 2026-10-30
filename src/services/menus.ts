@@ -75,6 +75,16 @@ export function getSiteMenusConfig(): SiteMenusConfig {
 }
 
 export async function fetchSiteMenusConfigFromCloud(): Promise<SiteMenusConfig> {
+  const now = Date.now();
+  // Return in-memory cache immediately if fetched within the last 3 minutes
+  if (
+    globalForMenus._menusCache &&
+    globalForMenus._lastWcFetchTime &&
+    now - globalForMenus._lastWcFetchTime < 180000
+  ) {
+    return globalForMenus._menusCache;
+  }
+
   const wpUrl = process.env.NEXT_PUBLIC_WORDPRESS_URL || "https://admin.forthetruth.in";
   const key = process.env.WOOCOMMERCE_API_KEY || "ck_c6693ca02bf0d33b2828f8d311d879be4bf835d5";
   const secret = process.env.WOOCOMMERCE_API_SECRET || "cs_8513b72208ead026d4f6667169466090ccc4f50d";
@@ -84,6 +94,7 @@ export async function fetchSiteMenusConfigFromCloud(): Promise<SiteMenusConfig> 
     const url = `${wpUrl.replace(/\/$/, "")}/wp-json/wc/v3/products/${CONFIG_PRODUCT_ID}`;
     const res = await fetch(url, {
       headers: { Authorization: `Basic ${auth}` },
+      signal: AbortSignal.timeout(4000),
       cache: "no-store",
     });
     if (res.ok) {
