@@ -47,10 +47,16 @@ export default async function HomePage() {
 
   const curated = await fetchCuratedShelfConfigFromCloud();
 
-  // Setup fallback map from local data
+  // Setup fallback map from local data with verified covers
   const fallbackMap = new Map<number, Product>();
   (categoryRowsFallbackData as unknown as Product[]).forEach((p) => {
-    fallbackMap.set(p.id, p);
+    const images =
+      p.images && p.images.length > 0
+        ? p.images
+        : (p as unknown as { image?: string }).image
+        ? [{ id: 0, src: (p as unknown as { image?: string }).image!, alt: p.name }]
+        : [];
+    fallbackMap.set(p.id, { ...p, images });
   });
 
   const getFallbackList = (ids: number[]): Product[] =>

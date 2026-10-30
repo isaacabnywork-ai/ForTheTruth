@@ -32,7 +32,11 @@ export function clearApiError() {
 
 export function isWooCommerceOffline(): boolean {
   if (!isWooConfigured()) return true;
-  if (recentApiError && Date.now() - recentApiError.timestamp < 120000) {
+  if (
+    recentApiError &&
+    (recentApiError.status === 502 || recentApiError.status === 503) &&
+    Date.now() - recentApiError.timestamp < 15000
+  ) {
     return true;
   }
   return false;

@@ -27,11 +27,22 @@ export function pruneProductForClient(p: Product): Product {
     stock_quantity: p.stock_quantity ?? null,
     average_rating: p.average_rating || "0.00",
     rating_count: p.rating_count || 0,
-    images: (p.images || []).slice(0, 2).map((img) => ({
-      id: img.id,
-      src: img.src,
-      alt: img.alt || p.name,
-    })),
+    images:
+      p.images && p.images.length > 0
+        ? p.images.slice(0, 2).map((img) => ({
+            id: img.id,
+            src: img.src,
+            alt: img.alt || p.name,
+          }))
+        : (p as unknown as { image?: string }).image
+        ? [
+            {
+              id: 0,
+              src: (p as unknown as { image?: string }).image!,
+              alt: p.name,
+            },
+          ]
+        : [],
     categories: (p.categories || []).map((c) => ({
       id: c.id,
       name: c.name,
