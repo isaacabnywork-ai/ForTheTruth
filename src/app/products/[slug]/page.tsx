@@ -12,6 +12,8 @@ import {
 } from "@/services/woocommerce";
 import type { Product, ProductReview } from "@/types/product";
 
+import { cleanExcerpt } from "@/utils/text";
+
 export const revalidate = 3600;
 
 interface PageProps {
@@ -20,18 +22,45 @@ interface PageProps {
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { slug } = await params;
-  if (!isWooConfigured()) return { title: "Book Details | For The Truth" };
+  if (!isWooConfigured()) return { title: "Book Details" };
 
   try {
     const product = await getProductBySlug(slug);
-    if (!product) return { title: "Book Not Found | For The Truth" };
+    if (!product) return { title: "Book Not Found" };
+
+    const excerpt = cleanExcerpt(product.short_description || product.description, 160) || `Buy ${product.name} at For The Truth`;
+    const image = product.images?.[0]?.src;
 
     return {
-      title: `${product.name} | For The Truth`,
-      description: product.short_description?.replace(/<[^>]*>?/gm, "").slice(0, 160),
+      title: product.name, // Layout template will append " | For The Truth" cleanly without duplication
+      description: excerpt,
+      openGraph: {
+        title: `${product.name} — Buy Online in India`,
+        description: excerpt,
+        url: `https://forthetruth.in/products/${slug}`,
+        siteName: "For The Truth",
+        locale: "en_IN",
+        type: "book",
+        ...(image && {
+          images: [
+            {
+              url: image,
+              width: 800,
+              height: 1200,
+              alt: product.images[0].alt || product.name,
+            },
+          ],
+        }),
+      },
+      twitter: {
+        card: "summary_large_image",
+        title: product.name,
+        description: excerpt,
+        ...(image && { images: [image] }),
+      },
     };
   } catch {
-    return { title: "Book Details | For The Truth" };
+    return { title: "Book Details" };
   }
 }
 

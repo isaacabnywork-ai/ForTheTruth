@@ -8,6 +8,7 @@ import { isWooConfigured } from "@/config/env";
 import { StoreMaintenancePage } from "@/components/common/StoreMaintenancePage";
 import { parseProductQuery, type SearchParamsMap } from "@/lib/productQuery";
 import { getCategories, getProductsPaged } from "@/services/woocommerce";
+import { pruneProductForClient } from "@/utils/pruneProduct";
 import type { WCCategory } from "@/types/product";
 
 export const metadata: Metadata = {
@@ -99,7 +100,7 @@ export default async function ProductsCatalogPage({
             <>
               <div className="grid grid-cols-2 gap-5 sm:grid-cols-3 xl:grid-cols-4">
                 {result.products.map((product) => (
-                  <ProductCard key={product.id} product={product} />
+                  <ProductCard key={product.id} product={pruneProductForClient(product)} />
                 ))}
               </div>
               <Pagination

@@ -64,13 +64,29 @@ export async function POST(req: NextRequest) {
 
   // Check Option 2: Does user have an administrator, shop_manager, or editor role in WordPress?
   let wpRole = "customer";
-  let realCustomerId = idHash;
+  let realCustomerId = 0;
   try {
-    const { getCustomerByUsernameOrEmail } = await import("@/services/woocommerce");
-    const wcCustomer = await Promise.race([
+    const { getCustomerByUsernameOrEmail, createCustomer, getCustomerByEmail } = await import("@/services/woocommerce");
+    let wcCustomer = await Promise.race([
       getCustomerByUsernameOrEmail(email),
-      new Promise<null>((resolve) => setTimeout(() => resolve(null), 2500)),
+      new Promise<null>((resolve) => setTimeout(() => resolve(null), 3000)),
     ]);
+
+    // If customer doesn't exist yet, create them in WooCommerce
+    if (!wcCustomer?.id) {
+      try {
+        wcCustomer = await createCustomer({
+          email,
+          first_name: finalFirst,
+          last_name: finalLast,
+          password: crypto.randomUUID() + "!Aa1",
+        });
+      } catch {
+        // If registration error (e.g. account already exists), query by email
+        wcCustomer = await getCustomerByEmail(email).catch(() => null);
+      }
+    }
+
     if (wcCustomer?.role) {
       wpRole = wcCustomer.role.toLowerCase();
     }
@@ -79,6 +95,10 @@ export async function POST(req: NextRequest) {
     }
   } catch {
     /* ignore fallback */
+  }
+
+  if (!realCustomerId) {
+    realCustomerId = idHash;
   }
 
   const isWpAdmin = ["administrator", "shop_manager", "editor"].includes(wpRole);

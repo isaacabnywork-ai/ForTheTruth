@@ -12,10 +12,10 @@ import { isWooConfigured } from "@/config/env";
 import { getCategories, getProducts } from "@/services/woocommerce";
 import { fetchCuratedShelfConfigFromCloud } from "@/services/curation";
 import categoryRowsFallbackData from "@/data/category_rows_fallback.json";
+import { pruneProducts } from "@/utils/pruneProduct";
 import type { Product, WCCategory } from "@/types/product";
 
-export const dynamic = "force-dynamic";
-export const revalidate = 0;
+export const revalidate = 300; // 5-minute Edge cache (ISR) for fast initial paint across India
 
 function sortByIdList(products: Product[], ids: number[]): Product[] {
   const map = new Map(products.map((p) => [p.id, p]));
@@ -249,7 +249,7 @@ export default async function HomePage() {
 
       categories = fetchedCategories;
 
-      // Cover thumbnails for topic grid
+      // Cover thumbnails for topic grid (pruned to lightweight objects)
       const top = categories.slice(0, 8);
       const covers = await Promise.all(
         top.map((c) =>
@@ -257,7 +257,7 @@ export default async function HomePage() {
         )
       );
       coversByCategory = Object.fromEntries(
-        top.map((c, i) => [c.id, covers[i]])
+        top.map((c, i) => [c.id, pruneProducts(covers[i])])
       );
     } catch (err) {
       console.error("Homepage: WooCommerce fetch failed", err);
@@ -271,28 +271,28 @@ export default async function HomePage() {
       slug: "bible-speaks-today",
       viewMoreHref: "/categories/bible-commentary",
       badge: "BIBLE SPEAKS TODAY",
-      products: bibleSpeaksTodayProducts,
+      products: pruneProducts(bibleSpeaksTodayProducts),
     },
     {
       title: curated.christianLivingTitle || "Christian Living",
       slug: "christian-living",
       viewMoreHref: "/categories/christian-living",
       badge: "CHRISTIAN LIVING",
-      products: christianLivingProducts,
+      products: pruneProducts(christianLivingProducts),
     },
     {
       title: curated.ministryTitle || "Ministry",
       slug: "ministry",
       viewMoreHref: "/categories/ministry",
       badge: "MINISTRY",
-      products: ministryProducts,
+      products: pruneProducts(ministryProducts),
     },
     {
       title: curated.theologyTitle || "Theology",
       slug: "theology",
       viewMoreHref: "/categories/theology",
       badge: "THEOLOGY",
-      products: theologyProducts,
+      products: pruneProducts(theologyProducts),
     },
   ];
 
@@ -308,11 +308,17 @@ export default async function HomePage() {
     return <StoreMaintenancePage />;
   }
 
+  // Prune main shelf products to eliminate bloated JSON hydration payload
+  const prunedFeatured = pruneProducts(featured);
+  const prunedNewArrivals = pruneProducts(newArrivals);
+  const prunedBestsellers = pruneProducts(bestsellers);
+  const prunedSpineProducts = pruneProducts(spineProducts);
+
   return (
     <>
       {/* 1 — Hero above the fold with customizable content */}
       <HeroShelf
-        products={featured}
+        products={prunedFeatured}
         badge={curated.heroBadge}
         title={curated.heroTitle}
         subtitle={curated.heroSubtitle}
@@ -323,12 +329,12 @@ export default async function HomePage() {
 
       {/* 3 — New Arrivals (Strictly book IDs only) */}
       {storeReady ? (
-        newArrivals.length > 0 && (
+        prunedNewArrivals.length > 0 && (
           <BookRow
             title={curated.newArrivalsTitle || "New Arrivals"}
             href="/products?orderby=date"
             badge="NEW ARRIVAL"
-            products={newArrivals}
+            products={prunedNewArrivals}
           />
         )
       ) : (
@@ -340,12 +346,12 @@ export default async function HomePage() {
 
       {/* 5 — Children Books Shelf (dynamic rotation or manual by ID) */}
       {storeReady ? (
-        bestsellers.length > 0 && (
+        prunedBestsellers.length > 0 && (
           <BookRow
             title={curated.bestsellersTitle || "Children Books"}
             href="/categories/children"
             badge="CHILDREN BOOKS"
-            products={bestsellers}
+            products={prunedBestsellers}
           />
         )
       ) : (
@@ -353,9 +359,9 @@ export default async function HomePage() {
       )}
 
       {/* 6 — Explore Children Books (spine slider) with customizable titles & book selection */}
-      {spineProducts.length > 0 && (
+      {prunedSpineProducts.length > 0 && (
         <SpineSlider
-          products={spineProducts}
+          products={prunedSpineProducts}
           badge={curated.spineBadge || "Browse the shelf"}
           title={curated.spineTitle || "Explore Children Books"}
           subtitle={curated.spineSubtitle}

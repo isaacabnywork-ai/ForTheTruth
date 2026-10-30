@@ -72,6 +72,25 @@ export function cleanExcerpt(htmlOrText: string, maxLength?: number): string {
 }
 
 /**
+ * Strips Claude web chat UI HTML artifacts (e.g. font-claude-response-body, text-text-100, etc.)
+ * and unneeded chat container classes copied directly from Claude web interface into WordPress descriptions.
+ */
+export function cleanHtmlDescription(rawHtml: string): string {
+  if (!rawHtml) return "";
+
+  return rawHtml
+    // Strip Claude font and chat body classes
+    .replace(/\s*class="[^"]*font-claude-[^"]*"/gi, "")
+    .replace(/\s*class="[^"]*text-text-[^"]*"/gi, "")
+    .replace(/\s*class="[^"]*break-words[^"]*"/gi, "")
+    .replace(/\s*font-claude-[a-z0-9_-]+/gi, "")
+    // Remove empty class attributes left behind
+    .replace(/\s*class="\s*"/gi, "")
+    // Clean up excessive whitespace inside opening tags
+    .replace(/<([a-z0-9]+)\s+>/gi, "<$1>");
+}
+
+/**
  * Formats a category name cleanly:
  * - Decodes HTML entities
  * - Converts "GOOD BOOK GUIDES" (or any accidental all-caps category) to Title Case "Good Book Guides"

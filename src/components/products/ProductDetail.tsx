@@ -13,6 +13,7 @@ import { ReviewForm } from "./ReviewForm";
 import { SingleBookPaymentTrust } from "./SingleBookPaymentTrust";
 import { triggerHaptic } from "@/utils/haptics";
 import { useWishlistSync } from "@/hooks/useWishlistSync";
+import { cleanHtmlDescription } from "@/utils/text";
 
 interface ProductDetailProps {
   product: Product;
@@ -267,7 +268,13 @@ export function ProductDetail({ product, reviews = [] }: ProductDetailProps) {
                       : "border-sand/60 opacity-70 hover:opacity-100 hover:border-gold/50"
                   }`}
                 >
-                  <img src={img.src} alt="" className="h-full w-full object-contain" />
+                  <Image
+                    src={img.src}
+                    alt={`${product.name} thumbnail ${idx + 1}`}
+                    fill
+                    sizes="56px"
+                    className="object-contain p-0.5"
+                  />
                 </button>
               ))}
             </div>
@@ -439,7 +446,9 @@ export function ProductDetail({ product, reviews = [] }: ProductDetailProps) {
                 className={`prose max-w-none text-sm text-charcoal/80 leading-relaxed transition-all duration-300 ${
                   isDescExpanded ? "" : "line-clamp-3 max-h-[5.5rem] overflow-hidden"
                 }`}
-                dangerouslySetInnerHTML={{ __html: product.description || product.short_description }}
+                dangerouslySetInnerHTML={{
+                  __html: cleanHtmlDescription(product.description || product.short_description),
+                }}
               />
 
               {/* Fading overlay when collapsed */}

@@ -42,6 +42,9 @@ export interface Product {
   stock_status: "instock" | "outofstock" | "onbackorder";
   stock_quantity: number | null;
   manage_stock?: boolean;
+  downloadable?: boolean;
+  virtual?: boolean;
+  downloads?: { id: string; name: string; file: string }[];
   average_rating: string;
   rating_count: number;
   images: WCImage[];

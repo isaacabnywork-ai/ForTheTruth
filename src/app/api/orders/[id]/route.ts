@@ -21,11 +21,14 @@ export async function GET(
     if (order) {
       const owns =
         (user && user.id && order.customer_id === user.id) ||
+        (user && user.email && order.billing?.email?.toLowerCase() === user.email.toLowerCase()) ||
         (orderKey && order.order_key === orderKey) ||
         !order.customer_id ||
         order.customer_id === 0;
       if (owns) {
-        return NextResponse.json({ order });
+        const { getDownloadsForOrder } = await import("@/services/woocommerce");
+        const downloads = await getDownloadsForOrder(order).catch(() => []);
+        return NextResponse.json({ order, downloads });
       }
     }
   } catch {

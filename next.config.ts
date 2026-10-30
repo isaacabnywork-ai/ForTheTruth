@@ -1,16 +1,13 @@
 import type { NextConfig } from "next";
 
-const wpHost = process.env.NEXT_PUBLIC_WORDPRESS_URL
-  ? new URL(process.env.NEXT_PUBLIC_WORDPRESS_URL).hostname
-  : "your-wordpress-site.com";
-
 const nextConfig: NextConfig = {
   output: process.env.DOCKER_BUILD === "1" ? "standalone" : undefined,
   compress: true,
   poweredByHeader: false,
   images: {
     remotePatterns: [
-      { protocol: "https", hostname: wpHost },
+      { protocol: "https", hostname: "admin.forthetruth.in" },
+      { protocol: "https", hostname: "forthetruth.in" },
       { protocol: "https", hostname: "demos.abnyweb.in" },
       { protocol: "https", hostname: "**.wp.com" },
       { protocol: "https", hostname: "images.unsplash.com" },
@@ -28,6 +25,9 @@ const nextConfig: NextConfig = {
         { key: "X-Frame-Options", value: "DENY" },
         { key: "X-Content-Type-Options", value: "nosniff" },
         { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
+        { key: "Strict-Transport-Security", value: "max-age=63072000; includeSubDomains; preload" },
+        { key: "Permissions-Policy", value: "camera=(), microphone=(), geolocation=(), browsing-topics=()" },
+        { key: "X-XSS-Protection", value: "1; mode=block" },
       ],
     },
     {

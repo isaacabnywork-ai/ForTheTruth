@@ -50,6 +50,10 @@ function Confirmation() {
             shipping_lines: d.order.shipping_lines ?? prev?.shipping_lines,
           }));
         }
+        if (d?.downloads && d.downloads.length > 0) {
+          setDownloads(d.downloads);
+          setLoadingDownloads(false);
+        }
       })
       .catch(() => {});
   }, [orderId, orderKey]);

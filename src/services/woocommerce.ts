@@ -776,7 +776,7 @@ export async function getFreeEbooks(): Promise<Product[]> {
 
 /** Fetch all downloads available to a customer */
 export async function getCustomerDownloads(customerId: number): Promise<WCDownloadLink[]> {
-  if (!isWooConfigured()) return [];
+  if (!isWooConfigured() || !customerId || customerId <= 0) return [];
   try {
     return await wcFetch<WCDownloadLink[]>(`/customers/${customerId}/downloads`, {
       revalidate: 0,
@@ -786,6 +786,118 @@ export async function getCustomerDownloads(customerId: number): Promise<WCDownlo
   }
 }
 
+/** Extract downloads directly from an order */
+export async function getDownloadsForOrder(order: WCOrder): Promise<WCDownloadLink[]> {
+  const freeBooks = await getFreeEbooks().catch(() => []);
+  const freeBooksMap = new Map<number, Product>(freeBooks.map((b) => [b.id, b]));
+  const downloads: WCDownloadLink[] = [];
+
+  for (const item of order.line_items || []) {
+    let prod: Product | null | undefined = freeBooksMap.get(item.product_id);
+    if (!prod) {
+      prod = (await getProduct(item.product_id).catch(() => null)) as Product | null;
+    }
+    if (prod && prod.downloadable && prod.downloads && prod.downloads.length > 0) {
+      const dlFile = prod.downloads[0];
+      const env = getServerEnv();
+      const email = order.billing?.email || "";
+      const downloadUrl = `${env.NEXT_PUBLIC_WORDPRESS_URL}/?download_file=${prod.id}&order=${order.order_key}&email=${encodeURIComponent(email)}&key=${dlFile.id}`;
+
+      downloads.push({
+        download_id: dlFile.id,
+        download_url: downloadUrl,
+        product_id: prod.id,
+        product_name: prod.name,
+        download_name: dlFile.name || "PDF",
+        order_id: order.id,
+        downloads_remaining: "unlimited",
+        access_expires: null,
+        file: {
+          name: dlFile.name,
+          file: dlFile.file,
+        },
+      });
+    }
+  }
+  return downloads;
+}
+
+/**
+ * Robust download fetcher for user account:
+ * 1. Checks WooCommerce /customers/:id/downloads if customerId > 0
+ * 2. Checks completed orders by email & customerId (catches guest / zero-id orders)
+ * 3. Merges and deduplicates so no purchased or free e-book is ever lost
+ */
+export async function getUserDownloads(
+  email: string,
+  customerId?: number
+): Promise<WCDownloadLink[]> {
+  if (!isWooConfigured()) return [];
+
+  const downloadMap = new Map<number, WCDownloadLink>();
+
+  // 1. Direct WooCommerce customer downloads if customerId exists
+  if (customerId && customerId > 0) {
+    try {
+      const direct = await getCustomerDownloads(customerId);
+      for (const d of direct) {
+        if (d.product_id) {
+          downloadMap.set(d.product_id, d);
+        }
+      }
+    } catch {
+      // ignore
+    }
+  }
+
+  // 2. Scan completed/processing orders by email
+  try {
+    const orders = await getOrdersByEmail(email, customerId);
+    const validOrders = orders.filter(
+      (o) => o.status === "completed" || o.status === "processing"
+    );
+
+    const freeBooks = await getFreeEbooks().catch(() => []);
+    const freeBooksMap = new Map<number, Product>(freeBooks.map((b) => [b.id, b]));
+
+    for (const order of validOrders) {
+      for (const item of order.line_items || []) {
+        if (downloadMap.has(item.product_id)) continue;
+
+        let prod: Product | null | undefined = freeBooksMap.get(item.product_id);
+        if (!prod) {
+          prod = (await getProduct(item.product_id).catch(() => null)) as Product | null;
+        }
+
+        if (prod && prod.downloadable && prod.downloads && prod.downloads.length > 0) {
+          const dlFile = prod.downloads[0];
+          const env = getServerEnv();
+          const downloadUrl = `${env.NEXT_PUBLIC_WORDPRESS_URL}/?download_file=${prod.id}&order=${order.order_key}&email=${encodeURIComponent(order.billing?.email || email)}&key=${dlFile.id}`;
+
+          downloadMap.set(item.product_id, {
+            download_id: dlFile.id,
+            download_url: downloadUrl,
+            product_id: prod.id,
+            product_name: prod.name,
+            download_name: dlFile.name || "PDF",
+            order_id: order.id,
+            downloads_remaining: "unlimited",
+            access_expires: null,
+            file: {
+              name: dlFile.name,
+              file: dlFile.file,
+            },
+          });
+        }
+      }
+    }
+  } catch (err) {
+    console.error("[getUserDownloads error]", err);
+  }
+
+  return Array.from(downloadMap.values());
+}
+
 /** Create a free order for a downloadable product (sets status=completed so download is available immediately) */
 export async function createFreeOrder(opts: {
   productId: number;
@@ -793,8 +905,8 @@ export async function createFreeOrder(opts: {
   customerId: number;
   billing: Record<string, string>;
 }): Promise<WCOrder> {
-  return createOrder({
-    customer_id: opts.customerId,
+  const payload: any = {
+    customer_id: opts.customerId || 0,
     status: "completed",
     payment_method: "free",
     payment_method_title: "Free Download",
@@ -802,7 +914,18 @@ export async function createFreeOrder(opts: {
     shipping: opts.billing,
     line_items: [{ product_id: opts.productId, quantity: 1 }],
     set_paid: true,
-  });
+  };
+
+  try {
+    return await createOrder(payload);
+  } catch (err) {
+    // If specific customer_id failed in WooCommerce, retry safely as guest order
+    if (opts.customerId && opts.customerId > 0) {
+      payload.customer_id = 0;
+      return await createOrder(payload);
+    }
+    throw err;
+  }
 }
 // ---------- Staff Management ----------
 

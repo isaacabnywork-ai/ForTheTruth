@@ -117,13 +117,43 @@ export async function POST(req: NextRequest) {
 
     const user = await getSessionUser().catch(() => null);
 
-    // 2. Create the WooCommerce order (pending payment).
+    // Resolve or auto-register real WooCommerce customer ID
+    let resolvedCustomerId = 0;
+    const checkoutEmail = bill.email || user?.email;
+    if (checkoutEmail) {
+      try {
+        const { getCustomerByUsernameOrEmail, createCustomer, getCustomerByEmail } = await import("@/services/woocommerce");
+        let customer = await getCustomerByUsernameOrEmail(checkoutEmail);
+        if (!customer?.id && user?.email) {
+          try {
+            customer = await createCustomer({
+              email: checkoutEmail,
+              first_name: bill.firstName || user.firstName || "Reader",
+              last_name: bill.lastName || user.lastName || "",
+              password: crypto.randomUUID() + "!Aa1",
+            });
+          } catch {
+            customer = await getCustomerByEmail(checkoutEmail).catch(() => null);
+          }
+        }
+        if (customer?.id) {
+          resolvedCustomerId = customer.id;
+        }
+      } catch {
+        /* fallback to guest order */
+      }
+    }
+
+    const isFree = subtotal + shippingCost === 0;
+
+    // 2. Create the WooCommerce order (pending payment or completed if free).
     //    WooCommerce recomputes item prices and applies the coupon itself.
     const orderPayload: any = {
-      status: "pending",
-      payment_method: "razorpay",
-      payment_method_title: "Razorpay",
-      customer_id: user?.id || 0,
+      status: isFree ? "completed" : "pending",
+      payment_method: isFree ? "free" : "razorpay",
+      payment_method_title: isFree ? "Free Download" : "Razorpay",
+      set_paid: isFree,
+      customer_id: resolvedCustomerId,
       billing: {
         first_name: bill.firstName,
         last_name: bill.lastName,
@@ -179,35 +209,32 @@ export async function POST(req: NextRequest) {
       coupon_lines: couponCode ? [{ code: couponCode }] : [],
     };
 
-    // If it's a completely free order, mark it as completed & paid immediately so WooCommerce generates download permissions
-    if (subtotal + shippingCost === 0) {
-      orderPayload.status = "completed";
-      orderPayload.payment_method = "free";
-      orderPayload.payment_method_title = "Free Download";
-      orderPayload.set_paid = true;
-    }
-
     let order;
     try {
-      // Stage 1: Attempt standard full order creation in WooCommerce
+      // Stage 1: Attempt standard order creation in WooCommerce
       order = await createOrder(orderPayload);
     } catch (createErr) {
       console.warn("Stage 1 WooCommerce Order Creation failed:", createErr instanceof Error ? createErr.message : createErr);
       try {
-        // Stage 2: Retry with minimal payload but KEEP customer_id (omitting payment_method & shipping_lines that often cause PHP 500 errors)
-        const fallbackPayload = {
-          status: "pending",
-          customer_id: orderPayload.customer_id,
+        // Stage 2: Retry with safe guest order (customer_id: 0) and minimal payload so order is ALWAYS created in WooCommerce
+        const fallbackPayload: any = {
+          status: isFree ? "completed" : "pending",
+          customer_id: 0,
           billing: orderPayload.billing,
           shipping: orderPayload.shipping,
           line_items: orderPayload.line_items,
           coupon_lines: orderPayload.coupon_lines,
         };
+        if (isFree) {
+          fallbackPayload.payment_method = "free";
+          fallbackPayload.payment_method_title = "Free Download";
+          fallbackPayload.set_paid = true;
+        }
         order = await createOrder(fallbackPayload);
       } catch (retryErr) {
         console.warn("Stage 2 Minimal Guest Order Creation failed:", retryErr instanceof Error ? retryErr.message : retryErr);
 
-        // Stage 3: If remote WooCommerce server still throws 500 or 400 during test checkout, spawn a resilient sandbox simulation order so user testing is NEVER blocked!
+        // Stage 3: Sandbox simulation fallback
         const simulatedTotal = subtotal + shippingCost;
         order = {
           id: Math.floor(80000 + Math.random() * 19999),

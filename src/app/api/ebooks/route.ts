@@ -1,10 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getSessionUser } from "@/lib/session";
 import {
+  getCustomerByUsernameOrEmail,
   getCustomerByEmail,
+  createCustomer,
   createFreeOrder,
-  getCustomerDownloads,
-  getOrdersByCustomer,
+  getUserDownloads,
 } from "@/services/woocommerce";
 
 // ─── GET — check if user already has this ebook & get download link ───────────
@@ -15,14 +16,7 @@ export async function GET(req: NextRequest) {
   const productId = req.nextUrl.searchParams.get("productId");
 
   try {
-    let customerId = user.id;
-    if (!customerId) {
-      const customer = await getCustomerByEmail(user.email).catch(() => null);
-      customerId = customer?.id ?? 0;
-    }
-    if (!customerId) return NextResponse.json({ downloads: [], alreadyOwned: false });
-
-    const downloads = await getCustomerDownloads(customerId);
+    const downloads = await getUserDownloads(user.email, user.id);
 
     if (productId) {
       const match = downloads.filter((d) => d.product_id === parseInt(productId, 10));
@@ -48,27 +42,41 @@ export async function POST(req: NextRequest) {
   if (!productId) return NextResponse.json({ error: "productId is required" }, { status: 400 });
 
   try {
-    let customerId = user.id;
-    if (!customerId) {
-      const customer = await getCustomerByEmail(user.email).catch(() => null);
-      customerId = customer?.id ?? 0;
-    }
-    if (!customerId) {
-      return NextResponse.json({ error: "Customer record not found. Please try again." }, { status: 404 });
+    // 1. Resolve or create customer in WooCommerce
+    let customerId = 0;
+    try {
+      let customer = await getCustomerByUsernameOrEmail(user.email);
+      if (!customer?.id) {
+        try {
+          customer = await createCustomer({
+            email: user.email,
+            first_name: user.firstName || "Reader",
+            last_name: user.lastName || "",
+            password: crypto.randomUUID() + "!Aa1",
+          });
+        } catch {
+          customer = await getCustomerByEmail(user.email).catch(() => null);
+        }
+      }
+      if (customer?.id) {
+        customerId = customer.id;
+      }
+    } catch {
+      // fallback to 0
     }
 
-    // Check if already owned to avoid duplicate orders
-    const existingDownloads = await getCustomerDownloads(customerId).catch(() => []);
+    // 2. Check if already owned to avoid duplicate orders
+    const existingDownloads = await getUserDownloads(user.email, customerId).catch(() => []);
     const alreadyOwned = existingDownloads.some((d) => d.product_id === productId);
     if (alreadyOwned) {
       const links = existingDownloads.filter((d) => d.product_id === productId);
       return NextResponse.json({ success: true, alreadyOwned: true, downloads: links });
     }
 
-    // Create a free completed WC order → WooCommerce generates the download link
+    // 3. Create a free completed WC order → WooCommerce generates the download link
     const billing: Record<string, string> = {
-      first_name: user.firstName,
-      last_name: user.lastName,
+      first_name: user.firstName || "Reader",
+      last_name: user.lastName || "",
       email: user.email,
       address_1: "",
       address_2: "",
@@ -85,8 +93,8 @@ export async function POST(req: NextRequest) {
       billing,
     });
 
-    // Fetch fresh download links after order creation
-    const downloads = await getCustomerDownloads(customerId).catch(() => []);
+    // 4. Fetch fresh download links after order creation
+    const downloads = await getUserDownloads(user.email, customerId).catch(() => []);
     const newLinks = downloads.filter((d) => d.product_id === productId);
 
     return NextResponse.json({

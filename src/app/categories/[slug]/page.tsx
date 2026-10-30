@@ -14,6 +14,7 @@ import {
   isWooCommerceOffline,
 } from "@/services/woocommerce";
 import { formatCategoryName } from "@/utils/text";
+import { pruneProductForClient } from "@/utils/pruneProduct";
 
 export const revalidate = 3600;
 
@@ -27,11 +28,28 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
   const category = await getCategoryBySlug(slug).catch(() => null);
   if (!category) return {};
+
+  const cleanName = formatCategoryName(category.name);
+  const excerpt =
+    category.description?.replace(/<[^>]+>/g, "").slice(0, 160) ||
+    `Browse curated ${cleanName} books at For The Truth.`;
+
   return {
-    title: category.name,
-    description:
-      category.description?.replace(/<[^>]+>/g, "").slice(0, 160) ||
-      `Browse ${category.name} books.`,
+    title: cleanName,
+    description: excerpt,
+    openGraph: {
+      title: `${cleanName} Christian Books`,
+      description: excerpt,
+      url: `https://forthetruth.in/categories/${slug}`,
+      siteName: "For The Truth",
+      locale: "en_IN",
+      type: "website",
+    },
+    twitter: {
+      card: "summary",
+      title: `${cleanName} Christian Books`,
+      description: excerpt,
+    },
   };
 }
 
@@ -92,7 +110,7 @@ export default async function CategoryPage({ params, searchParams }: Props) {
         <>
           <div className="grid grid-cols-2 gap-6 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
             {result.products.map((p) => (
-              <ProductCard key={p.id} product={p} />
+              <ProductCard key={p.id} product={pruneProductForClient(p)} />
             ))}
           </div>
           <Pagination
