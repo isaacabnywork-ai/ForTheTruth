@@ -1,10 +1,23 @@
+import Image from "next/image";
+
 export default function GlobalLoading() {
   return (
     <div className="mx-auto flex min-h-[70vh] w-full max-w-7xl flex-col items-center justify-center p-6 text-center animate-fade-in">
       <div className="relative mb-6 flex items-center justify-center">
-        {/* Outer glowing book icon or spinner */}
-        <div className="h-16 w-16 animate-spin rounded-full border-4 border-slate-200 border-t-navy border-r-gold shadow-lg" />
-        <span className="absolute text-xl">📖</span>
+        {/* Outer spinning gold & navy circle */}
+        <div className="h-16 w-16 animate-spin rounded-full border-4 border-slate-200 border-t-navy border-r-gold shadow-md" />
+        
+        {/* Center FTT Logo */}
+        <div className="absolute flex h-9 w-9 items-center justify-center overflow-hidden rounded-full">
+          <Image
+            src="/logo.png"
+            alt="For The Truth Logo"
+            width={36}
+            height={36}
+            priority
+            className="object-contain"
+          />
+        </div>
       </div>
       <h3 className="font-display text-lg font-black tracking-tight text-navy">
         Opening Shelf &amp; Fetching Catalog...

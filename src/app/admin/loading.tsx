@@ -1,3 +1,5 @@
+import Image from "next/image";
+
 export default function AdminLoading() {
   return (
     <div className="p-6 lg:p-10 max-w-7xl mx-auto w-full animate-fade-in">
@@ -19,7 +21,19 @@ export default function AdminLoading() {
       </div>
 
       <div className="h-96 w-full rounded-3xl border border-slate-200/80 bg-white p-6 shadow-sm animate-pulse flex flex-col justify-center items-center">
-        <div className="h-12 w-12 animate-spin rounded-full border-4 border-slate-200 border-t-navy mb-4" />
+        <div className="relative mb-4 flex items-center justify-center">
+          <div className="h-14 w-14 animate-spin rounded-full border-4 border-slate-200 border-t-navy border-r-gold shadow-sm" />
+          <div className="absolute flex h-8 w-8 items-center justify-center overflow-hidden rounded-full">
+            <Image
+              src="/logo.png"
+              alt="For The Truth Logo"
+              width={32}
+              height={32}
+              priority
+              className="object-contain"
+            />
+          </div>
+        </div>
         <p className="font-display text-xs font-black tracking-wider text-slate-500 uppercase">
           Synchronizing Live Ledger &amp; POS Registers...
         </p>
