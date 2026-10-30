@@ -23,7 +23,7 @@ export default async function ProductsCatalogPage({
   searchParams: Promise<SearchParamsMap>;
 }) {
   const sp = await searchParams;
-  const { query, page, plain } = parseProductQuery(sp, 24);
+  const { query, page, plain } = parseProductQuery(sp, 25);
 
   let result: Awaited<ReturnType<typeof getProductsPaged>> = {
     products: [],
@@ -69,7 +69,7 @@ export default async function ProductsCatalogPage({
   }
 
   return (
-    <div className="mx-auto max-w-7xl px-4 py-8 sm:py-10 lg:px-8">
+    <div className="mx-auto max-w-7xl 2xl:max-w-[1536px] px-4 py-8 sm:py-10 lg:px-8">
       {/* Catalog Header bar */}
       <div className="mb-6 flex flex-wrap items-end justify-between gap-4 border-b border-sand pb-4">
         <div>
@@ -98,7 +98,7 @@ export default async function ProductsCatalogPage({
         <main className="flex-1 min-w-0 w-full order-2 lg:order-1">
           {result.products.length > 0 ? (
             <>
-              <div className="grid grid-cols-2 gap-5 sm:grid-cols-3 xl:grid-cols-4">
+              <div className="grid grid-cols-2 gap-5 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
                 {result.products.map((product) => (
                   <ProductCard key={product.id} product={pruneProductForClient(product)} />
                 ))}

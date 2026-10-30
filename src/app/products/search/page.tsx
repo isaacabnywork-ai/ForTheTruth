@@ -16,7 +16,7 @@ export default async function SearchPage({
   searchParams: Promise<SearchParamsMap>;
 }) {
   const sp = await searchParams;
-  const { query, page, plain } = parseProductQuery(sp);
+  const { query, page, plain } = parseProductQuery(sp, 25);
   const q = query.search ?? "";
 
   let results: Awaited<ReturnType<typeof getProductsPaged>> = {
@@ -67,7 +67,7 @@ export default async function SearchPage({
 
       {results.products.length > 0 ? (
         <>
-          <div className="grid grid-cols-2 gap-x-5 gap-y-10 md:grid-cols-3 xl:grid-cols-4">
+          <div className="grid grid-cols-2 gap-x-5 gap-y-10 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
             {results.products.map((p) => (
               <ProductCard key={p.id} product={p} />
             ))}

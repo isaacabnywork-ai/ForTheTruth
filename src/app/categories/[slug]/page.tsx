@@ -66,7 +66,7 @@ export default async function CategoryPage({ params, searchParams }: Props) {
     notFound();
   }
 
-  const { query, page, plain } = parseProductQuery(sp, 24);
+  const { query, page, plain } = parseProductQuery(sp, 25);
   const result = await getProductsPaged({
     ...query,
     category: category.id,
