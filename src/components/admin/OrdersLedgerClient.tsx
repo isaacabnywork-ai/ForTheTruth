@@ -233,12 +233,38 @@ export function OrdersLedgerClient({ initialOrders }: { initialOrders: WCOrder[]
               <span className="text-cta">₹{selectedOrder.total}</span>
             </div>
 
-            <div className="mt-6 flex justify-end">
+            <div className="mt-6 flex flex-wrap items-center justify-between gap-3 border-t border-slate-200 pt-4">
+              <div className="flex flex-wrap items-center gap-2">
+                {selectedOrder.billing?.phone && (
+                  <a
+                    href={`https://wa.me/${selectedOrder.billing.phone.replace(/[^0-9]/g, "").length === 10 ? "91" + selectedOrder.billing.phone.replace(/[^0-9]/g, "") : selectedOrder.billing.phone.replace(/[^0-9]/g, "")}?text=${encodeURIComponent(
+                      `Hi ${selectedOrder.billing.first_name || "there"}, grace and peace! 🌿\n\nWe hope you're thoroughly enjoying your books from order #${selectedOrder.id}! Would you take 30 seconds to share your review with us?\n\n⭐ Review your books here:\nhttps://forthetruth.in/account/orders/${selectedOrder.id}\n\nYour review helps other believers across India discover sound, gospel-rich books!\n\nBlessings in Christ,\nTeam For The Truth\n+91 8604685533`
+                    )}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center gap-1.5 rounded-2xl bg-emerald-600 px-4 py-2.5 font-display text-xs font-bold text-white hover:bg-emerald-700 shadow-sm transition active:scale-95"
+                  >
+                    💬 WhatsApp Review Link
+                  </a>
+                )}
+                {selectedOrder.billing?.email && (
+                  <a
+                    href={`mailto:${selectedOrder.billing.email}?subject=${encodeURIComponent(
+                      `How is your reading going, ${selectedOrder.billing.first_name || "friend"}? 📖`
+                    )}&body=${encodeURIComponent(
+                      `Dear ${selectedOrder.billing.first_name || "Reader"},\n\nWe pray your books from order #${selectedOrder.id} arrived safely and are already strengthening your faith and knowledge of our Lord Jesus Christ.\n\nCould you take 30 seconds to share your thoughts on the books you received?\nhttps://forthetruth.in/account/orders/${selectedOrder.id}\n\nYour honest reviews help fellow readers, churches, and students find trusted, theologically sound resources.\n\nBlessings in Christ,\nTeam For The Truth\nhttps://forthetruth.in/\n+91 8604685533`
+                    )}`}
+                    className="flex items-center gap-1.5 rounded-2xl border border-slate-300 bg-white px-4 py-2.5 font-display text-xs font-bold text-navy hover:bg-slate-50 shadow-xs transition active:scale-95"
+                  >
+                    ✉️ Email Review Request
+                  </a>
+                )}
+              </div>
               <button
                 onClick={() => setSelectedOrder(null)}
-                className="rounded-2xl bg-navy px-8 py-3 font-display text-xs font-black text-white hover:bg-navy-light shadow-md"
+                className="rounded-2xl bg-navy px-6 py-2.5 font-display text-xs font-black text-white hover:bg-navy-light shadow-md"
               >
-                CLOSE INSPECTOR
+                CLOSE
               </button>
             </div>
           </div>
