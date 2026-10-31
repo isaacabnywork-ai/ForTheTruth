@@ -150,7 +150,7 @@ export function ProductDetail({ product, reviews = [] }: ProductDetailProps) {
       <div className="grid gap-6 md:grid-cols-12 lg:gap-12 items-start">
         {/* Left: Image Gallery (Full width, sticks to top on mobile/tablet) */}
         <div className="flex flex-col gap-4 md:col-span-5 lg:col-span-5 w-full max-w-none md:max-w-[420px] mx-auto md:mx-0">
-          <div className="relative w-full group pt-2 sm:pt-0">
+          <div className="relative w-full group pt-0">
             {/* Native App-Style Mobile/Tablet Back Button */}
             <button
               onClick={() => window.history.back()}
@@ -176,7 +176,7 @@ export function ProductDetail({ product, reviews = [] }: ProductDetailProps) {
                 onClick={() => setIsZoomOpen(true)}
                 aria-label="Enlarge image"
                 title="Click to zoom"
-                className="absolute right-2 top-2 z-20 flex h-9 w-9 items-center justify-center rounded-full bg-white/90 text-charcoal shadow-sm backdrop-blur-md transition-all duration-200 hover:bg-white hover:scale-105 active:scale-95 border border-sand/60 opacity-0 group-hover:opacity-100 sm:opacity-75"
+                className="absolute right-4 top-4 z-20 flex h-10 w-10 items-center justify-center rounded-full bg-white/90 text-charcoal shadow-md backdrop-blur-md transition-all duration-200 hover:bg-white hover:scale-105 active:scale-95 border border-sand/60 opacity-90 sm:opacity-75"
               >
                 <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                   <circle cx="11" cy="11" r="8" />
@@ -216,7 +216,7 @@ export function ProductDetail({ product, reviews = [] }: ProductDetailProps) {
             {/* Carousel Container — Full-Width Hardware-Accelerated Swiping */}
             <div 
               ref={scrollContainerRef}
-              className="relative flex w-full overflow-x-auto snap-x snap-mandatory scroll-smooth scrollbar-hide items-center justify-start touch-pan-x select-none py-0 sm:py-2"
+              className="relative flex w-full overflow-x-auto snap-x snap-mandatory scroll-smooth scrollbar-hide items-start justify-start touch-pan-x select-none py-0 sm:py-2"
               style={{ scrollSnapType: "x mandatory", WebkitOverflowScrolling: "touch" }}
               onScroll={(e) => {
                 const scrollLeft = e.currentTarget.scrollLeft;
@@ -232,15 +232,15 @@ export function ProductDetail({ product, reviews = [] }: ProductDetailProps) {
               {images.map((img, idx) => (
                 <div 
                   key={img.id || idx}
-                  className="relative min-w-full w-full shrink-0 flex items-center justify-center snap-center snap-always select-none py-0 sm:py-2"
+                  className="relative min-w-full w-full shrink-0 flex items-start justify-center snap-center snap-always select-none py-0 sm:py-2"
                   style={{ scrollSnapAlign: "center" }}
                 >
                   {img.src ? (
-                    <div className="relative flex items-center justify-center w-full px-0 sm:px-4 md:px-0">
+                    <div className="relative flex items-start justify-center w-full px-0 sm:px-4 md:px-0">
                       <img
                         src={img.src}
                         alt={img.alt || product.name}
-                        className="w-full h-auto max-h-[75vh] sm:max-h-[500px] md:max-h-[520px] object-contain sm:object-contain block drop-shadow-md"
+                        className="w-full h-auto max-h-[75vh] sm:max-h-[500px] md:max-h-[520px] object-contain object-top block drop-shadow-md"
                         loading={idx === 0 ? "eager" : "lazy"}
                       />
                     </div>
