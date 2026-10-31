@@ -23,7 +23,7 @@ export default async function ProductsCatalogPage({
   searchParams: Promise<SearchParamsMap>;
 }) {
   const sp = await searchParams;
-  const { query, page, plain } = parseProductQuery(sp, 25);
+  const { query, page, plain } = parseProductQuery(sp, 30);
 
   let result: Awaited<ReturnType<typeof getProductsPaged>> = {
     products: [],
@@ -98,7 +98,7 @@ export default async function ProductsCatalogPage({
         <main className="flex-1 min-w-0 w-full order-2 lg:order-1">
           {result.products.length > 0 ? (
             <>
-              <div className="grid grid-cols-2 gap-5 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
+              <div className="grid grid-cols-2 gap-5 sm:grid-cols-3 lg:grid-cols-5">
                 {result.products.map((product) => (
                   <ProductCard key={product.id} product={pruneProductForClient(product)} />
                 ))}

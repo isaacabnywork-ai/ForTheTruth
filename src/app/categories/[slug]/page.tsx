@@ -66,7 +66,7 @@ export default async function CategoryPage({ params, searchParams }: Props) {
     notFound();
   }
 
-  const { query, page, plain } = parseProductQuery(sp, 25);
+  const { query, page, plain } = parseProductQuery(sp, 30);
   const result = await getProductsPaged({
     ...query,
     category: category.id,
@@ -108,7 +108,7 @@ export default async function CategoryPage({ params, searchParams }: Props) {
 
       {result.products.length > 0 ? (
         <>
-          <div className="grid grid-cols-2 gap-6 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
+          <div className="grid grid-cols-2 gap-6 sm:grid-cols-3 lg:grid-cols-5">
             {result.products.map((p) => (
               <ProductCard key={p.id} product={pruneProductForClient(p)} />
             ))}

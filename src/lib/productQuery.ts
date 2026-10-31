@@ -9,7 +9,7 @@ function first(v: string | string[] | undefined): string | undefined {
 /** Translate URL search params into a WooCommerce product query. */
 export function parseProductQuery(
   sp: SearchParamsMap,
-  perPage = 25
+  perPage = 30
 ): { query: ProductQuery; page: number; plain: Record<string, string | undefined> } {
   const page = Math.max(1, parseInt(first(sp.page) ?? "1", 10) || 1);
   const orderbyRaw = first(sp.orderby) ?? "date";
