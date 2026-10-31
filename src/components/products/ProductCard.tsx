@@ -75,83 +75,84 @@ export function ProductCard({
   }
 
   return (
-    <article className="group flex flex-col w-full select-none">
-      {/* Book Cover Container with Natural Aspect Ratio & Bottom Baseline Alignment */}
-      <Link
-        href={`/products/${product.slug}`}
-        className="relative flex items-end justify-center h-[210px] sm:h-[235px] md:h-[250px] lg:h-[260px] w-full"
-        title={fullTitle}
-      >
-        <div className="relative inline-block max-h-full max-w-full transition-all duration-300 group-hover:-translate-y-1.5 overflow-hidden rounded-[3px]">
-          {imageSrc ? (
-            <img
-              src={imageSrc}
-              alt={imageAlt || fullTitle}
-              loading="lazy"
-              className={`max-h-[210px] sm:max-h-[235px] md:max-h-[250px] lg:max-h-[260px] w-auto max-w-full rounded-[3px] shadow-xs border border-black/[0.06] object-contain block group-hover:shadow-md transition-all duration-300 ${
+    <article className="group flex flex-col items-center w-full select-none">
+      <div className="flex flex-col items-center w-fit max-w-full min-w-[115px] sm:min-w-[130px]">
+        {/* Book Cover Container with Natural Aspect Ratio & Direct Alignment */}
+        <Link
+          href={`/products/${product.slug}`}
+          className="relative block"
+          title={fullTitle}
+        >
+          <div className="relative inline-block max-h-full max-w-full transition-all duration-300 group-hover:-translate-y-1.5 overflow-hidden rounded-[3px]">
+            {imageSrc ? (
+              <img
+                src={imageSrc}
+                alt={imageAlt || fullTitle}
+                loading="lazy"
+                className={`h-[185px] sm:h-[215px] md:h-[235px] lg:h-[250px] w-auto max-w-full rounded-[3px] shadow-xs border border-black/[0.06] object-contain block group-hover:shadow-md transition-all duration-300 ${
+                  !inStock ? "opacity-40" : ""
+                }`}
+              />
+            ) : (
+              <div className={`flex aspect-[2/3] h-[185px] sm:h-[215px] md:h-[235px] lg:h-[250px] items-center justify-center bg-gold-gradient p-3 text-center rounded-[3px] ${
                 !inStock ? "opacity-40" : ""
+              }`}>
+                <span className="font-serif text-xs italic leading-snug text-white [text-shadow:0_1px_2px_rgba(120,85,40,0.4)]">
+                  {displayTitle}
+                </span>
+              </div>
+            )}
+
+            {/* Book spine crease */}
+            <div className="pointer-events-none absolute inset-y-0 left-0 w-[4px] bg-gradient-to-r from-black/20 via-black/5 to-transparent rounded-l-[3px]" />
+
+            {/* Subtle sheen */}
+            <div className="pointer-events-none absolute inset-0 bg-gradient-to-tr from-transparent via-white/5 to-white/10 opacity-30 rounded-[3px]" />
+
+            {/* Rank Badge if provided */}
+            {rank != null && rank <= 3 && (
+              <div className="absolute top-2 left-2 z-10 pointer-events-none">
+                <span className="bg-navy text-white text-[9.5px] font-bold uppercase tracking-wider px-2 py-0.5 rounded shadow-xs">
+                  {rank === 1 ? "🥇 #1" : rank === 2 ? "🥈 #2" : "🥉 #3"}
+                </span>
+              </div>
+            )}
+
+            {/* Out of Stock / Sold Out Badge */}
+            {!inStock && (
+              <div className="absolute inset-0 flex items-center justify-center p-2 pointer-events-none z-10">
+                <span className="bg-[#212121]/90 text-white text-[9.5px] sm:text-[10px] font-bold uppercase tracking-wider px-3 py-1 rounded-full shadow-md backdrop-blur-xs whitespace-nowrap">
+                  SOLD OUT
+                </span>
+              </div>
+            )}
+
+            {/* Subtle Wishlist heart button */}
+            <button
+              type="button"
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                triggerHaptic("tap");
+                toggleWishlist(product.id);
+              }}
+              aria-label={wishlisted ? "Remove from wishlist" : "Add to wishlist"}
+              aria-pressed={wishlisted}
+              className={`absolute right-1.5 top-1.5 z-10 rounded-full p-1.5 shadow-xs backdrop-blur-xs transition-all duration-200 active:scale-90 ${
+                wishlisted
+                  ? "bg-gold text-white"
+                  : "bg-white/85 text-charcoal/60 opacity-0 group-hover:opacity-100 hover:bg-gold hover:text-white"
               }`}
-            />
-          ) : (
-            <div className={`flex aspect-[2/3] h-[210px] sm:h-[235px] md:h-[250px] lg:h-[260px] items-center justify-center bg-gold-gradient p-3 text-center rounded-[3px] ${
-              !inStock ? "opacity-40" : ""
-            }`}>
-              <span className="font-serif text-xs italic leading-snug text-white [text-shadow:0_1px_2px_rgba(120,85,40,0.4)]">
-                {displayTitle}
-              </span>
-            </div>
-          )}
+            >
+              <svg width="12" height="12" viewBox="0 0 24 24" fill={wishlisted ? "currentColor" : "none"} stroke="currentColor" strokeWidth="2" aria-hidden="true">
+                <path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z" />
+              </svg>
+            </button>
+          </div>
+        </Link>
 
-          {/* Book spine crease */}
-          <div className="pointer-events-none absolute inset-y-0 left-0 w-[4px] bg-gradient-to-r from-black/20 via-black/5 to-transparent rounded-l-[3px]" />
-
-          {/* Subtle sheen */}
-          <div className="pointer-events-none absolute inset-0 bg-gradient-to-tr from-transparent via-white/5 to-white/10 opacity-30 rounded-[3px]" />
-
-          {/* Rank Badge if provided */}
-          {rank != null && rank <= 3 && (
-            <div className="absolute top-2 left-2 z-10 pointer-events-none">
-              <span className="bg-navy text-white text-[9.5px] font-bold uppercase tracking-wider px-2 py-0.5 rounded shadow-xs">
-                {rank === 1 ? "🥇 #1" : rank === 2 ? "🥈 #2" : "🥉 #3"}
-              </span>
-            </div>
-          )}
-
-          {/* Out of Stock / Sold Out Badge */}
-          {!inStock && (
-            <div className="absolute inset-0 flex items-center justify-center p-2 pointer-events-none z-10">
-              <span className="bg-[#212121]/90 text-white text-[9.5px] sm:text-[10px] font-bold uppercase tracking-wider px-3 py-1 rounded-full shadow-md backdrop-blur-xs whitespace-nowrap">
-                SOLD OUT
-              </span>
-            </div>
-          )}
-
-          {/* Subtle Wishlist heart button */}
-          <button
-            type="button"
-            onClick={(e) => {
-              e.preventDefault();
-              e.stopPropagation();
-              triggerHaptic("tap");
-              toggleWishlist(product.id);
-            }}
-            aria-label={wishlisted ? "Remove from wishlist" : "Add to wishlist"}
-            aria-pressed={wishlisted}
-            className={`absolute right-1.5 top-1.5 z-10 rounded-full p-1.5 shadow-xs backdrop-blur-xs transition-all duration-200 active:scale-90 ${
-              wishlisted
-                ? "bg-gold text-white"
-                : "bg-white/85 text-charcoal/60 opacity-0 group-hover:opacity-100 hover:bg-gold hover:text-white"
-            }`}
-          >
-            <svg width="12" height="12" viewBox="0 0 24 24" fill={wishlisted ? "currentColor" : "none"} stroke="currentColor" strokeWidth="2" aria-hidden="true">
-              <path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z" />
-            </svg>
-          </button>
-        </div>
-      </Link>
-
-      {/* Bottom Row: Price, Discount Badge & Squircle Cart / Notify Button */}
-      <div className="mt-2.5 flex items-center justify-between w-full pt-0.5">
+        {/* Bottom Row: Price, Discount Badge & Squircle Cart / Notify Button — aligned inside book image */}
+        <div className="mt-1.5 flex items-center justify-between w-full pt-0.5">
         <Link
           href={`/products/${product.slug}`}
           className="flex flex-col text-left justify-center group/price min-h-[36px]"
@@ -268,6 +269,7 @@ export function ProductCard({
           </button>
         )}
       </div>
-    </article>
-  );
+    </div>
+  </article>
+);
 }
