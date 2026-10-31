@@ -128,9 +128,9 @@ export function ProductDetail({ product, reviews = [] }: ProductDetailProps) {
   };
 
   return (
-    <div className="mx-auto max-w-6xl px-4 pt-8 pb-28 sm:pt-10 md:pt-12 lg:px-8 lg:py-12">
+    <div className="mx-auto max-w-6xl px-0 pt-0 pb-28 sm:px-4 sm:pt-4 md:pt-6 lg:px-8 lg:py-12">
       {/* Breadcrumb Navigation (Desktop Only) */}
-      <nav aria-label="Breadcrumb" className="mb-6 hidden items-center gap-2 text-xs text-charcoal/60 lg:flex">
+      <nav aria-label="Breadcrumb" className="mb-6 hidden items-center gap-2 text-xs text-charcoal/60 lg:flex px-4 lg:px-0">
         <Link href="/" className="hover:text-gold-dark">Home</Link>
         <span>/</span>
         <Link href="/products" className="hover:text-gold-dark">Books</Link>
@@ -147,15 +147,15 @@ export function ProductDetail({ product, reviews = [] }: ProductDetailProps) {
       </nav>
 
       {/* Main Product Grid */}
-      <div className="grid gap-8 md:grid-cols-12 lg:gap-12 items-start">
-        {/* Left: Image Gallery (Clean presentation with NO surrounding box) */}
-        <div className="flex flex-col gap-4 md:col-span-5 lg:col-span-5 w-full max-w-[420px] mx-auto md:mx-0">
-          <div className="relative w-full group">
+      <div className="grid gap-6 md:grid-cols-12 lg:gap-12 items-start">
+        {/* Left: Image Gallery (Full width, sticks to top on mobile/tablet) */}
+        <div className="flex flex-col gap-4 md:col-span-5 lg:col-span-5 w-full max-w-none md:max-w-[420px] mx-auto md:mx-0">
+          <div className="relative w-full group pt-2 sm:pt-0">
             {/* Native App-Style Mobile/Tablet Back Button */}
             <button
               onClick={() => window.history.back()}
               aria-label="Go back"
-              className="absolute left-2 top-2 z-30 flex h-9 w-9 items-center justify-center rounded-full bg-white/90 text-charcoal shadow-md backdrop-blur-md transition-transform active:scale-95 lg:hidden border border-sand/50"
+              className="absolute left-4 top-4 z-30 flex h-10 w-10 items-center justify-center rounded-full bg-white/90 text-charcoal shadow-md backdrop-blur-md transition-transform active:scale-95 lg:hidden border border-sand/50"
             >
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" aria-hidden="true">
                 <path d="M15 18l-6-6 6-6" strokeLinecap="round" strokeLinejoin="round" />
@@ -235,11 +235,11 @@ export function ProductDetail({ product, reviews = [] }: ProductDetailProps) {
                   onClick={() => setIsZoomOpen(true)}
                 >
                   {img.src ? (
-                    <div className="relative flex items-center justify-center">
+                    <div className="relative flex items-center justify-center w-full px-4 sm:px-6 md:px-0">
                       <img
                         src={img.src}
                         alt={img.alt || product.name}
-                        className="max-h-[440px] sm:max-h-[480px] w-auto max-w-full rounded-r-md rounded-l-[2px] drop-shadow-[0_14px_28px_rgba(30,20,10,0.16)] drop-shadow-[0_2px_8px_rgba(30,20,10,0.08)] object-contain select-none transition-transform duration-300 hover:scale-[1.01]"
+                        className="max-h-[62vh] sm:max-h-[500px] md:max-h-[520px] w-auto max-w-[88vw] sm:max-w-full rounded-r-md rounded-l-[2px] drop-shadow-[0_16px_32px_rgba(30,20,10,0.18)] drop-shadow-[0_4px_12px_rgba(30,20,10,0.08)] object-contain select-none transition-transform duration-300 hover:scale-[1.01]"
                         loading={idx === 0 ? "eager" : "lazy"}
                       />
                     </div>
@@ -255,7 +255,7 @@ export function ProductDetail({ product, reviews = [] }: ProductDetailProps) {
 
           {/* Thumbnails */}
           {images.length > 1 && (
-            <div className="flex items-center gap-2.5 overflow-x-auto pb-1 pt-1 scrollbar-hide">
+            <div className="flex items-center gap-2.5 overflow-x-auto px-4 sm:px-0 pb-1 pt-1 scrollbar-hide justify-center md:justify-start">
               {images.map((img, idx) => (
                 <button
                   key={img.id || idx}
@@ -282,7 +282,7 @@ export function ProductDetail({ product, reviews = [] }: ProductDetailProps) {
         </div>
 
         {/* Right: Product Details & Purchase Controls */}
-        <div className="flex flex-col justify-start md:col-span-7 lg:col-span-7">
+        <div className="flex flex-col justify-start md:col-span-7 lg:col-span-7 px-4 sm:px-6 md:px-0">
           <div>
             <div className="flex flex-wrap items-center gap-2">
               {product.categories.map((cat) => (
@@ -343,8 +343,8 @@ export function ProductDetail({ product, reviews = [] }: ProductDetailProps) {
             />
           </div>
 
-          {/* Action Row - Placed directly below description without empty gap */}
-          <div className="mt-6 border-t border-sand/80 pt-6">
+          {/* Action Row - Hidden on mobile & tablet preview per user instruction (keeps only the sticky add to cart bar) */}
+          <div className="mt-6 border-t border-sand/80 pt-6 hidden lg:block">
             <div className="flex flex-wrap items-center gap-4">
               {/* Quantity selector */}
               <div className="flex items-center rounded-full border border-sand bg-cream/50 px-4 py-2">
@@ -411,7 +411,7 @@ export function ProductDetail({ product, reviews = [] }: ProductDetailProps) {
       </div>
 
       {/* Tabs: Overview & Reviews */}
-      <div className="mt-14 border-t border-sand pt-8">
+      <div className="mt-14 border-t border-sand pt-8 px-4 sm:px-6 md:px-0">
         <div className="flex gap-8 border-b border-sand pb-3">
           <button
             onClick={() => setActiveTab("description")}

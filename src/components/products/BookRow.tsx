@@ -17,7 +17,7 @@ interface BookRowProps {
 
 const MAX_PER_ROW = 6;
 
-function cleanTitle(title: string): string {
+export function cleanTitle(title: string): string {
   if (!title) return "";
   return decodeHtmlEntities(title)
     .replace(/_Damage$/i, "")
@@ -31,7 +31,7 @@ function cleanTitle(title: string): string {
  *   e.g. "How to Lead Your Family: A Guide for Men Wanting to Be More" -> "How to Lead Your Family"
  * - Restricts word count so titles fit gracefully in 2 lines without overflowing into 3+ lines.
  */
-function formatCardTitle(rawTitle: string): { displayTitle: string; fullTitle: string } {
+export function formatCardTitle(rawTitle: string): { displayTitle: string; fullTitle: string } {
   const fullTitle = cleanTitle(rawTitle);
   if (!fullTitle) return { displayTitle: "", fullTitle: "" };
 

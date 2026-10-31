@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { ProductDetail } from "@/components/products/ProductDetail";
-import { Bookshelf } from "@/components/products/Bookshelf";
+import { BookRow } from "@/components/products/BookRow";
 import { isWooConfigured } from "@/config/env";
 import { StoreMaintenancePage } from "@/components/common/StoreMaintenancePage";
 import {
@@ -144,9 +144,9 @@ export default async function SingleProductPage({ params }: PageProps) {
       <ProductDetail product={product} reviews={reviews} />
 
       {related.length > 0 && (
-        <div className="mt-12">
-          <Bookshelf
-            title="You Might Also Like"
+        <div className="mt-8">
+          <BookRow
+            title="Recommended Products"
             products={related}
           />
         </div>
