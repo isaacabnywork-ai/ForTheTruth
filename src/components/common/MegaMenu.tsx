@@ -23,7 +23,7 @@ const subHeaderCls =
 export function MegaMenu({ open, onNavigate, onMouseEnter, onMouseLeave }: MegaMenuProps) {
   return (
     <div
-      className={`fixed left-1/2 top-[88px] z-[100] w-[min(900px,calc(100vw-3rem))] -translate-x-1/2 transition-all duration-300 before:absolute before:-top-5 before:inset-x-0 before:h-5 before:content-[''] ${
+      className={`fixed left-1/2 top-[88px] z-[100] w-[min(1080px,calc(100vw-2.5rem))] -translate-x-1/2 transition-all duration-300 before:absolute before:-top-5 before:inset-x-0 before:h-5 before:content-[''] ${
         open
           ? "pointer-events-auto visible translate-y-0 opacity-100"
           : "pointer-events-none invisible -translate-y-2 opacity-0"
@@ -33,9 +33,9 @@ export function MegaMenu({ open, onNavigate, onMouseEnter, onMouseLeave }: MegaM
       onMouseLeave={onMouseLeave}
     >
       <div className="overflow-hidden rounded-2xl border border-sand bg-white shadow-2xl p-6">
-        <div className="grid grid-cols-3 gap-6">
+        <div className="grid grid-cols-12 gap-6">
           {/* Column 1: All Books Main Navigation & Publishers */}
-          <div className="border-r border-sand pr-6">
+          <div className="col-span-3 border-r border-sand pr-6">
             <p className={sectionHeaderCls}>All Books</p>
             <ul className="space-y-0.5">
               <li>
@@ -94,7 +94,7 @@ export function MegaMenu({ open, onNavigate, onMouseEnter, onMouseLeave }: MegaM
           </div>
 
           {/* Column 2: Collections */}
-          <div className="border-r border-sand pr-6">
+          <div className="col-span-3 border-r border-sand pr-6">
             <p className={sectionHeaderCls}>Collections</p>
             <ul className="space-y-0.5">
               {COLLECTIONS.map((c) => (
@@ -116,8 +116,10 @@ export function MegaMenu({ open, onNavigate, onMouseEnter, onMouseLeave }: MegaM
             </ul>
           </div>
 
-          {/* Column 3: Recently Viewed */}
-          <RecentlyViewedMegaSection onNavigate={onNavigate} />
+          {/* Column 3 & 4: Recently Viewed (2 Blocks with 3-4 books each) */}
+          <div className="col-span-6 pl-1">
+            <RecentlyViewedMegaSection onNavigate={onNavigate} columns={2} maxPerBlock={4} />
+          </div>
         </div>
       </div>
     </div>
