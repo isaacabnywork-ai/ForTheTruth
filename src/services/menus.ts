@@ -75,6 +75,16 @@ export function getSiteMenusConfig(): SiteMenusConfig {
 }
 
 export async function fetchSiteMenusConfigFromCloud(): Promise<SiteMenusConfig> {
+  // During CI/build phase, immediately return local fallback to prevent build hangs on external APIs
+  if (
+    process.env.NEXT_PHASE === "phase-production-build" ||
+    process.env.npm_lifecycle_event === "build" ||
+    process.env.CI === "true" ||
+    process.env.AWS_AMPLIFY === "true"
+  ) {
+    return getSiteMenusConfig();
+  }
+
   const now = Date.now();
   // Return in-memory cache immediately if fetched within the last 3 minutes
   if (
@@ -95,7 +105,7 @@ export async function fetchSiteMenusConfigFromCloud(): Promise<SiteMenusConfig> 
     const res = await fetch(url, {
       headers: { Authorization: `Basic ${auth}` },
       signal: AbortSignal.timeout(4000),
-      cache: "no-store",
+      next: { revalidate: 300 },
     });
     if (res.ok) {
       const product = await res.json();

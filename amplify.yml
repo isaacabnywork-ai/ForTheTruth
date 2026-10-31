@@ -3,7 +3,7 @@ frontend:
   phases:
     preBuild:
       commands:
-        - npm ci
+        - npm ci --legacy-peer-deps || npm install --legacy-peer-deps
     build:
       commands:
         - (env | grep -e WOOCOMMERCE -e NEXT_PUBLIC -e RAZORPAY -e ADMIN -e BREVO -e SUPABASE >> .env.production) || true
