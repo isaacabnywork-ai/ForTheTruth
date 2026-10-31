@@ -299,24 +299,7 @@ export function ProductDetail({ product, reviews = [] }: ProductDetailProps) {
         {/* Right: Product Details & Purchase Controls */}
         <div className="flex flex-col justify-start md:col-span-7 lg:col-span-7 px-4 sm:px-6 md:px-0">
           <div>
-            <div className="flex flex-wrap items-center gap-2">
-              {product.categories.map((cat) => (
-                <span key={cat.id} className="rounded-full border border-sand bg-white px-3 py-1 text-[11px] font-bold uppercase tracking-widest text-charcoal/70">
-                  {cat.name}
-                </span>
-              ))}
-              {inStock ? (
-                <span className="ml-auto rounded-full bg-emerald-100 px-3 py-0.5 text-xs font-bold text-emerald-800">
-                  In Stock
-                </span>
-              ) : (
-                <span className="ml-auto rounded-full bg-charcoal/10 px-3 py-0.5 text-xs font-bold text-charcoal/60">
-                  Out of Stock
-                </span>
-              )}
-            </div>
-
-            <h1 className="mt-3 font-display text-3xl font-bold leading-tight text-charcoal md:text-4xl">
+            <h1 className="mt-1 font-display text-3xl font-bold leading-tight text-charcoal md:text-4xl">
               {product.name}
             </h1>
 
@@ -350,12 +333,32 @@ export function ProductDetail({ product, reviews = [] }: ProductDetailProps) {
             </div>
 
             {/* Short Excerpt Description - Clamped to 3 lines so Cart controls remain visible immediately */}
-            <div
-              className="prose prose-sm mt-4 line-clamp-3 text-charcoal/75 leading-relaxed text-sm"
-              dangerouslySetInnerHTML={{
-                __html: product.short_description || product.description,
-              }}
-            />
+            {(product.short_description || product.description) && (
+              <div
+                className="prose prose-sm mt-4 line-clamp-3 text-charcoal/75 leading-relaxed text-sm"
+                dangerouslySetInnerHTML={{
+                  __html: product.short_description || product.description,
+                }}
+              />
+            )}
+
+            {/* Category Badges & Stock Status — Placed below description */}
+            <div className="mt-5 flex flex-wrap items-center gap-2">
+              {product.categories.map((cat) => (
+                <span key={cat.id} className="rounded-full border border-sand bg-white px-3 py-1 text-[11px] font-bold uppercase tracking-widest text-charcoal/70">
+                  {cat.name}
+                </span>
+              ))}
+              {inStock ? (
+                <span className="ml-auto rounded-full bg-emerald-100 px-3 py-0.5 text-xs font-bold text-emerald-800">
+                  In Stock
+                </span>
+              ) : (
+                <span className="ml-auto rounded-full bg-charcoal/10 px-3 py-0.5 text-xs font-bold text-charcoal/60">
+                  Out of Stock
+                </span>
+              )}
+            </div>
           </div>
 
           {/* Action Row - Hidden on mobile & tablet preview per user instruction (keeps only the sticky add to cart bar) */}
