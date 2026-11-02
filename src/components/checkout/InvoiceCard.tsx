@@ -86,44 +86,37 @@ export function InvoiceCard({ order, isFree }: InvoiceCardProps) {
     <div className="w-full">
       {/* ── Toolbar Action Bar (Hidden when printing) ── */}
       <div className="mb-4 flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-sand bg-white p-4 shadow-sm print:hidden">
-        <div className="flex items-center gap-2.5">
-          <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-gold/15 text-gold-dark font-black">
-            🧾
-          </div>
-          <div>
-            <span className="text-xs font-bold uppercase tracking-wider text-charcoal/80">
-              Tax Invoice &amp; Receipt
-            </span>
-            <p className="text-[11px] text-charcoal/50">
-              Official retail bill for Order #{order.id}
-            </p>
-          </div>
+        <div>
+          <span className="text-xs font-bold uppercase tracking-wider text-charcoal/80">
+            Tax Invoice &amp; Receipt
+          </span>
+          <p className="text-[11px] text-charcoal/50">
+            Official retail bill for Order #{order.id}
+          </p>
         </div>
 
         <div className="flex flex-wrap items-center gap-2">
           <button
             onClick={handlePrint}
             type="button"
-            className="flex items-center gap-1.5 rounded-xl bg-navy px-4 py-2 font-display text-xs font-bold text-white shadow-sm transition-all hover:bg-navy-light active:scale-95"
+            className="flex items-center rounded-xl bg-navy px-4 py-2 font-display text-xs font-bold text-white shadow-sm transition-all hover:bg-navy-light active:scale-95"
           >
-            <span>🖨️</span>
             <span>Print Invoice</span>
           </button>
           <button
             onClick={handlePrint}
             type="button"
-            className="flex items-center gap-1.5 rounded-xl border border-sand bg-cream/60 px-4 py-2 font-display text-xs font-bold text-charcoal transition-all hover:bg-cream active:scale-95"
+            className="flex items-center rounded-xl border border-sand bg-cream/60 px-4 py-2 font-display text-xs font-bold text-charcoal transition-all hover:bg-cream active:scale-95"
             title="Uses your browser print dialog to save as PDF"
           >
-            <span>📥</span>
             <span>Download PDF</span>
           </button>
           <button
             onClick={handleCopyDetails}
             type="button"
-            className="flex items-center gap-1.5 rounded-xl border border-sand bg-white px-3 py-2 font-display text-xs font-semibold text-charcoal/70 transition-all hover:text-charcoal active:scale-95"
+            className="flex items-center rounded-xl border border-sand bg-white px-3 py-2 font-display text-xs font-semibold text-charcoal/70 transition-all hover:text-charcoal active:scale-95"
           >
-            {copied ? "✓ Copied" : "📋 Copy"}
+            <span>{copied ? "Copied" : "Copy"}</span>
           </button>
         </div>
       </div>
@@ -138,10 +131,12 @@ export function InvoiceCard({ order, isFree }: InvoiceCardProps) {
           <div className="flex flex-col gap-6 sm:flex-row sm:items-start sm:justify-between">
             {/* Store Information */}
             <div>
-              <div className="flex items-center gap-2">
-                <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-gold-gradient text-white font-black text-sm shadow-gold">
-                  📖
-                </span>
+              <div className="flex items-center gap-2.5">
+                <img
+                  src="/logo.png"
+                  alt="For The Truth Logo"
+                  className="h-8 w-8 object-contain shrink-0"
+                />
                 <span className="font-display text-2xl font-black tracking-tight text-navy">
                   FOR THE TRUTH
                 </span>
