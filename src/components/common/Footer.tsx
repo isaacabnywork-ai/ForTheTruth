@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { SITE_NAME, COLLECTIONS } from "@/utils/constants";
 import type { SiteMenusConfig } from "@/types/menus";
@@ -91,7 +92,22 @@ export function Footer({ menusConfig }: { menusConfig?: SiteMenusConfig }) {
 
       <div className="border-t border-white/10">
         <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-3 px-4 pt-5 pb-28 text-xs text-white/40 lg:px-8 lg:py-5">
-          <p>{copyright}</p>
+          <div className="flex items-center gap-2 sm:gap-2.5">
+            <p>{copyright}</p>
+            <Link
+              href="/"
+              className="inline-flex shrink-0 items-center transition-transform hover:scale-105"
+              aria-label="For The Truth"
+            >
+              <Image
+                src="/logo.png"
+                alt="For The Truth"
+                width={22}
+                height={22}
+                className="h-5 w-5 sm:h-[22px] sm:w-[22px] rounded-full object-contain"
+              />
+            </Link>
+          </div>
           <PaymentLogosStrip />
         </div>
       </div>
