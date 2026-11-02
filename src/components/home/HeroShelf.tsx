@@ -8,7 +8,7 @@ import { RatingStars } from "@/components/products/RatingStars";
 import { formatPrice } from "@/utils/currency";
 import { READER_TRUST } from "@/utils/constants";
 import { getAuthor, getFormat, type Product } from "@/types/product";
-import { cleanExcerpt, decodeHtmlEntities } from "@/utils/text";
+import { decodeHtmlEntities } from "@/utils/text";
 
 /**
  * Hero panel in a reading-dashboard layout:
@@ -94,9 +94,6 @@ export function HeroShelf({
   const hero = validProducts[currentIndex] || validProducts[0];
   const author = hero ? getAuthor(hero) : undefined;
   const format = hero ? getFormat(hero) : undefined;
-
-  const rawDescription = hero ? (hero.short_description || hero.description || "") : "";
-  const excerpt = cleanExcerpt(rawDescription, 150);
 
   const heroName = hero
     ? decodeHtmlEntities(
@@ -248,12 +245,6 @@ export function HeroShelf({
                         {parseFloat(hero.average_rating).toFixed(1)} ({hero.rating_count})
                       </span>
                     </div>
-                  )}
-
-                  {excerpt && (
-                    <p className="mx-auto lg:mx-0 mt-3.5 max-w-sm text-xs sm:text-sm leading-relaxed text-charcoal/70 line-clamp-3">
-                      {excerpt}…
-                    </p>
                   )}
 
                   {author && (
