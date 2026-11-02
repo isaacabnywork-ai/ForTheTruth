@@ -313,8 +313,8 @@ export function ProductDetail({ product, reviews = [] }: ProductDetailProps) {
               </p>
             )}
 
-            {/* Rating Stars */}
-            <div className="mt-2.5 sm:mt-4 flex items-center gap-2.5 sm:gap-3">
+            {/* Rating Stars & In Stock Status */}
+            <div className="mt-2.5 sm:mt-4 flex flex-wrap items-center gap-2.5 sm:gap-3">
               <RatingStars
                 rating={parseFloat(product.average_rating)}
                 count={product.rating_count}
@@ -322,6 +322,15 @@ export function ProductDetail({ product, reviews = [] }: ProductDetailProps) {
               <span className="text-[11px] sm:text-xs text-charcoal/50">
                 ({product.rating_count} {product.rating_count === 1 ? "review" : "reviews"})
               </span>
+              {inStock ? (
+                <span className="rounded-full bg-emerald-100 px-2.5 py-0.5 text-[11px] sm:text-xs font-bold text-emerald-800">
+                  In Stock
+                </span>
+              ) : (
+                <span className="rounded-full bg-charcoal/10 px-2.5 py-0.5 text-[11px] sm:text-xs font-bold text-charcoal/60">
+                  Out of Stock
+                </span>
+              )}
             </div>
 
             {/* Price */}
@@ -346,23 +355,16 @@ export function ProductDetail({ product, reviews = [] }: ProductDetailProps) {
               />
             )}
 
-            {/* Category Badges & Stock Status — Placed below description */}
-            <div className="mt-3 sm:mt-5 flex flex-wrap items-center gap-1.5 sm:gap-2">
-              {product.categories.map((cat) => (
-                <span key={cat.id} className="rounded-full border border-sand bg-white px-2.5 py-0.5 sm:px-3 sm:py-1 text-[10px] sm:text-[11px] font-bold uppercase tracking-widest text-charcoal/70">
-                  {cat.name}
-                </span>
-              ))}
-              {inStock ? (
-                <span className="ml-auto rounded-full bg-emerald-100 px-2.5 py-0.5 text-[11px] sm:text-xs font-bold text-emerald-800">
-                  In Stock
-                </span>
-              ) : (
-                <span className="ml-auto rounded-full bg-charcoal/10 px-2.5 py-0.5 text-[11px] sm:text-xs font-bold text-charcoal/60">
-                  Out of Stock
-                </span>
-              )}
-            </div>
+            {/* Category Badges — Placed below description */}
+            {product.categories.length > 0 && (
+              <div className="mt-3 sm:mt-5 flex flex-wrap items-center gap-1.5 sm:gap-2">
+                {product.categories.map((cat) => (
+                  <span key={cat.id} className="rounded-full border border-sand bg-white px-2.5 py-0.5 sm:px-3 sm:py-1 text-[10px] sm:text-[11px] font-bold uppercase tracking-widest text-charcoal/70">
+                    {cat.name}
+                  </span>
+                ))}
+              </div>
+            )}
           </div>
 
           {/* Action Row - Hidden on mobile & tablet preview per user instruction (keeps only the sticky add to cart bar) */}
