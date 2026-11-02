@@ -213,7 +213,7 @@ export function ProductDetail({ product, reviews = [] }: ProductDetailProps) {
               </>
             )}
 
-            {/* Carousel Container — Full-Width Edge-To-Edge with Medium Mobile Height */}
+            {/* Carousel Container — Full-Width Hardware-Accelerated Swiping */}
             <div 
               ref={scrollContainerRef}
               className="relative flex w-full overflow-x-auto snap-x snap-mandatory scroll-smooth scrollbar-hide items-start justify-start touch-pan-x select-none py-0 sm:py-2"
@@ -240,13 +240,13 @@ export function ProductDetail({ product, reviews = [] }: ProductDetailProps) {
                       <img
                         src={img.src}
                         alt={img.alt || product.name}
-                        className="w-full h-[320px] xs:h-[360px] sm:h-auto sm:max-h-[500px] md:max-h-[520px] object-cover sm:object-contain object-top block drop-shadow-md"
+                        className="w-full h-auto max-h-[75vh] sm:max-h-[500px] md:max-h-[520px] object-contain object-top block drop-shadow-md"
                         loading={idx === 0 ? "eager" : "lazy"}
                       />
                     </div>
                   ) : (
-                    <div className="flex h-[320px] xs:h-[360px] w-full sm:h-[360px] sm:w-[240px] items-center justify-center bg-gold-gradient p-6 sm:p-8 text-center rounded-none sm:rounded-r-md sm:rounded-l-[2px] shadow-book-lg mx-auto">
-                      <span className="font-display text-xl sm:text-2xl italic text-white line-clamp-3">{product.name}</span>
+                    <div className="flex h-[360px] w-[240px] items-center justify-center bg-gold-gradient p-8 text-center rounded-r-md rounded-l-[2px] shadow-book-lg">
+                      <span className="font-display text-2xl italic text-white">{product.name}</span>
                     </div>
                   )}
                 </div>
@@ -270,14 +270,14 @@ export function ProductDetail({ product, reviews = [] }: ProductDetailProps) {
 
           {/* Thumbnails */}
           {images.length > 1 && (
-            <div className="flex items-center gap-2 overflow-x-auto px-4 sm:px-0 pb-1 pt-1.5 scrollbar-hide justify-center md:justify-start">
+            <div className="flex items-center gap-2.5 overflow-x-auto px-4 sm:px-0 pb-1 pt-1 scrollbar-hide justify-center md:justify-start">
               {images.map((img, idx) => (
                 <button
                   key={img.id || idx}
                   type="button"
                   onClick={() => scrollToIndex(idx)}
                   aria-label={`View image ${idx + 1}`}
-                  className={`relative h-14 w-10 sm:h-20 sm:w-14 shrink-0 overflow-hidden rounded-md sm:rounded-lg border-2 p-0.5 bg-white/60 transition-all duration-200 ${
+                  className={`relative h-20 w-14 shrink-0 overflow-hidden rounded-lg border-2 p-0.5 bg-white/60 transition-all duration-200 ${
                     selectedImg === idx
                       ? "border-gold shadow-md ring-1 ring-gold/30 scale-105"
                       : "border-sand/60 opacity-70 hover:opacity-100 hover:border-gold/50"
@@ -287,7 +287,7 @@ export function ProductDetail({ product, reviews = [] }: ProductDetailProps) {
                     src={img.src}
                     alt={`${product.name} thumbnail ${idx + 1}`}
                     fill
-                    sizes="(max-width: 640px) 40px, 56px"
+                    sizes="56px"
                     className="object-contain p-0.5"
                   />
                 </button>
@@ -297,45 +297,45 @@ export function ProductDetail({ product, reviews = [] }: ProductDetailProps) {
         </div>
 
         {/* Right: Product Details & Purchase Controls */}
-        <div className="flex flex-col justify-start md:col-span-7 lg:col-span-7 px-4 sm:px-6 md:px-0 pt-2 md:pt-0">
+        <div className="flex flex-col justify-start md:col-span-7 lg:col-span-7 px-4 sm:px-6 md:px-0">
           <div>
-            <h1 className="mt-1 font-display text-2xl sm:text-3xl font-bold leading-tight text-charcoal md:text-4xl">
+            <h1 className="mt-1 font-display text-3xl font-bold leading-tight text-charcoal md:text-4xl">
               {product.name}
             </h1>
 
             {author && (
-              <p className="mt-1 sm:mt-2 text-xs sm:text-sm font-semibold uppercase tracking-widest text-gold-dark">
+              <p className="mt-2 text-sm font-semibold uppercase tracking-widest text-gold-dark">
                 By {author}
               </p>
             )}
 
             {/* Rating Stars */}
-            <div className="mt-2 sm:mt-4 flex items-center gap-2.5 sm:gap-3">
+            <div className="mt-4 flex items-center gap-3">
               <RatingStars
                 rating={parseFloat(product.average_rating)}
                 count={product.rating_count}
               />
-              <span className="text-[11px] sm:text-xs text-charcoal/50">
+              <span className="text-xs text-charcoal/50">
                 ({product.rating_count} {product.rating_count === 1 ? "review" : "reviews"})
               </span>
             </div>
 
             {/* Price */}
-            <div className="mt-2.5 sm:mt-5 flex items-baseline gap-3 sm:gap-4">
-              <span className="font-display text-2xl sm:text-3xl font-bold text-charcoal">
+            <div className="mt-5 flex items-baseline gap-4">
+              <span className="font-display text-3xl font-bold text-charcoal">
                 {formatPrice(product.price)}
               </span>
               {product.on_sale && product.regular_price && (
-                <span className="text-base sm:text-lg text-gray-400 line-through">
+                <span className="text-lg text-gray-400 line-through">
                   {formatPrice(product.regular_price)}
                 </span>
               )}
             </div>
 
-            {/* Short Excerpt Description - Clamped to 3 lines so details stay visible */}
+            {/* Short Excerpt Description - Clamped to 3 lines so Cart controls remain visible immediately */}
             {(product.short_description || product.description) && (
               <div
-                className="prose prose-sm mt-2 sm:mt-4 line-clamp-3 text-charcoal/75 leading-relaxed text-xs sm:text-sm"
+                className="prose prose-sm mt-4 line-clamp-3 text-charcoal/75 leading-relaxed text-sm"
                 dangerouslySetInnerHTML={{
                   __html: product.short_description || product.description,
                 }}
@@ -343,18 +343,18 @@ export function ProductDetail({ product, reviews = [] }: ProductDetailProps) {
             )}
 
             {/* Category Badges & Stock Status — Placed below description */}
-            <div className="mt-3 sm:mt-5 flex flex-wrap items-center gap-1.5 sm:gap-2">
+            <div className="mt-5 flex flex-wrap items-center gap-2">
               {product.categories.map((cat) => (
-                <span key={cat.id} className="rounded-full border border-sand bg-white px-2.5 py-0.5 sm:px-3 sm:py-1 text-[10px] sm:text-[11px] font-bold uppercase tracking-widest text-charcoal/70">
+                <span key={cat.id} className="rounded-full border border-sand bg-white px-3 py-1 text-[11px] font-bold uppercase tracking-widest text-charcoal/70">
                   {cat.name}
                 </span>
               ))}
               {inStock ? (
-                <span className="ml-auto rounded-full bg-emerald-100 px-2.5 py-0.5 text-[11px] sm:text-xs font-bold text-emerald-800">
+                <span className="ml-auto rounded-full bg-emerald-100 px-3 py-0.5 text-xs font-bold text-emerald-800">
                   In Stock
                 </span>
               ) : (
-                <span className="ml-auto rounded-full bg-charcoal/10 px-2.5 py-0.5 text-[11px] sm:text-xs font-bold text-charcoal/60">
+                <span className="ml-auto rounded-full bg-charcoal/10 px-3 py-0.5 text-xs font-bold text-charcoal/60">
                   Out of Stock
                 </span>
               )}
