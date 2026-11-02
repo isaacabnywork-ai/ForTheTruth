@@ -7,7 +7,7 @@ import { useEffect, useState } from "react";
 import { SearchBar } from "./SearchBar";
 import { useCartStore } from "@/store/cartStore";
 import type { WCCategory } from "@/types/product";
-import { CHURCH_LINKS, COLLECTIONS, NAV_LINKS } from "@/utils/constants";
+import { COLLECTIONS, NAV_LINKS } from "@/utils/constants";
 import { triggerHaptic } from "@/utils/haptics";
 import { SOCIAL_LINKS } from "./SocialIcons";
 
@@ -279,28 +279,6 @@ export function MobileNav({ categories }: { categories: WCCategory[] }) {
                 {c.label}
               </Link>
             ))}
-          </div>
-
-          {/* Church pathway */}
-          <div className="mt-8 rounded-2xl bg-navy-gradient p-5">
-            <p className="text-[10px] font-bold uppercase tracking-[0.28em] text-gold-light">
-              For Churches
-            </p>
-            {CHURCH_LINKS.slice(0, 3).map((c) => (
-              <Link
-                key={`${c.href}-${c.label}`}
-                href={c.href}
-                className="mt-2 block text-sm text-white/70 transition-smooth hover:text-gold-light"
-              >
-                {c.label}
-              </Link>
-            ))}
-            <Link
-              href="/church-resources#quote"
-              className="btn-cta mt-4 w-full !py-2.5 !text-[11px]"
-            >
-              Request a Quote
-            </Link>
           </div>
         </div>
 

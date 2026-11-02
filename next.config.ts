@@ -46,6 +46,13 @@ const nextConfig: NextConfig = {
       ],
     },
   ],
+  redirects: async () => [
+    {
+      source: "/church-resources",
+      destination: "/contact",
+      permanent: true,
+    },
+  ],
   rewrites: async () => [
     {
       source: "/wp-content/uploads/:path*",

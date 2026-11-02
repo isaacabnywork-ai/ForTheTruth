@@ -25,7 +25,6 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     "/categories",
     "/free-ebooks",
     "/authors",
-    "/church-resources",
     "/about",
     "/statement-of-faith",
     "/contact",

@@ -100,7 +100,7 @@ export default function PrivacyPage() {
                 <p className="font-bold text-charcoal mb-1">Address for sending the Return:</p>
                 <p>
                   FOR THE TRUTH PRESS<br />
-                  Shop 1G/A &amp; 1G/B Kahlon Emporium III,<br />
+                  1G/A &amp; 1G/B Kahlon Emporium III,<br />
                   Sector 18, Vrindavan Colony, Lucknow,<br />
                   Uttar Pradesh 226029<br />
                   Phone – 8604685533

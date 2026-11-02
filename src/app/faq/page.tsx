@@ -127,7 +127,7 @@ const FAQS: FAQItem[] = [
     a: (
       <span>
         Yes, we offer wholesale and bulk purchasing options for individuals, organizations, and businesses looking to buy in larger quantities. Whether you’re stocking a library, bookstore, or educational institution, we can accommodate your needs. Please{" "}
-        <Link href="/church-resources#quote" className="font-semibold text-gold-dark hover:underline">
+        <Link href="/contact" className="font-semibold text-gold-dark hover:underline">
           contact us for more information and pricing
         </Link>
         .

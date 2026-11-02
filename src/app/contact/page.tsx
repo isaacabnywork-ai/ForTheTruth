@@ -85,7 +85,7 @@ export default function ContactPage() {
               </h2>
               <p className="mt-1.5 text-xs text-charcoal/70 leading-relaxed">
                 <strong>FOR THE TRUTH PRESS</strong><br />
-                Shop 1G/A &amp; 1G/B Kahlon Emporium III,<br />
+                1G/A &amp; 1G/B Kahlon Emporium III,<br />
                 Sector 18, Vrindavan Colony, Lucknow,<br />
                 Uttar Pradesh 226029<br />
                 Phone: 8604685533

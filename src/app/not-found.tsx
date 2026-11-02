@@ -45,7 +45,7 @@ export default function NotFound() {
             {[
               { label: "Bestselling Books", href: "/products?orderby=popularity" },
               { label: "Bible Study Titles", href: "/categories" },
-              { label: "Church Bulk Orders", href: "/church-resources" },
+              { label: "Contact Us", href: "/contact" },
               { label: "My Account & Orders", href: "/account/dashboard" },
             ].map((link) => (
               <li key={link.href}>

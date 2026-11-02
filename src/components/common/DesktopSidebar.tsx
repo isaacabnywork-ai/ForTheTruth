@@ -87,7 +87,6 @@ const SIDEBAR_PUBLISHERS = [
 /* ── Other Resources & Useful Links ────────────────────────── */
 const SIDEBAR_MORE = [
   { label: "Statement of Faith", href: "/statement-of-faith" },
-  { label: "Church Resources", href: "/church-resources" },
   { label: "Contact Us", href: "/contact" },
 ];
 
