@@ -32,6 +32,9 @@ export function ProductDetail({ product, reviews = [] }: ProductDetailProps) {
   useWishlistSync();
 
   const addToCart = useCartStore((s) => s.addToCart);
+  const cartCount = useCartStore((s) => s.getCount());
+  const [addedToCart, setAddedToCart] = useState(false);
+  const showCartIsland = addedToCart && cartCount > 0;
   const toggleWishlist = useWishlistStore((s) => s.toggleWishlist);
   const wishlisted = useWishlistStore((s) => s.productIds.includes(product.id));
   const addRecentlyViewed = useRecentlyViewedStore((s) => s.addRecentlyViewed);
@@ -113,6 +116,7 @@ export function ProductDetail({ product, reviews = [] }: ProductDetailProps) {
 
   const handleAddToCart = () => {
     triggerHaptic("success");
+    setAddedToCart(true);
     addToCart(
       {
         productId: product.id,
@@ -721,28 +725,88 @@ export function ProductDetail({ product, reviews = [] }: ProductDetailProps) {
         </div>
       </div>
 
-      {/* Mobile Sticky Quick Action Footer (Native App Experience) */}
-      <div className="fixed bottom-[92px] left-1/2 -translate-x-1/2 z-40 flex w-[92vw] max-w-[440px] items-center justify-between gap-3 rounded-2xl border border-sand/80 bg-white/95 px-4 py-2.5 shadow-xl backdrop-blur-md transition-all duration-300 lg:hidden">
-        <div className="flex flex-col">
-          <span className="text-[11px] font-semibold uppercase text-charcoal/60 truncate max-w-[150px] sm:max-w-[220px]">
-            {product.name}
-          </span>
-          <span className="font-display text-lg font-black text-charcoal">
-            {formatPrice(product.price)}
-          </span>
+      {/* Mobile Sticky Action Bar / Dynamic Island */}
+      {!showCartIsland ? (
+        <div className="fixed bottom-4 sm:bottom-6 left-1/2 -translate-x-1/2 z-50 flex w-[92vw] max-w-[440px] items-center justify-between gap-3 rounded-2xl border border-sand/80 bg-white/95 px-4 py-2.5 shadow-[0_8px_30px_rgb(0,0,0,0.15)] backdrop-blur-md transition-all duration-300 lg:hidden">
+          <div className="flex flex-col min-w-0 pr-2">
+            <span className="text-[11px] font-semibold uppercase tracking-wider text-charcoal/60 truncate max-w-[160px] sm:max-w-[220px]">
+              {product.name}
+            </span>
+            <span className="font-display text-xl font-black text-charcoal">
+              {formatPrice(product.price)}
+            </span>
+          </div>
+          <button
+            onClick={inStock ? handleAddToCart : undefined}
+            disabled={!inStock}
+            className={`!px-6 !py-2.5 !text-xs font-black uppercase tracking-wider shrink-0 transition-transform ${
+              inStock
+                ? "btn-gold shadow-md active:scale-95"
+                : "rounded-full bg-charcoal/15 text-charcoal/40 cursor-not-allowed"
+            }`}
+          >
+            {inStock ? "Add to Cart" : "Out of Stock"}
+          </button>
         </div>
-        <button
-          onClick={inStock ? handleAddToCart : undefined}
-          disabled={!inStock}
-          className={`!px-6 !py-2.5 !text-xs font-black tracking-wide shrink-0 transition-transform ${
-            inStock
-              ? "btn-gold shadow-md active:scale-95"
-              : "rounded-full bg-charcoal/15 text-charcoal/40 cursor-not-allowed"
-          }`}
-        >
-          {inStock ? "Add to Cart" : "Out of Stock"}
-        </button>
-      </div>
+      ) : (
+        <div className="fixed bottom-4 sm:bottom-6 left-1/2 -translate-x-1/2 z-50 flex items-center justify-center gap-2.5 max-w-[92vw] transition-all duration-300 lg:hidden animate-in fade-in slide-in-from-bottom-2">
+          {/* Main View Cart Island Pill in #B98D2F */}
+          <Link
+            href="/cart"
+            onClick={() => triggerHaptic("tap")}
+            className="flex items-center justify-between gap-4 rounded-full bg-[#B98D2F] py-2 pl-2 pr-4.5 text-white shadow-[0_8px_30px_rgba(185,141,47,0.45)] transition-all active:scale-95"
+            style={{ minWidth: "210px" }}
+          >
+            <div className="flex items-center gap-3">
+              {/* Product Thumbnail */}
+              <div className="relative h-10 w-10 shrink-0 overflow-hidden rounded-full border-2 border-white/60 bg-white/20 shadow-xs">
+                {currentImage.src ? (
+                  <Image
+                    src={currentImage.src}
+                    alt={product.name}
+                    fill
+                    sizes="40px"
+                    className="object-cover"
+                  />
+                ) : (
+                  <div className="h-full w-full bg-white/20" />
+                )}
+              </div>
+
+              {/* View Cart Text */}
+              <div className="flex flex-col text-left">
+                <span className="text-sm font-black text-white leading-tight">
+                  View cart
+                </span>
+                <span className="text-[11px] font-semibold text-white/90 leading-tight">
+                  {cartCount} {cartCount === 1 ? "item" : "items"}
+                </span>
+              </div>
+            </div>
+
+            {/* Right Chevron */}
+            <svg
+              className="h-5 w-5 text-white shrink-0 stroke-[2.5]"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+            </svg>
+          </Link>
+
+          {/* Quick Add Another Button */}
+          <button
+            type="button"
+            onClick={handleAddToCart}
+            title="Add another copy"
+            aria-label="Add another copy"
+            className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-white text-[#B98D2F] border border-sand/80 shadow-lg active:scale-90 font-black text-xl transition-transform hover:bg-cream"
+          >
+            +
+          </button>
+        </div>
+      )}
 
       {/* Lightbox / Zoom Modal */}
       {isZoomOpen && currentImage.src && (

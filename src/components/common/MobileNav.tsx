@@ -33,6 +33,13 @@ export function MobileNav({ categories }: { categories: WCCategory[] }) {
 
   if (pathname?.startsWith("/admin")) return null;
 
+  // Hide mobile navigation menu on single book detail pages per user design
+  const isSingleBookPage =
+    Boolean(pathname?.startsWith("/products/")) &&
+    !pathname?.startsWith("/products/search");
+
+  if (isSingleBookPage) return null;
+
   const isHome = pathname === "/";
   const isShop = pathname.startsWith("/products") && !pathname.startsWith("/products/search");
   const isSearch = pathname.startsWith("/products/search");
