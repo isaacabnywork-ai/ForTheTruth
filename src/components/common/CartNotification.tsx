@@ -2,74 +2,81 @@
 
 import { useEffect } from "react";
 import Link from "next/link";
+import Image from "next/image";
+import { usePathname } from "next/navigation";
 import { useCartStore } from "@/store/cartStore";
-import { formatPrice } from "@/utils/currency";
+import { triggerHaptic } from "@/utils/haptics";
 
 export function CartNotification() {
   const notification = useCartStore((s) => s.notification);
   const clearNotification = useCartStore((s) => s.clearNotification);
   const totalCount = useCartStore((s) => s.getCount());
+  const pathname = usePathname();
+
+  // On the single book page on mobile, ProductDetail already handles the bottom island
+  const isSingleBookPage =
+    Boolean(pathname?.startsWith("/products/")) &&
+    !pathname?.startsWith("/products/search");
 
   useEffect(() => {
     if (!notification) return;
     const timer = setTimeout(() => {
       clearNotification();
-    }, 4500);
+    }, 5000);
     return () => clearTimeout(timer);
   }, [notification, clearNotification]);
 
   if (!notification) return null;
+  if (isSingleBookPage) return null;
 
   return (
-    <div className="fixed bottom-6 right-6 z-[100] max-w-sm w-[calc(100%-3rem)] animate-in fade-in slide-in-from-bottom-5 duration-300">
-      <div className="rounded-2xl border-2 border-gold/40 bg-white p-5 shadow-2xl backdrop-blur-md relative overflow-hidden">
-        {/* Accent gold top bar */}
-        <div className="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-gold via-gold-dark to-navy" />
-
-        <div className="flex items-start gap-4">
-          <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-emerald-100 text-emerald-700 font-black text-xl shadow-sm">
-            ✓
+    <div className="fixed bottom-20 sm:bottom-6 left-1/2 -translate-x-1/2 sm:left-auto sm:right-6 sm:translate-x-0 z-[100] transition-all duration-300 animate-in fade-in slide-in-from-bottom-3">
+      <Link
+        href="/cart"
+        onClick={() => {
+          triggerHaptic("tap");
+          clearNotification();
+        }}
+        className="flex items-center justify-between gap-4 rounded-full bg-[#B98D2F] py-2 pl-2 pr-4.5 text-white shadow-[0_8px_30px_rgba(185,141,47,0.45)] transition-all active:scale-95"
+        style={{ minWidth: "210px" }}
+      >
+        <div className="flex items-center gap-3">
+          {/* Product Thumbnail */}
+          <div className="relative h-10 w-10 shrink-0 overflow-hidden rounded-full border-2 border-white/60 bg-white/20 shadow-xs">
+            {notification.image ? (
+              <Image
+                src={notification.image}
+                alt={notification.name}
+                fill
+                sizes="40px"
+                className="object-cover"
+              />
+            ) : (
+              <div className="h-full w-full bg-white/20" />
+            )}
           </div>
-          <div className="flex-1 min-w-0">
-            <div className="flex items-center justify-between gap-2">
-              <span className="text-[11px] font-bold uppercase tracking-widest text-emerald-700">
-                Added to Cart
-              </span>
-              <button
-                onClick={clearNotification}
-                className="text-slate-400 hover:text-slate-700 text-sm font-bold p-1 rounded-full hover:bg-slate-100 transition-colors"
-                title="Close notification"
-              >
-                ✕
-              </button>
-            </div>
 
-            <p className="mt-1 font-serif text-base font-bold text-navy truncate">
-              {notification.name}
-            </p>
-            <p className="text-xs font-semibold text-slate-500">
-              {formatPrice(notification.price.toString())} • {totalCount} {totalCount === 1 ? "item" : "items"} in cart
-            </p>
-
-            <div className="mt-3.5 flex items-center gap-2.5">
-              <Link
-                href="/cart"
-                onClick={clearNotification}
-                className="flex-1 rounded-xl bg-navy px-4 py-2 text-center text-xs font-display font-bold text-white hover:bg-gold-dark hover:text-navy transition-all shadow-sm"
-              >
-                View Cart &amp; Checkout →
-              </Link>
-              <button
-                type="button"
-                onClick={clearNotification}
-                className="rounded-xl border border-slate-200 px-3 py-2 text-xs font-bold text-slate-600 hover:bg-slate-50 transition-colors"
-              >
-                Continue
-              </button>
-            </div>
+          {/* View Cart Text */}
+          <div className="flex flex-col text-left">
+            <span className="text-sm font-black text-white leading-tight">
+              View cart
+            </span>
+            <span className="text-[11px] font-semibold text-white/90 leading-tight">
+              {totalCount} {totalCount === 1 ? "item" : "items"}
+            </span>
           </div>
         </div>
-      </div>
+
+        {/* Right Chevron */}
+        <svg
+          className="h-5 w-5 text-white shrink-0 stroke-[2.5]"
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke="currentColor"
+        >
+          <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+        </svg>
+      </Link>
     </div>
   );
 }

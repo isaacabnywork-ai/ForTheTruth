@@ -5,8 +5,10 @@ import { persist } from "zustand/middleware";
 import type { CartItem } from "@/types/cart";
 
 export interface CartNotificationItem {
+  productId: number;
   name: string;
   price: number;
+  image?: string;
 }
 
 interface CartState {
@@ -28,7 +30,12 @@ export const useCartStore = create<CartState>()(
       notification: null,
       addToCart: (item, quantity = 1) =>
         set((state) => {
-          const notification = { name: item.name, price: item.price };
+          const notification: CartNotificationItem = {
+            productId: item.productId,
+            name: item.name,
+            price: item.price,
+            image: item.image,
+          };
           const existing = state.items.find(
             (i) => i.productId === item.productId
           );

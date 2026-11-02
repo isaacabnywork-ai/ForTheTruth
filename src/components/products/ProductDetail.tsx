@@ -795,17 +795,6 @@ export function ProductDetail({ product, reviews = [] }: ProductDetailProps) {
               <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
             </svg>
           </Link>
-
-          {/* Quick Add Another Button */}
-          <button
-            type="button"
-            onClick={handleAddToCart}
-            title="Add another copy"
-            aria-label="Add another copy"
-            className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-white text-[#B98D2F] border border-sand/80 shadow-lg active:scale-90 font-black text-xl transition-transform hover:bg-cream"
-          >
-            +
-          </button>
         </div>
       )}
 
