@@ -293,10 +293,10 @@ export function ProductFilters({
 
   return (
     <>
-      {/* Mobile/Tablet: Floating Filter Button */}
+      {/* Mobile/Tablet: Floating Filter Button (Floats right above the Search icon in bottom nav) */}
       <button
         onClick={() => setIsOpen(true)}
-        className="fixed bottom-22 left-1/2 -translate-x-1/2 z-40 flex h-11 w-11 items-center justify-center rounded-full bg-white text-gold-dark border border-sand shadow-lg transition-transform hover:scale-105 active:scale-95 lg:hidden cursor-pointer"
+        className="fixed bottom-[76px] left-1/2 -translate-x-1/2 z-40 flex h-11 w-11 items-center justify-center rounded-full bg-white text-gold-dark border border-sand/90 shadow-[0_4px_16px_rgba(0,0,0,0.12)] transition-transform hover:scale-105 active:scale-95 lg:hidden cursor-pointer"
         aria-label="Open Filters"
       >
         <svg
