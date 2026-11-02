@@ -47,13 +47,23 @@ function Confirmation() {
       .then((r) => (r.ok ? r.json() : null))
       .then((d) => {
         if (d?.order) {
-          setOrder((prev) => ({
-            ...(prev || {}),
-            ...d.order,
-            // Preserve shipping total if available
-            shipping_total: d.order.shipping_total ?? prev?.shipping_total,
-            shipping_lines: d.order.shipping_lines ?? prev?.shipping_lines,
-          }));
+          setOrder((prev) => {
+            const mergedLineItems = d.order.line_items?.map((item: any, idx: number) => {
+              const prevItem = prev?.line_items?.[idx] || prev?.line_items?.find((p) => p.id === item.id || p.product_id === item.product_id);
+              return {
+                ...item,
+                image: item.image || prevItem?.image,
+              };
+            }) || d.order.line_items || prev?.line_items;
+
+            return {
+              ...(prev || {}),
+              ...d.order,
+              line_items: mergedLineItems,
+              shipping_total: d.order.shipping_total ?? prev?.shipping_total,
+              shipping_lines: d.order.shipping_lines ?? prev?.shipping_lines,
+            };
+          });
         }
         if (d?.downloads && d.downloads.length > 0) {
           setDownloads(d.downloads);

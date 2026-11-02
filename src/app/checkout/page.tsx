@@ -127,6 +127,7 @@ export default function CheckoutPage() {
           quantity: i.quantity,
           price: i.price,
           total: (i.price * i.quantity).toString(),
+          image: i.image ? { id: 0, src: i.image } : undefined,
         })),
         payment_method_title: isFreeOrder ? "Free Order" : "Razorpay (Online Payment)",
         date_created: new Date().toISOString(),

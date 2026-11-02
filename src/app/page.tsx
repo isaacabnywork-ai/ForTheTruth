@@ -5,6 +5,7 @@ import {
   CategoryBookRows,
   type CategoryRowItem,
 } from "@/components/home/CategoryBookRows";
+import { HomePromoTrio } from "@/components/home/HomePromoTrio";
 import { Testimonials } from "@/components/home/Testimonials";
 import { SpineSlider } from "@/components/home/SpineSlider";
 import { StoreMaintenancePage } from "@/components/common/StoreMaintenancePage";
@@ -44,6 +45,8 @@ export default async function HomePage() {
   let christianLivingProducts: Product[] = [];
   let ministryProducts: Product[] = [];
   let theologyProducts: Product[] = [];
+  let leftAdProduct: Product | null = null;
+  let rightAdProduct: Product | null = null;
 
   const curated = await fetchCuratedShelfConfigFromCloud();
 
@@ -168,6 +171,12 @@ export default async function HomePage() {
             revalidate: 60,
           }).catch(() => []);
 
+      const adQuery = getProducts({
+        include: [19279, 48904],
+        perPage: 2,
+        revalidate: 60,
+      }).catch(() => []);
+
       const [
         fetchedHero,
         fetchedNew,
@@ -178,6 +187,7 @@ export default async function HomePage() {
         fetchedCl,
         fetchedMinistry,
         fetchedTheology,
+        fetchedAd,
       ] = await Promise.all([
         heroQuery,
         newQuery,
@@ -188,7 +198,13 @@ export default async function HomePage() {
         clQuery,
         ministryQuery,
         theologyQuery,
+        adQuery,
       ]);
+
+      if (Array.isArray(fetchedAd)) {
+        leftAdProduct = fetchedAd.find((p) => p.id === 19279) || null;
+        rightAdProduct = fetchedAd.find((p) => p.id === 48904) || null;
+      }
 
       // Hero
       if (curated.heroIds.length > 0) {
@@ -348,8 +364,14 @@ export default async function HomePage() {
         <BookRowSkeleton title={curated.newArrivalsTitle || "New Arrivals"} />
       )}
 
-      {/* 4 — 4 Categorical Rows: The Bible Speaks Today (by ID), Christian Living (dynamic), Ministry (dynamic), Theology (dynamic) */}
-      <CategoryBookRows rows={categoryRows} />
+      {/* 4 — First 2 Categorical Rows: The Bible Speaks Today & Christian Living */}
+      <CategoryBookRows rows={categoryRows.slice(0, 2)} />
+
+      {/* 5 — Promotional Ad Banner Trio: Left Book Ad | Reformation Week Offer | Right Book Ad */}
+      <HomePromoTrio leftBook={leftAdProduct} rightBook={rightAdProduct} />
+
+      {/* 6 — Next 2 Categorical Rows: Ministry & Theology */}
+      <CategoryBookRows rows={categoryRows.slice(2)} />
 
       {/* 5 — Children Books Shelf (dynamic rotation or manual by ID) */}
       {storeReady ? (

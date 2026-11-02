@@ -47,11 +47,93 @@ const nextConfig: NextConfig = {
     },
   ],
   redirects: async () => [
+    // 1. Shop pagination (Legacy WooCommerce URLs indexed by Google)
+    {
+      source: "/shop/page/1",
+      destination: "/shop",
+      permanent: true,
+    },
+    {
+      source: "/shop/page/:page",
+      destination: "/shop?page=:page",
+      permanent: true,
+    },
+    // 2. Products alias pagination & catalog
+    {
+      source: "/products/page/1",
+      destination: "/shop",
+      permanent: true,
+    },
+    {
+      source: "/products/page/:page",
+      destination: "/shop?page=:page",
+      permanent: true,
+    },
     {
       source: "/products",
       destination: "/shop",
       permanent: true,
     },
+    // 3. Category pagination (Legacy WooCommerce URLs)
+    {
+      source: "/categories/:slug/page/1",
+      destination: "/categories/:slug",
+      permanent: true,
+    },
+    {
+      source: "/categories/:slug/page/:page",
+      destination: "/categories/:slug?page=:page",
+      permanent: true,
+    },
+    // 4. WooCommerce default category prefixes: /product-category/ and /category/
+    {
+      source: "/product-category/:slug/page/1",
+      destination: "/categories/:slug",
+      permanent: true,
+    },
+    {
+      source: "/product-category/:slug/page/:page",
+      destination: "/categories/:slug?page=:page",
+      permanent: true,
+    },
+    {
+      source: "/product-category/:slug",
+      destination: "/categories/:slug",
+      permanent: true,
+    },
+    {
+      source: "/category/:slug/page/1",
+      destination: "/categories/:slug",
+      permanent: true,
+    },
+    {
+      source: "/category/:slug/page/:page",
+      destination: "/categories/:slug?page=:page",
+      permanent: true,
+    },
+    {
+      source: "/category/:slug",
+      destination: "/categories/:slug",
+      permanent: true,
+    },
+    // 5. WooCommerce default single product: /product/:slug (singular)
+    {
+      source: "/product/:slug",
+      destination: "/products/:slug",
+      permanent: true,
+    },
+    // 6. WooCommerce product tags: /product-tag/:slug
+    {
+      source: "/product-tag/:slug/page/:page",
+      destination: "/shop?tag=:slug&page=:page",
+      permanent: true,
+    },
+    {
+      source: "/product-tag/:slug",
+      destination: "/shop?tag=:slug",
+      permanent: true,
+    },
+    // 7. General legacy redirects
     {
       source: "/church-resources",
       destination: "/contact",
