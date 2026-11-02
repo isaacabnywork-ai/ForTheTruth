@@ -39,15 +39,16 @@ function RecentlyViewedCard({
     <Link
       href={`/products/${item.slug}`}
       onClick={onNavigate}
-      className="group flex items-center gap-2.5 rounded-xl border border-sand/60 bg-white p-2 shadow-2xs transition-all duration-200 hover:-translate-y-0.5 hover:border-gold/40 hover:shadow-xs"
+      className="group flex items-center gap-2.5 rounded-xl border border-sand/60 bg-white p-2 shadow-2xs transition-all duration-200 hover:-translate-y-0.5 hover:border-gold/40 hover:shadow-xs overflow-hidden"
     >
-      {/* Book cover image */}
-      <div className="relative h-13 w-9.5 shrink-0 overflow-hidden rounded-[2px] bg-sand/30 shadow-xs">
+      {/* Book cover image - strictly constrained to miniature thumbnail size */}
+      <div className="relative h-14 w-10 shrink-0 overflow-hidden rounded-[2px] bg-sand/30 shadow-xs">
         {item.image ? (
           <img
             src={item.image}
             alt={item.name}
             className="h-full w-full object-cover select-none transition-transform duration-200 group-hover:scale-105"
+            loading="lazy"
           />
         ) : (
           <div className="flex h-full w-full items-center justify-center bg-gold-gradient text-[8px] font-bold text-white">
