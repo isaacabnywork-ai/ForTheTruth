@@ -110,7 +110,7 @@ export function HeroShelf({
 
   return (
     <section
-      className="relative z-0 isolate px-3 sm:px-6 pt-1 sm:pt-4 md:pt-8 lg:px-8 w-full max-w-full overflow-hidden"
+      className="relative z-0 isolate px-3 sm:px-6 pt-2 sm:pt-4 md:pt-8 lg:px-8 w-full max-w-full overflow-hidden"
       onMouseEnter={() => setIsPaused(true)}
       onMouseLeave={() => setIsPaused(false)}
       onTouchStart={handleTouchStart}
@@ -121,11 +121,11 @@ export function HeroShelf({
       aria-roledescription="carousel"
       aria-label="Featured Books Hero Slider"
     >
-      <div className="relative overflow-hidden rounded-3xl md:rounded-[2.5rem] bg-white shadow-panel group/hero flex flex-col justify-between h-[calc(100dvh-200px)] min-h-[440px] lg:h-auto lg:min-h-0">
+      <div className="relative overflow-hidden rounded-3xl md:rounded-[2.5rem] bg-white shadow-panel group/hero flex flex-col justify-between h-[calc(100dvh-200px)] min-h-[460px] lg:h-auto lg:min-h-0">
         <div className="pointer-events-none absolute inset-0 bg-cream-mesh opacity-80" />
         <div className="pointer-events-none absolute inset-0 bg-paper-texture opacity-50" />
 
-        <div className="relative flex-1 min-h-0 flex flex-col justify-start px-4 sm:px-8 pt-2.5 pb-4 sm:py-6 md:px-12 lg:grid lg:grid-cols-[1.05fr_auto_0.95fr] lg:items-center lg:gap-8 lg:px-14 lg:py-16">
+        <div className="relative flex-1 min-h-0 flex flex-col justify-center items-center px-4 sm:px-8 py-5 sm:py-8 md:px-12 lg:grid lg:grid-cols-[1.05fr_auto_0.95fr] lg:items-center lg:gap-8 lg:px-14 lg:py-16">
           {/* ---------- LEFT: Headline & Actions ---------- */}
           <div className="hidden lg:block text-left max-w-sm xl:max-w-md">
             {badge && (
@@ -188,7 +188,7 @@ export function HeroShelf({
           </div>
 
           {/* ---------- CENTRE: Book Cover Image (as-is, original aspect ratio, no animation) ---------- */}
-          <div className="relative flex justify-center items-start pt-1 pb-1 sm:py-4 lg:col-span-1 lg:items-center md:min-h-[420px]">
+          <div className="relative flex justify-center items-center py-2 sm:py-4 lg:col-span-1 md:min-h-[420px]">
             {hero ? (
               <HeroBookImage product={hero} />
             ) : (
@@ -198,7 +198,7 @@ export function HeroShelf({
 
           {/* ---------- RIGHT: Featured Book Summary & Slide Controls ---------- */}
           {hero && (
-            <div className="text-center lg:text-left lg:col-span-1 flex flex-col justify-start shrink-0 lg:min-h-[340px] lg:justify-between mt-2 sm:mt-0">
+            <div className="text-center lg:text-left lg:col-span-1 flex flex-col justify-between shrink-0 lg:min-h-[340px] mt-4 sm:mt-0">
               <AnimatePresence mode="wait" custom={direction}>
                 <motion.div
                   key={hero.id}
@@ -310,17 +310,17 @@ function HeroBookImage({ product }: { product: Product }) {
   return (
     <Link
       href={`/products/${product.slug}`}
-      className="group relative flex items-center justify-center p-0 sm:p-2"
+      className="group relative flex items-center justify-center p-1 sm:p-2"
       aria-label={product.name}
     >
       {image ? (
         <img
           src={image.src}
           alt={decodeHtmlEntities(image.alt || product.name)}
-          className="max-h-[290px] sm:max-h-[380px] md:max-h-[420px] w-auto h-auto max-w-[260px] sm:max-w-[340px] md:max-w-[400px] object-contain rounded-lg shadow-book-lg select-none"
+          className="max-h-[260px] sm:max-h-[350px] md:max-h-[420px] w-auto h-auto max-w-[240px] sm:max-w-[320px] md:max-w-[400px] object-contain rounded-lg shadow-book-lg select-none"
         />
       ) : (
-        <div className="flex h-[290px] sm:h-[380px] w-[200px] sm:w-[260px] items-center justify-center rounded-lg bg-gold-gradient p-6 text-center shadow-book-lg">
+        <div className="flex h-[260px] sm:h-[350px] w-[180px] sm:w-[240px] items-center justify-center rounded-lg bg-gold-gradient p-6 text-center shadow-book-lg">
           <span className="font-display text-xl italic text-white">{title}</span>
         </div>
       )}
@@ -331,7 +331,7 @@ function HeroBookImage({ product }: { product: Product }) {
 function BookSkeleton() {
   return (
     <div className="relative">
-      <div className="skeleton h-[290px] sm:h-[380px] w-[200px] sm:w-[260px] rounded-[3px] rounded-r-md md:h-[400px] md:w-[275px]" />
+      <div className="skeleton h-[260px] sm:h-[350px] w-[180px] sm:w-[240px] rounded-[3px] rounded-r-md md:h-[400px] md:w-[275px]" />
       <span
         aria-hidden="true"
         className="absolute -bottom-6 left-1/2 h-6 w-[78%] -translate-x-1/2 rounded-[50%] bg-charcoal/15 blur-xl"
