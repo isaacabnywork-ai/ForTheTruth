@@ -82,12 +82,26 @@ export default async function SingleProductPage({ params }: PageProps) {
         [reviews, related] = await Promise.all([
           getProductReviews(product.id).catch(() => []),
           getProducts({
-            perPage: 6,
+            perPage: 14,
             category: product.categories[0]?.id,
           }).catch(() => []),
         ]);
         // Filter out current product from related
-        related = related.filter((p) => p.id !== product!.id).slice(0, 6);
+        related = related.filter((p) => p.id !== product!.id);
+        if (related.length < 12) {
+          const fallbackBooks = await getProducts({
+            perPage: 14,
+            orderby: "popularity",
+          }).catch(() => []);
+          const existingIds = new Set([product.id, ...related.map((p) => p.id)]);
+          for (const fb of fallbackBooks) {
+            if (!existingIds.has(fb.id)) {
+              related.push(fb);
+              existingIds.add(fb.id);
+            }
+            if (related.length >= 12) break;
+          }
+        }
       }
     } catch (err) {
       console.error("SingleProductPage fetch error:", err);
@@ -136,7 +150,7 @@ export default async function SingleProductPage({ params }: PageProps) {
   };
 
   return (
-    <main className="bg-offwhite min-h-screen pb-16">
+    <div className="w-full bg-cream">
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
@@ -144,13 +158,14 @@ export default async function SingleProductPage({ params }: PageProps) {
       <ProductDetail product={product} reviews={reviews} />
 
       {related.length > 0 && (
-        <div className="mt-8">
+        <div className="pb-4 sm:pb-8">
           <BookRow
             title="Recommended Products"
             products={related}
+            rows={2}
           />
         </div>
       )}
-    </main>
+    </div>
   );
 }

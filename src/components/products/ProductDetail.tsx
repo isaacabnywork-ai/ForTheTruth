@@ -132,7 +132,7 @@ export function ProductDetail({ product, reviews = [] }: ProductDetailProps) {
   };
 
   return (
-    <div className="mx-auto max-w-6xl px-0 pt-0 pb-28 sm:px-4 sm:pt-4 md:pt-6 lg:px-8 lg:py-12">
+    <div className="mx-auto max-w-6xl px-0 pt-0 pb-8 sm:pb-12 sm:px-4 sm:pt-4 md:pt-6 lg:px-8 lg:py-12">
       {/* Breadcrumb Navigation (Desktop Only) */}
       <nav aria-label="Breadcrumb" className="mb-6 hidden items-center gap-2 text-xs text-charcoal/60 lg:flex px-4 lg:px-0">
         <Link href="/" className="hover:text-gold-dark">Home</Link>
@@ -510,11 +510,12 @@ export function ProductDetail({ product, reviews = [] }: ProductDetailProps) {
                 >
                   {isDescExpanded ? (
                     <>
-                      <span>↑ Show Less Description</span>
+                      <span>Show Less Description</span>
+                      <span className="transition-transform group-hover:-translate-y-0.5">↑</span>
                     </>
                   ) : (
                     <>
-                      <span>📖 Read More About This Book</span>
+                      <span>Read More About This Book</span>
                       <span className="transition-transform group-hover:translate-y-0.5">↓</span>
                     </>
                   )}

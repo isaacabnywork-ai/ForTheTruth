@@ -13,6 +13,8 @@ interface BookRowProps {
   href?: string;
   badge?: string;
   products: Product[];
+  rows?: number;
+  className?: string;
 }
 
 const MAX_PER_ROW = 6;
@@ -101,14 +103,16 @@ const CARD_THEMES = [
   },
 ];
 
-export function BookRow({ title, href, badge, products }: BookRowProps) {
-  const books = products.slice(0, MAX_PER_ROW);
+export function BookRow({ title, href, badge, products, rows = 1, className }: BookRowProps) {
+  const isTwoRows = rows === 2 && products.length > 3;
+  const row1 = isTwoRows ? products.slice(0, 6) : products.slice(0, MAX_PER_ROW);
+  const row2 = isTwoRows ? products.slice(6, 12) : [];
   const rowBadge = badge || getSectionBadge(title);
 
   return (
-    <section className="py-8 md:py-12 w-full max-w-full overflow-hidden">
+    <section className={`py-6 md:py-10 w-full max-w-full overflow-hidden ${className || ""}`}>
       {/* Section Header */}
-      <div className="mx-auto flex max-w-6xl items-baseline justify-between px-4 sm:px-6 lg:px-8 mb-6 sm:mb-8">
+      <div className="mx-auto flex max-w-6xl items-baseline justify-between px-4 sm:px-6 lg:px-8 mb-5 sm:mb-7">
         <h2 className="section-title text-xl sm:text-2xl md:text-3xl font-black text-charcoal">
           {title}
         </h2>
@@ -124,16 +128,46 @@ export function BookRow({ title, href, badge, products }: BookRowProps) {
 
       {/* Books Display */}
       <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
-        <div className="flex gap-4 sm:gap-5 overflow-x-auto scrollbar-hide pb-4 pt-1 lg:grid lg:grid-cols-6 lg:gap-6 lg:overflow-visible lg:pb-0">
-          {books.map((p, idx) => (
-            <BookRowCard
-              key={p.id}
-              product={p}
-              colorIndex={idx}
-              badge={rowBadge}
-            />
-          ))}
-        </div>
+        {isTwoRows ? (
+          <div className="flex flex-col gap-6 sm:gap-8">
+            {/* Row 1 */}
+            <div className="flex gap-4 sm:gap-5 overflow-x-auto scrollbar-hide pb-2 pt-1 lg:grid lg:grid-cols-6 lg:gap-6 lg:overflow-visible lg:pb-0">
+              {row1.map((p, idx) => (
+                <BookRowCard
+                  key={p.id}
+                  product={p}
+                  colorIndex={idx}
+                  badge={rowBadge}
+                />
+              ))}
+            </div>
+
+            {/* Row 2 */}
+            {row2.length > 0 && (
+              <div className="flex gap-4 sm:gap-5 overflow-x-auto scrollbar-hide pb-2 pt-1 lg:grid lg:grid-cols-6 lg:gap-6 lg:overflow-visible lg:pb-0">
+                {row2.map((p, idx) => (
+                  <BookRowCard
+                    key={p.id}
+                    product={p}
+                    colorIndex={idx + row1.length}
+                    badge={rowBadge}
+                  />
+                ))}
+              </div>
+            )}
+          </div>
+        ) : (
+          <div className="flex gap-4 sm:gap-5 overflow-x-auto scrollbar-hide pb-4 pt-1 lg:grid lg:grid-cols-6 lg:gap-6 lg:overflow-visible lg:pb-0">
+            {row1.map((p, idx) => (
+              <BookRowCard
+                key={p.id}
+                product={p}
+                colorIndex={idx}
+                badge={rowBadge}
+              />
+            ))}
+          </div>
+        )}
       </div>
     </section>
   );
