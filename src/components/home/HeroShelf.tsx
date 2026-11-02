@@ -317,10 +317,10 @@ function HeroBookImage({ product }: { product: Product }) {
         <img
           src={image.src}
           alt={decodeHtmlEntities(image.alt || product.name)}
-          className="max-h-[260px] sm:max-h-[350px] md:max-h-[420px] w-auto h-auto max-w-[240px] sm:max-w-[320px] md:max-w-[400px] object-contain rounded-lg shadow-book-lg select-none"
+          className="max-h-[340px] sm:max-h-[400px] md:max-h-[440px] w-auto h-auto max-w-full object-contain rounded-lg shadow-book-lg select-none"
         />
       ) : (
-        <div className="flex h-[260px] sm:h-[350px] w-[180px] sm:w-[240px] items-center justify-center rounded-lg bg-gold-gradient p-6 text-center shadow-book-lg">
+        <div className="flex h-[340px] sm:h-[400px] w-[230px] sm:w-[270px] items-center justify-center rounded-lg bg-gold-gradient p-6 text-center shadow-book-lg">
           <span className="font-display text-xl italic text-white">{title}</span>
         </div>
       )}
@@ -331,7 +331,7 @@ function HeroBookImage({ product }: { product: Product }) {
 function BookSkeleton() {
   return (
     <div className="relative">
-      <div className="skeleton h-[260px] sm:h-[350px] w-[180px] sm:w-[240px] rounded-[3px] rounded-r-md md:h-[400px] md:w-[275px]" />
+      <div className="skeleton h-[340px] sm:h-[400px] w-[230px] sm:w-[270px] rounded-[3px] rounded-r-md md:h-[400px] md:w-[275px]" />
       <span
         aria-hidden="true"
         className="absolute -bottom-6 left-1/2 h-6 w-[78%] -translate-x-1/2 rounded-[50%] bg-charcoal/15 blur-xl"
