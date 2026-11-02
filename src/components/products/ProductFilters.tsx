@@ -155,26 +155,26 @@ export function ProductFilters({
   };
 
   // Reusable Price Slider JSX
-  const renderPriceSlider = () => (
-    <div className="space-y-2.5">
+  const renderPriceSlider = (isCompact = false) => (
+    <div className={isCompact ? "space-y-1" : "space-y-2.5"}>
       <div className="flex items-center justify-between">
-        <label className="text-[10.5px] font-bold uppercase tracking-wider text-charcoal/70">
+        <label className={`${isCompact ? "text-[9.5px]" : "text-[10.5px]"} font-bold uppercase tracking-wider text-charcoal/70`}>
           Price Range
         </label>
-        <span className="text-xs font-semibold text-charcoal font-mono">
+        <span className={`${isCompact ? "text-[11px]" : "text-xs"} font-semibold text-charcoal font-mono`}>
           {getPriceLabel()}
         </span>
       </div>
 
-      <div className="rounded-xl border border-sand bg-[#fbf9f5] p-3.5 shadow-2xs">
+      <div className={`rounded-xl border border-sand bg-[#fbf9f5] ${isCompact ? "p-2 sm:p-2.5" : "p-3.5"} shadow-2xs`}>
         {/* Slider dual track */}
-        <div className="relative h-6 flex items-center">
+        <div className={`relative ${isCompact ? "h-5" : "h-6"} flex items-center`}>
           {/* Background track */}
-          <div className="absolute h-1.5 w-full rounded-full bg-sand/70" />
+          <div className={`absolute ${isCompact ? "h-1" : "h-1.5"} w-full rounded-full bg-sand/70`} />
 
           {/* Active fill bar */}
           <div
-            className="absolute h-1.5 rounded-full bg-gold transition-all duration-75"
+            className={`absolute ${isCompact ? "h-1" : "h-1.5"} rounded-full bg-gold transition-all duration-75`}
             style={{
               left: `${(localMin / MAX_PRICE) * 100}%`,
               right: `${100 - (localMax / MAX_PRICE) * 100}%`,
@@ -190,10 +190,9 @@ export function ProductFilters({
             value={localMin}
             onChange={(e) => handleMinPriceChange(Number(e.target.value))}
             style={{ zIndex: localMin > MAX_PRICE - 100 ? 30 : 20 }}
-            className="absolute w-full pointer-events-none appearance-none bg-transparent focus:outline-none
+            className={`absolute w-full pointer-events-none appearance-none bg-transparent focus:outline-none
               [&::-webkit-slider-thumb]:pointer-events-auto
-              [&::-webkit-slider-thumb]:h-4
-              [&::-webkit-slider-thumb]:w-4
+              [&::-webkit-slider-thumb]:${isCompact ? "h-3.5 w-3.5" : "h-4 w-4"}
               [&::-webkit-slider-thumb]:rounded-full
               [&::-webkit-slider-thumb]:bg-white
               [&::-webkit-slider-thumb]:border-2
@@ -204,8 +203,7 @@ export function ProductFilters({
               [&::-webkit-slider-thumb]:transition-transform
               [&::-webkit-slider-thumb]:appearance-none
               [&::-moz-range-thumb]:pointer-events-auto
-              [&::-moz-range-thumb]:h-4
-              [&::-moz-range-thumb]:w-4
+              [&::-moz-range-thumb]:${isCompact ? "h-3.5 w-3.5" : "h-4 w-4"}
               [&::-moz-range-thumb]:rounded-full
               [&::-moz-range-thumb]:bg-white
               [&::-moz-range-thumb]:border-2
@@ -213,7 +211,7 @@ export function ProductFilters({
               [&::-moz-range-thumb]:shadow-md
               [&::-moz-range-thumb]:cursor-pointer
               [&::-moz-range-thumb]:hover:scale-110
-              [&::-moz-range-thumb]:transition-transform"
+              [&::-moz-range-thumb]:transition-transform`}
             aria-label="Minimum price"
           />
 
@@ -226,10 +224,9 @@ export function ProductFilters({
             value={localMax}
             onChange={(e) => handleMaxPriceChange(Number(e.target.value))}
             style={{ zIndex: localMin > MAX_PRICE - 100 ? 20 : 30 }}
-            className="absolute w-full pointer-events-none appearance-none bg-transparent focus:outline-none
+            className={`absolute w-full pointer-events-none appearance-none bg-transparent focus:outline-none
               [&::-webkit-slider-thumb]:pointer-events-auto
-              [&::-webkit-slider-thumb]:h-4
-              [&::-webkit-slider-thumb]:w-4
+              [&::-webkit-slider-thumb]:${isCompact ? "h-3.5 w-3.5" : "h-4 w-4"}
               [&::-webkit-slider-thumb]:rounded-full
               [&::-webkit-slider-thumb]:bg-white
               [&::-webkit-slider-thumb]:border-2
@@ -240,8 +237,7 @@ export function ProductFilters({
               [&::-webkit-slider-thumb]:transition-transform
               [&::-webkit-slider-thumb]:appearance-none
               [&::-moz-range-thumb]:pointer-events-auto
-              [&::-moz-range-thumb]:h-4
-              [&::-moz-range-thumb]:w-4
+              [&::-moz-range-thumb]:${isCompact ? "h-3.5 w-3.5" : "h-4 w-4"}
               [&::-moz-range-thumb]:rounded-full
               [&::-moz-range-thumb]:bg-white
               [&::-moz-range-thumb]:border-2
@@ -249,20 +245,20 @@ export function ProductFilters({
               [&::-moz-range-thumb]:shadow-md
               [&::-moz-range-thumb]:cursor-pointer
               [&::-moz-range-thumb]:hover:scale-110
-              [&::-moz-range-thumb]:transition-transform"
+              [&::-moz-range-thumb]:transition-transform`}
             aria-label="Maximum price"
           />
         </div>
 
         {/* Labels under slider */}
-        <div className="flex items-center justify-between pt-1 text-[10.5px] font-medium text-charcoal/50">
+        <div className={`flex items-center justify-between pt-0.5 ${isCompact ? "text-[9.5px]" : "text-[10.5px]"} font-medium text-charcoal/50`}>
           <span>₹0</span>
           <span>₹1,250</span>
           <span>₹2,500+</span>
         </div>
 
         {/* Quick Price Preset Chips */}
-        <div className="mt-3 flex flex-wrap gap-1.5 pt-2 border-t border-sand/50">
+        <div className={`${isCompact ? "mt-2 pt-1.5" : "mt-3 pt-2"} flex flex-wrap gap-1.5 border-t border-sand/50`}>
           {[
             { label: "< ₹300", min: 0, max: 300 },
             { label: "₹300–₹500", min: 300, max: 500 },
@@ -280,7 +276,7 @@ export function ProductFilters({
                   setLocalMax(preset.max);
                   applyPriceChange(preset.min, preset.max, true);
                 }}
-                className={`rounded-lg px-2 py-1 text-[10px] font-semibold transition-colors cursor-pointer ${
+                className={`rounded-md px-2 py-0.5 ${isCompact ? "text-[9px]" : "text-[10px]"} font-semibold transition-colors cursor-pointer ${
                   isSelected
                     ? "bg-gold text-white shadow-2xs font-bold"
                     : "bg-white hover:bg-sand/60 text-charcoal/70 border border-sand/70"
@@ -300,12 +296,12 @@ export function ProductFilters({
       {/* Mobile/Tablet: Floating Filter Button */}
       <button
         onClick={() => setIsOpen(true)}
-        className="fixed bottom-24 left-1/2 -translate-x-1/2 z-50 flex h-12 w-12 items-center justify-center rounded-full bg-white text-gold-dark border border-sand shadow-xl transition-transform hover:scale-105 active:scale-95 lg:hidden cursor-pointer"
+        className="fixed bottom-22 left-1/2 -translate-x-1/2 z-40 flex h-11 w-11 items-center justify-center rounded-full bg-white text-gold-dark border border-sand shadow-lg transition-transform hover:scale-105 active:scale-95 lg:hidden cursor-pointer"
         aria-label="Open Filters"
       >
         <svg
-          width="20"
-          height="20"
+          width="18"
+          height="18"
           viewBox="0 0 24 24"
           fill="none"
           stroke="currentColor"
@@ -331,22 +327,23 @@ export function ProductFilters({
         )}
       </button>
 
-      {/* Mobile/Tablet: Filter Modal */}
+      {/* Mobile/Tablet: Compact Filter Modal */}
       {isOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-charcoal/40 backdrop-blur-sm p-4 animate-in fade-in duration-200 lg:hidden">
-          <div className="w-full max-w-sm rounded-3xl bg-cream p-5 shadow-2xl overflow-y-auto max-h-[85vh] animate-in zoom-in-95">
-            <div className="flex items-center justify-between mb-5">
-              <h3 className="font-display text-lg font-bold text-charcoal">
+        <div className="fixed inset-0 z-[120] flex items-center justify-center bg-charcoal/50 backdrop-blur-xs p-3 sm:p-4 animate-in fade-in duration-200 lg:hidden">
+          <div className="w-full max-w-[330px] xs:max-w-[345px] rounded-2xl bg-cream p-3.5 sm:p-4 shadow-2xl overflow-y-auto max-h-[74vh] animate-in zoom-in-95 border border-sand">
+            {/* Header */}
+            <div className="flex items-center justify-between mb-2.5 pb-2 border-b border-sand/80">
+              <h3 className="font-display text-sm font-bold text-charcoal">
                 Filters & Sorting
               </h3>
               <button
                 onClick={() => setIsOpen(false)}
-                className="rounded-full p-2 text-charcoal/60 hover:bg-sand/60 hover:text-charcoal transition-colors cursor-pointer"
+                className="rounded-full p-1 text-charcoal/60 hover:bg-sand/60 hover:text-charcoal transition-colors cursor-pointer"
                 aria-label="Close Filters"
               >
                 <svg
-                  width="20"
-                  height="20"
+                  width="18"
+                  height="18"
                   viewBox="0 0 24 24"
                   fill="none"
                   stroke="currentColor"
@@ -359,10 +356,10 @@ export function ProductFilters({
               </button>
             </div>
 
-            <div className="flex flex-col gap-4">
+            <div className="flex flex-col gap-2.5">
               {/* Author */}
-              <div className="space-y-1.5">
-                <label className="text-[10px] font-bold uppercase tracking-wider text-charcoal/60">
+              <div className="space-y-1">
+                <label className="text-[9.5px] font-bold uppercase tracking-wider text-charcoal/60">
                   Search Author
                 </label>
                 <div className="relative">
@@ -371,17 +368,17 @@ export function ProductFilters({
                     value={authorInput}
                     onChange={(e) => handleAuthorChange(e.target.value)}
                     placeholder="Search by author..."
-                    className="w-full rounded-xl border border-sand bg-white px-3 py-2.5 pr-10 text-sm font-medium text-charcoal shadow-sm placeholder:text-charcoal/40 transition-smooth hover:border-gold/50 focus:border-gold focus:outline-none focus:ring-2 focus:ring-gold/25"
+                    className="w-full rounded-lg border border-sand bg-white px-2.5 py-1.5 pr-8 text-xs font-medium text-charcoal shadow-2xs placeholder:text-charcoal/40 transition-smooth hover:border-gold/50 focus:border-gold focus:outline-none focus:ring-1 focus:ring-gold/25"
                   />
                   {authorInput && (
                     <button
                       type="button"
                       onClick={() => handleAuthorChange("")}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 text-charcoal/40 hover:text-gold-dark transition-colors cursor-pointer"
+                      className="absolute right-2.5 top-1/2 -translate-y-1/2 text-charcoal/40 hover:text-gold-dark transition-colors cursor-pointer"
                     >
                       <svg
-                        width="14"
-                        height="14"
+                        width="12"
+                        height="12"
                         viewBox="0 0 24 24"
                         fill="none"
                         stroke="currentColor"
@@ -397,12 +394,12 @@ export function ProductFilters({
 
               {/* Category */}
               {!isCategoryPage && categories.length > 0 && (
-                <div className="space-y-1.5">
-                  <label className="text-[10px] font-bold uppercase tracking-wider text-charcoal/60">
+                <div className="space-y-1">
+                  <label className="text-[9.5px] font-bold uppercase tracking-wider text-charcoal/60">
                     Category
                   </label>
                   <select
-                    className="w-full rounded-xl border border-sand bg-white px-3 py-2.5 text-sm font-medium text-charcoal shadow-sm transition-smooth hover:border-gold/50 focus:border-gold focus:outline-none focus:ring-2 focus:ring-gold/25"
+                    className="w-full rounded-lg border border-sand bg-white px-2.5 py-1.5 text-xs font-medium text-charcoal shadow-2xs transition-smooth hover:border-gold/50 focus:border-gold focus:outline-none focus:ring-1 focus:ring-gold/25"
                     value={currentCategorySlug ?? ""}
                     onChange={(e) =>
                       setParam({ category: e.target.value || null })
@@ -418,16 +415,16 @@ export function ProductFilters({
                 </div>
               )}
 
-              {/* Price Slider */}
-              {renderPriceSlider()}
+              {/* Price Slider (Compact mode) */}
+              {renderPriceSlider(true)}
 
               {/* Availability */}
-              <div className="space-y-1.5">
-                <label className="text-[10px] font-bold uppercase tracking-wider text-charcoal/60">
+              <div className="space-y-1">
+                <label className="text-[9.5px] font-bold uppercase tracking-wider text-charcoal/60">
                   Availability
                 </label>
                 <select
-                  className="w-full rounded-xl border border-sand bg-white px-3 py-2.5 text-sm font-medium text-charcoal shadow-sm transition-smooth hover:border-gold/50 focus:border-gold focus:outline-none focus:ring-2 focus:ring-gold/25"
+                  className="w-full rounded-lg border border-sand bg-white px-2.5 py-1.5 text-xs font-medium text-charcoal shadow-2xs transition-smooth hover:border-gold/50 focus:border-gold focus:outline-none focus:ring-1 focus:ring-gold/25"
                   value={currentAvailability ?? ""}
                   onChange={(e) =>
                     setParam({ availability: e.target.value || null })
@@ -440,12 +437,12 @@ export function ProductFilters({
               </div>
 
               {/* Sort By */}
-              <div className="space-y-1.5">
-                <label className="text-[10px] font-bold uppercase tracking-wider text-charcoal/60">
+              <div className="space-y-1">
+                <label className="text-[9.5px] font-bold uppercase tracking-wider text-charcoal/60">
                   Sort By
                 </label>
                 <select
-                  className="w-full rounded-xl border border-sand bg-white px-3 py-2.5 text-sm font-medium text-charcoal shadow-sm transition-smooth hover:border-gold/50 focus:border-gold focus:outline-none focus:ring-2 focus:ring-gold/25"
+                  className="w-full rounded-lg border border-sand bg-white px-2.5 py-1.5 text-xs font-medium text-charcoal shadow-2xs transition-smooth hover:border-gold/50 focus:border-gold focus:outline-none focus:ring-1 focus:ring-gold/25"
                   value={currentOrderby ?? "date"}
                   onChange={(e) => setParam({ orderby: e.target.value })}
                 >
@@ -458,11 +455,11 @@ export function ProductFilters({
               </div>
 
               {/* On Sale */}
-              <label className="mt-2 flex w-full cursor-pointer items-center justify-between rounded-xl border border-sand bg-white px-3 py-2.5 text-sm font-medium text-charcoal shadow-sm transition-smooth hover:border-gold/50 has-[:checked]:border-gold has-[:checked]:bg-gold/10 has-[:checked]:font-bold has-[:checked]:text-gold-dark">
+              <label className="mt-0.5 flex w-full cursor-pointer items-center justify-between rounded-lg border border-sand bg-white px-2.5 py-1.5 text-xs font-medium text-charcoal shadow-2xs transition-smooth hover:border-gold/50 has-[:checked]:border-gold has-[:checked]:bg-gold/10 has-[:checked]:font-bold has-[:checked]:text-gold-dark">
                 <span>Show On Sale Only</span>
                 <input
                   type="checkbox"
-                  className="h-4 w-4 accent-gold rounded cursor-pointer"
+                  className="h-3.5 w-3.5 accent-gold rounded cursor-pointer"
                   checked={currentOnSale === "true"}
                   onChange={(e) =>
                     setParam({ on_sale: e.target.checked ? "true" : null })
@@ -470,10 +467,11 @@ export function ProductFilters({
                 />
               </label>
 
-              <div className="mt-3 flex gap-2 pt-3 border-t border-sand">
+              {/* Actions */}
+              <div className="mt-1.5 flex gap-2 pt-2 border-t border-sand/80">
                 <button
                   onClick={() => setIsOpen(false)}
-                  className="flex-1 btn-gold py-2.5 text-sm shadow-md cursor-pointer"
+                  className="flex-1 btn-gold py-1.5 text-xs font-bold rounded-lg shadow-xs cursor-pointer"
                 >
                   Apply
                 </button>
@@ -493,7 +491,7 @@ export function ProductFilters({
                       });
                       setIsOpen(false);
                     }}
-                    className="btn-outline py-2.5 px-4 text-sm whitespace-nowrap cursor-pointer"
+                    className="btn-outline py-1.5 px-3 text-xs font-medium rounded-lg whitespace-nowrap cursor-pointer"
                   >
                     Clear All
                   </button>
