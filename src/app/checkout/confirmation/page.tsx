@@ -244,7 +244,7 @@ function Confirmation() {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             {/* A) Join WhatsApp */}
             <a
-              href="https://wa.me/918604685533?text=Hi%20For%20The%20Truth%20Team!%20I%20just%20placed%20an%20order%20and%20would%20love%20to%20join%20the%20community."
+              href="https://whatsapp.com/channel/0029Va9m4Y2GJP89rsezRV0E"
               target="_blank"
               rel="noopener noreferrer"
               className="group flex flex-col items-center justify-between rounded-2xl border border-emerald-200 bg-emerald-50/60 p-5 text-center transition hover:border-emerald-400 hover:bg-emerald-50 hover:shadow-md"

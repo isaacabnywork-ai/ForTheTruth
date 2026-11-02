@@ -53,7 +53,7 @@ export const SOCIAL_LINKS: readonly SocialLink[] = [
   },
   {
     label: "WhatsApp",
-    href: "https://wa.link/iiz17x",
+    href: "https://whatsapp.com/channel/0029Va9m4Y2GJP89rsezRV0E",
     bgClass: "bg-[#25D366] hover:bg-[#20ba59] shadow-emerald-500/20",
     icon: (
       <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
