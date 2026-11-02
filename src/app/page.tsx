@@ -339,7 +339,7 @@ export default async function HomePage() {
         prunedNewArrivals.length > 0 && (
           <BookRow
             title={curated.newArrivalsTitle || "New Arrivals"}
-            href="/products?orderby=date"
+            href="/shop?orderby=date"
             badge="NEW ARRIVAL"
             products={prunedNewArrivals}
           />

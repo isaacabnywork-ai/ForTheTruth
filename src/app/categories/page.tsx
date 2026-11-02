@@ -10,8 +10,27 @@ import { formatCategoryName } from "@/utils/text";
 export const revalidate = 3600;
 
 export const metadata: Metadata = {
-  title: "Categories",
-  description: "Browse books by category.",
+  title: "All Categories — Christian Books by Topic",
+  description:
+    "Explore Christian books organized by biblical topic: Bible Study, Theology, Devotionals, Commentaries, Christian Living, Leadership, Youth, and Children.",
+  alternates: {
+    canonical: "/categories",
+  },
+  openGraph: {
+    title: "All Categories — Christian Books by Topic | For The Truth",
+    description:
+      "Explore Christian books organized by biblical topic: Bible Study, Theology, Devotionals, Commentaries, and more.",
+    url: "https://forthetruth.in/categories",
+    siteName: "For The Truth",
+    locale: "en_IN",
+    type: "website",
+  },
+  twitter: {
+    card: "summary",
+    title: "All Categories — Christian Books by Topic",
+    description:
+      "Explore Christian books organized by biblical topic: Bible Study, Theology, Devotionals, Commentaries, and more.",
+  },
 };
 
 export default async function CategoriesPage() {
@@ -46,8 +65,32 @@ export default async function CategoriesPage() {
     }
   }
 
+  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://forthetruth.in";
+  const breadcrumbJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: [
+      {
+        "@type": "ListItem",
+        position: 1,
+        name: "Home",
+        item: baseUrl,
+      },
+      {
+        "@type": "ListItem",
+        position: 2,
+        name: "Categories",
+        item: `${baseUrl}/categories`,
+      },
+    ],
+  };
+
   return (
     <div className="mx-auto max-w-7xl px-4 py-12 lg:px-8">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd) }}
+      />
       <div className="mb-10 text-center">
         <p className="overline-label mb-3">Find your genre</p>
         <h1 className="font-display text-4xl font-bold">Browse by Category</h1>

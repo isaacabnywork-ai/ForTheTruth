@@ -73,15 +73,15 @@ const SIDEBAR_CATEGORIES = [
   { label: "Marriage & Family", slug: "marriage-family", href: "/categories/marriage-family" },
   { label: "Parenting", slug: "parenting", href: "/categories/parenting" },
   { label: "Prayer", slug: "prayer", href: "/categories/prayer" },
-  { label: "Upcoming Titles", slug: "upcoming", href: "/products?availability=outofstock" },
+  { label: "Upcoming Titles", slug: "upcoming", href: "/shop?availability=outofstock" },
 ];
 
 /* ── Publishers ────────────────────────────────────────────── */
 const SIDEBAR_PUBLISHERS = [
-  { label: "For The Truth", href: "/products?publisher=248" },
-  { label: "Shepherd Press", href: "/products?publisher=1108" },
-  { label: "10 Publishing", href: "/products?publisher=1887" },
-  { label: "The Good Book Company", href: "/products?publisher=163" },
+  { label: "For The Truth", href: "/shop?publisher=248" },
+  { label: "Shepherd Press", href: "/shop?publisher=1108" },
+  { label: "10 Publishing", href: "/shop?publisher=1887" },
+  { label: "The Good Book Company", href: "/shop?publisher=163" },
 ];
 
 /* ── Other Resources & Useful Links ────────────────────────── */
@@ -202,16 +202,16 @@ export function DesktopSidebar({
               <Icon d={ICONS.theology} size={18} />
             </Link>
             <Link
-              href="/products"
+              href="/shop"
               className={`p-2.5 rounded-xl transition-smooth hover:bg-cream hover:text-gold-dark ${
-                isActive("/products") ? "bg-gold/10 text-gold-dark" : "text-charcoal/60"
+                isActive("/shop") ? "bg-gold/10 text-gold-dark" : "text-charcoal/60"
               }`}
               title="Publishers & Catalog"
             >
               <Icon d={ICONS.building} size={18} />
             </Link>
             <Link
-              href="/products?orderby=popularity"
+              href="/shop?orderby=popularity"
               className="p-2.5 rounded-xl text-charcoal/60 transition-smooth hover:bg-cream hover:text-gold-dark"
               title="Collections"
             >
@@ -370,7 +370,7 @@ export function DesktopSidebar({
                   ))}
                   <li>
                     <Link
-                      href="/products?price=0-299"
+                      href="/shop?price=0-299"
                       className="block rounded-lg px-3 py-1.5 text-[13px] text-charcoal/65 transition-smooth hover:bg-cream hover:text-charcoal"
                     >
                       Under ₹299

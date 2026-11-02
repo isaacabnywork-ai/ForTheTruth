@@ -17,8 +17,31 @@ export async function generateMetadata(props: PageProps) {
   const author = getAuthorBySlug(params.slug);
   if (!author) return { title: "Author Not Found" };
   return {
-    title: `${author.name} | For The Truth`,
+    title: `${author.name} — Books & Biography`,
     description: author.bio,
+    alternates: {
+      canonical: `/authors/${params.slug}`,
+    },
+    openGraph: {
+      title: `${author.name} — Books & Biography | For The Truth`,
+      description: author.bio,
+      url: `https://forthetruth.in/authors/${params.slug}`,
+      siteName: "For The Truth",
+      locale: "en_IN",
+      type: "profile",
+      images: [
+        {
+          url: author.imageUrl,
+          alt: author.name,
+        },
+      ],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: `${author.name} — Books & Biography`,
+      description: author.bio,
+      images: [author.imageUrl],
+    },
   };
 }
 
@@ -39,8 +62,57 @@ export default async function AuthorProfilePage(props: PageProps) {
     console.error("Failed to fetch author products:", error);
   }
 
+  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://forthetruth.in";
+
+  const profileJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "ProfilePage",
+    name: `${author.name} — Theological Books & Biography`,
+    description: author.bio,
+    url: `${baseUrl}/authors/${author.slug}`,
+    mainEntity: {
+      "@type": "Person",
+      name: author.name,
+      description: author.bio,
+      image: author.imageUrl,
+    },
+  };
+
+  const breadcrumbJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: [
+      {
+        "@type": "ListItem",
+        position: 1,
+        name: "Home",
+        item: baseUrl,
+      },
+      {
+        "@type": "ListItem",
+        position: 2,
+        name: "Authors",
+        item: `${baseUrl}/authors`,
+      },
+      {
+        "@type": "ListItem",
+        position: 3,
+        name: author.name,
+        item: `${baseUrl}/authors/${author.slug}`,
+      },
+    ],
+  };
+
   return (
     <main className="bg-offwhite min-h-screen py-12 md:py-20">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(profileJsonLd) }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd) }}
+      />
       <div className="mx-auto max-w-7xl px-4 lg:px-8">
         {/* Back Link */}
         <Link

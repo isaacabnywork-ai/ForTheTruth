@@ -206,7 +206,7 @@ export function ReformationOfferPopup() {
           {/* CTA & Dismiss Buttons */}
           <div className="mt-4 sm:mt-5 space-y-2">
             <Link
-              href="/products"
+              href="/shop"
               onClick={handleClose}
               className="btn-cta w-full flex items-center justify-center gap-2 py-3 text-xs sm:text-sm font-bold uppercase tracking-wider rounded-full shadow-cta text-white transition-all hover:bg-cta-light"
             >

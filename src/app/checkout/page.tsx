@@ -145,7 +145,7 @@ export default function CheckoutPage() {
         <p className="font-display text-2xl font-bold text-charcoal/70">
           Nothing to check out.
         </p>
-        <Link href="/products" className="btn-gold mt-8 inline-flex">
+        <Link href="/shop" className="btn-gold mt-8 inline-flex">
           Browse the Shelves
         </Link>
       </div>

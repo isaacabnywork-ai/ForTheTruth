@@ -137,11 +137,11 @@ export function ProductDetail({ product, reviews = [] }: ProductDetailProps) {
       <nav aria-label="Breadcrumb" className="mb-6 hidden items-center gap-2 text-xs text-charcoal/60 lg:flex px-4 lg:px-0">
         <Link href="/" className="hover:text-gold-dark">Home</Link>
         <span>/</span>
-        <Link href="/products" className="hover:text-gold-dark">Books</Link>
+        <Link href="/shop" className="hover:text-gold-dark">Books</Link>
         {product.categories[0] && (
           <>
             <span>/</span>
-            <Link href={`/products?category=${product.categories[0].slug}`} className="hover:text-gold-dark">
+            <Link href={`/shop?category=${product.categories[0].slug}`} className="hover:text-gold-dark">
               {product.categories[0].name}
             </Link>
           </>

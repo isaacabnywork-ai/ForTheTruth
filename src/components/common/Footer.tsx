@@ -14,7 +14,7 @@ const COMPANY_LINKS = [
 ];
 
 const QUICK_LINKS = [
-  { label: "Out of Stock", href: "/products?availability=outofstock" },
+  { label: "Out of Stock", href: "/shop?availability=outofstock" },
   { label: "My Account", href: "/account/dashboard" },
   { label: "My Cart", href: "/cart" },
   { label: "Free E-Books", href: "/free-ebooks" },

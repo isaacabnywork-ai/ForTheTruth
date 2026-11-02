@@ -3,9 +3,27 @@ import Link from "next/link";
 import React from "react";
 
 export const metadata: Metadata = {
-  title: "Frequently Asked Questions (FAQs) | For The Truth",
+  title: "Frequently Asked Questions (FAQ)",
   description:
-    "Find answers to frequently asked questions about orders, payments, shipping, bulk purchases, Statement of Faith, and more at For The Truth.",
+    "Find answers to frequently asked questions about orders, payments, shipping across India, bulk church purchases, Statement of Faith, and more at For The Truth.",
+  alternates: {
+    canonical: "/faq",
+  },
+  openGraph: {
+    title: "Frequently Asked Questions — For The Truth",
+    description:
+      "Find answers to frequently asked questions about orders, payments, shipping, and bulk purchases at For The Truth.",
+    url: "https://forthetruth.in/faq",
+    siteName: "For The Truth",
+    locale: "en_IN",
+    type: "website",
+  },
+  twitter: {
+    card: "summary",
+    title: "Frequently Asked Questions — For The Truth",
+    description:
+      "Find answers to frequently asked questions about orders, payments, shipping, and bulk purchases at For The Truth.",
+  },
 };
 
 interface FAQItem {
@@ -99,7 +117,7 @@ const FAQS: FAQItem[] = [
     a: (
       <span>
         If a particular book is out of stock, you can sign up for notifications to be alerted when it becomes available again. Additionally, you can explore similar titles in our collection that may align with your interests. We regularly update our inventory, so check back often for new arrivals and restocks. You can also view all currently{" "}
-        <Link href="/products?availability=outofstock" className="font-semibold text-gold-dark hover:underline">
+        <Link href="/shop?availability=outofstock" className="font-semibold text-gold-dark hover:underline">
           Out of Stock titles
         </Link>
         .
@@ -214,8 +232,98 @@ const FAQS: FAQItem[] = [
 ];
 
 export default function FAQPage() {
+  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://forthetruth.in";
+
+  const faqJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    mainEntity: FAQS.map((item) => {
+      let answerText = "";
+      if (typeof item.a === "string") {
+        answerText = item.a;
+      } else {
+        // Fallbacks for answers with React nodes
+        switch (item.q) {
+          case "Do you offer gift wrapping or special packaging options?":
+            answerText = "We do offer gift wrapping or special packaging options. Please contact us for more details.";
+            break;
+          case "How can I contact customer support?":
+            answerText = "You can reach out to our customer support team via email at support@forthetruth.in, phone at +918604685533, or through the contact form on our website.";
+            break;
+          case "Do you offer digital or e-book versions of your books?":
+            answerText = "At For The Truth, we primarily focus on physical copies of books. We also offer one free eBook every month to our subscribers and maintain a collection of free downloadable eBooks on our website.";
+            break;
+          case "What if the book I want is out of stock?":
+            answerText = "If a book is out of stock, you can sign up for notifications to be alerted when restocked. You can also view all currently out of stock titles or request restock information.";
+            break;
+          case "Can I request a specific book that is not currently listed on your website?":
+            answerText = "Yes, we welcome suggestions! If there is a specific title you want, please reach out to us through our contact form.";
+            break;
+          case "Do you offer wholesale or bulk purchasing options?":
+            answerText = "Yes, we offer wholesale and bulk purchasing options for churches, libraries, and book clubs. Please contact us for bulk pricing.";
+            break;
+          case "How do you handle returns and exchanges?":
+            answerText = "You can initiate a return or exchange within 7 days of receiving your order, provided the book is in original condition, in accordance with our return policy.";
+            break;
+          case "What is your Statement of Faith?":
+            answerText = "You can read our full doctrinal convictions and Statement of Faith at forthetruth.in/statement-of-faith.";
+            break;
+          case "What is your Shipping Policy?":
+            answerText = "We offer fast delivery across India with free shipping on eligible orders. Full details are available at forthetruth.in/shipping.";
+            break;
+          case "What is your Privacy Policy?":
+            answerText = "Our Privacy Policy outlines how your personal data and payments are secured. Full details are available at forthetruth.in/privacy.";
+            break;
+          case "What are the Terms & Conditions?":
+            answerText = "Our terms of service and store conditions are accessible at forthetruth.in/terms.";
+            break;
+          case "Where can I find Hindi books?":
+            answerText = "Hindi theological books can be found through our partner Marg Satya Jeevan at margsatyajeevan.com.";
+            break;
+          default:
+            answerText = "Please contact us for more information.";
+        }
+      }
+      return {
+        "@type": "Question",
+        name: item.q,
+        acceptedAnswer: {
+          "@type": "Answer",
+          text: answerText,
+        },
+      };
+    }),
+  };
+
+  const breadcrumbJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: [
+      {
+        "@type": "ListItem",
+        position: 1,
+        name: "Home",
+        item: baseUrl,
+      },
+      {
+        "@type": "ListItem",
+        position: 2,
+        name: "FAQ",
+        item: `${baseUrl}/faq`,
+      },
+    ],
+  };
+
   return (
     <div className="bg-offwhite min-h-screen py-12 md:py-20">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonLd) }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd) }}
+      />
       <div className="mx-auto max-w-4xl px-4 lg:px-8">
         <div className="mb-12 text-center">
           <p className="overline-label text-gold-dark">Help Center</p>

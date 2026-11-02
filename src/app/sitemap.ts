@@ -1,6 +1,8 @@
 import type { MetadataRoute } from "next";
 import { isWooConfigured } from "@/config/env";
 import { AUTHORS } from "@/data/authors";
+import { TOPICS } from "@/utils/constants";
+import categoryRowsFallbackData from "@/data/category_rows_fallback.json";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 86400; // Cache sitemap for 24 hours
@@ -21,7 +23,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
   const staticRoutes = [
     "",
-    "/products",
+    "/shop",
     "/categories",
     "/free-ebooks",
     "/authors",
@@ -38,8 +40,8 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const entries: MetadataRoute.Sitemap = staticRoutes.map((route) => ({
     url: `${baseUrl}${route}`,
     lastModified: new Date(),
-    changeFrequency: route === "" || route === "/products" ? "daily" : "weekly",
-    priority: route === "" ? 1.0 : route === "/products" ? 0.9 : 0.8,
+    changeFrequency: route === "" || route === "/shop" ? "daily" : "weekly",
+    priority: route === "" ? 1.0 : route === "/shop" ? 0.9 : 0.8,
   }));
 
   // Authors
@@ -48,9 +50,12 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       url: `${baseUrl}/authors/${author.slug}`,
       lastModified: new Date(),
       changeFrequency: "monthly",
-      priority: 0.6,
+      priority: 0.7,
     });
   }
+
+  let categoriesAdded = 0;
+  let productsAdded = 0;
 
   if (isWooConfigured()) {
     try {
@@ -66,7 +71,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
         `${wpUrl}/wp-json/wc/v3/products/categories?per_page=100&_fields=id,slug`,
         {
           headers: { Authorization: authHeader },
-          signal: AbortSignal.timeout(5000),
+          signal: AbortSignal.timeout(6000),
           next: { revalidate: 86400 },
         }
       ).catch(() => null);
@@ -79,8 +84,9 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
               url: `${baseUrl}/categories/${cat.slug}`,
               lastModified: new Date(),
               changeFrequency: "weekly",
-              priority: 0.7,
+              priority: 0.8,
             });
+            categoriesAdded++;
           }
         }
       }
@@ -90,7 +96,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
         `${wpUrl}/wp-json/wc/v3/products?status=publish&per_page=100&_fields=id,slug,date_modified&page=1`,
         {
           headers: { Authorization: authHeader },
-          signal: AbortSignal.timeout(5000),
+          signal: AbortSignal.timeout(6000),
           next: { revalidate: 86400 },
         }
       ).catch(() => null);
@@ -99,7 +105,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
         const page1 = (await page1Res.json()) as SitemapProduct[];
         const totalPages = Math.min(
           parseInt(page1Res.headers.get("x-wp-totalpages") || "1", 10),
-          10
+          20
         );
         let allProducts = [...page1];
 
@@ -112,7 +118,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
                   `${wpUrl}/wp-json/wc/v3/products?status=publish&per_page=100&_fields=id,slug,date_modified&page=${page}`,
                   {
                     headers: { Authorization: authHeader },
-                    signal: AbortSignal.timeout(5000),
+                    signal: AbortSignal.timeout(6000),
                     next: { revalidate: 86400 },
                   }
                 );
@@ -131,8 +137,9 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
               url: `${baseUrl}/products/${prod.slug}`,
               lastModified: prod.date_modified ? new Date(prod.date_modified) : new Date(),
               changeFrequency: "weekly",
-              priority: 0.8,
+              priority: 0.85,
             });
+            productsAdded++;
           }
         }
       }
@@ -141,5 +148,41 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     }
   }
 
-  return entries;
+  // Fallback categories if WooCommerce is offline or not configured
+  if (categoriesAdded === 0) {
+    for (const topic of TOPICS) {
+      entries.push({
+        url: `${baseUrl}/categories/${topic.slug}`,
+        lastModified: new Date(),
+        changeFrequency: "weekly",
+        priority: 0.7,
+      });
+    }
+  }
+
+  // Fallback products if WooCommerce is offline or not configured
+  if (productsAdded === 0 && Array.isArray(categoryRowsFallbackData)) {
+    for (const item of categoryRowsFallbackData as Array<{ slug?: string }>) {
+      if (item.slug) {
+        entries.push({
+          url: `${baseUrl}/products/${item.slug}`,
+          lastModified: new Date(),
+          changeFrequency: "weekly",
+          priority: 0.8,
+        });
+      }
+    }
+  }
+
+  // Deduplicate entries by URL
+  const seen = new Set<string>();
+  const uniqueEntries: MetadataRoute.Sitemap = [];
+  for (const entry of entries) {
+    if (!seen.has(entry.url)) {
+      seen.add(entry.url);
+      uniqueEntries.push(entry);
+    }
+  }
+
+  return uniqueEntries;
 }

@@ -21,7 +21,7 @@ export const DEFAULT_MENUS_CONFIG: SiteMenusConfig = {
   announcement: "Free shipping across India on orders over ₹150 · Sound Christian Books",
   headerNav: [
     { id: "h-home", label: "Home", href: "/", menuType: "link" },
-    { id: "h-books", label: "All Books", href: "/products", menuType: "books" },
+    { id: "h-books", label: "All Books", href: "/shop", menuType: "books" },
     { id: "h-categories", label: "All Categories", href: "/categories", menuType: "categories" },
     { id: "h-ebooks", label: "Free E-Books", href: "/free-ebooks", menuType: "link" },
     { id: "h-about", label: "About", href: "/about", menuType: "link" },
@@ -41,7 +41,7 @@ export const DEFAULT_MENUS_CONFIG: SiteMenusConfig = {
     { id: "fc-5", label: "Terms and Conditions", href: "/terms" },
   ],
   footerQuick: [
-    { id: "fq-1", label: "Out of Stock", href: "/products?availability=outofstock" },
+    { id: "fq-1", label: "Out of Stock", href: "/shop?availability=outofstock" },
     { id: "fq-2", label: "My Account", href: "/account/dashboard" },
     { id: "fq-3", label: "My Cart", href: "/cart" },
     { id: "fq-4", label: "Free E-Books", href: "/free-ebooks" },

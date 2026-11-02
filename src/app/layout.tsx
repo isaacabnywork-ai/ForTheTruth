@@ -30,30 +30,66 @@ const cormorant = Cormorant_Garamond({
   display: "swap",
 });
 
+const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://forthetruth.in";
+
 export const metadata: Metadata = {
-  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || "https://forthetruth.in"),
-  title: { default: `${SITE_NAME} — Christian Books in India`, template: `%s | ${SITE_NAME}` },
+  metadataBase: new URL(siteUrl),
+  title: {
+    default: `${SITE_NAME} — Curated Sound Christian Books & Literature in India`,
+    template: `%s | ${SITE_NAME}`,
+  },
   description: SITE_DESCRIPTION,
   applicationName: SITE_NAME,
+  keywords: [
+    "Christian books India",
+    "Christian bookstore India",
+    "sound doctrine books",
+    "Reformed theology India",
+    "Christian literature India",
+    "Bible commentaries India",
+    "Christian devotionals",
+    "Christian living books",
+    "buy Christian books online India",
+    "For The Truth",
+    "For The Truth Press",
+  ],
+  authors: [{ name: "For The Truth Press", url: siteUrl }],
+  creator: "For The Truth Press",
+  publisher: "For The Truth Press Pvt. Ltd.",
+  category: "books",
+  alternates: {
+    canonical: "/",
+  },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      "max-video-preview": -1,
+      "max-image-preview": "large",
+      "max-snippet": -1,
+    },
+  },
   openGraph: {
     type: "website",
     locale: "en_IN",
-    url: "https://forthetruth.in",
+    url: siteUrl,
     siteName: SITE_NAME,
-    title: `${SITE_NAME} — Curated Sound Christian Literature & Books in India`,
+    title: `${SITE_NAME} — Curated Sound Christian Books & Literature in India`,
     description: SITE_DESCRIPTION,
     images: [
       {
         url: "/logo.png",
         width: 512,
         height: 512,
-        alt: SITE_NAME,
+        alt: `${SITE_NAME} — Curated Sound Christian Literature & Books in India`,
       },
     ],
   },
   twitter: {
     card: "summary_large_image",
-    title: `${SITE_NAME} — Curated Sound Christian Literature & Books in India`,
+    title: `${SITE_NAME} — Curated Sound Christian Books & Literature in India`,
     description: SITE_DESCRIPTION,
     images: ["/logo.png"],
   },
@@ -69,6 +105,9 @@ export const metadata: Metadata = {
     icon: "/logo.png",
     shortcut: "/logo.png",
     apple: "/logo.png",
+  },
+  verification: {
+    google: process.env.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION || undefined,
   },
 };
 
@@ -99,6 +138,58 @@ export default async function RootLayout({
     }
   }
 
+  const orgAndWebsiteJsonLd = {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "Organization",
+        "@id": `${siteUrl}/#organization`,
+        name: SITE_NAME,
+        alternateName: "For The Truth Press",
+        url: siteUrl,
+        logo: {
+          "@type": "ImageObject",
+          "@id": `${siteUrl}/#logo`,
+          url: `${siteUrl}/logo.png`,
+          caption: SITE_NAME,
+        },
+        image: {
+          "@id": `${siteUrl}/#logo`,
+        },
+        description: SITE_DESCRIPTION,
+        email: "contact@forthetruth.in",
+        telephone: "+918604685533",
+        address: {
+          "@type": "PostalAddress",
+          addressCountry: "IN",
+        },
+        sameAs: [
+          "https://www.instagram.com/forthetruthindia/",
+          "https://www.facebook.com/forthetruthindia",
+        ],
+      },
+      {
+        "@type": "WebSite",
+        "@id": `${siteUrl}/#website`,
+        url: siteUrl,
+        name: SITE_NAME,
+        description: SITE_DESCRIPTION,
+        publisher: {
+          "@id": `${siteUrl}/#organization`,
+        },
+        potentialAction: {
+          "@type": "SearchAction",
+          target: {
+            "@type": "EntryPoint",
+            urlTemplate: `${siteUrl}/shop?q={search_term_string}`,
+          },
+          "query-input": "required name=search_term_string",
+        },
+        inLanguage: "en-IN",
+      },
+    ],
+  };
+
   return (
     <html
       lang="en"
@@ -106,6 +197,10 @@ export default async function RootLayout({
       className={`${montserrat.variable} ${cormorant.variable} overflow-x-clip`}
     >
       <body className="flex min-h-screen w-full max-w-full overflow-x-clip bg-cream antialiased font-sans" suppressHydrationWarning>
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(orgAndWebsiteJsonLd) }}
+        />
         {/* One-time cleanup: dark mode was removed — clear any saved preference */}
         <script
           dangerouslySetInnerHTML={{

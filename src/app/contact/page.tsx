@@ -2,14 +2,78 @@ import type { Metadata } from "next";
 import Link from "next/link";
 
 export const metadata: Metadata = {
-  title: "Contact Us | For The Truth",
+  title: "Contact Us & Customer Support",
   description:
     "Write to us at For The Truth. Phone: +918604685533, Email: contact@forthetruth.in. Questions about books, orders, church partnerships, or recommendations.",
+  alternates: {
+    canonical: "/contact",
+  },
+  openGraph: {
+    title: "Contact Us — For The Truth",
+    description:
+      "Get in touch with For The Truth for customer support, book orders, church partnerships, and recommendations.",
+    url: "https://forthetruth.in/contact",
+    siteName: "For The Truth",
+    locale: "en_IN",
+    type: "website",
+  },
+  twitter: {
+    card: "summary",
+    title: "Contact Us — For The Truth",
+    description:
+      "Get in touch with For The Truth for customer support, book orders, church partnerships, and recommendations.",
+  },
 };
 
 export default function ContactPage() {
+  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://forthetruth.in";
+  const contactJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "ContactPage",
+    name: "Contact For The Truth",
+    url: `${baseUrl}/contact`,
+    mainEntity: {
+      "@type": "Organization",
+      name: "For The Truth",
+      telephone: "+918604685533",
+      email: "contact@forthetruth.in",
+      contactPoint: {
+        "@type": "ContactPoint",
+        telephone: "+918604685533",
+        contactType: "customer service",
+        availableLanguage: ["English", "Hindi"],
+      },
+    },
+  };
+  const breadcrumbJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: [
+      {
+        "@type": "ListItem",
+        position: 1,
+        name: "Home",
+        item: baseUrl,
+      },
+      {
+        "@type": "ListItem",
+        position: 2,
+        name: "Contact Us",
+        item: `${baseUrl}/contact`,
+      },
+    ],
+  };
+
   return (
     <div className="bg-offwhite min-h-screen py-12 md:py-20">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(contactJsonLd) }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd) }}
+      />
       <div className="mx-auto max-w-4xl px-4 lg:px-8">
         {/* Header */}
         <div className="mb-10 text-center">

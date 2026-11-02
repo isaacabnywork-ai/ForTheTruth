@@ -4,18 +4,18 @@ export const SITE_DESCRIPTION =
 
 export const NAV_LINKS = [
   { label: "Home", href: "/" },
-  { label: "All Books", href: "/products", menu: "books" },
+  { label: "All Books", href: "/shop", menu: "books" },
   { label: "All Categories", href: "/categories", menu: "categories" },
   { label: "Free E-Books", href: "/free-ebooks" },
   { label: "About", href: "/about" },
 ] as const;
 
 export const COLLECTIONS = [
-  { label: "Bestsellers", href: "/products?orderby=popularity" },
-  { label: "New Arrivals", href: "/products?orderby=date" },
-  { label: "Top Rated", href: "/products?orderby=rating" },
-  { label: "On Sale", href: "/products?on_sale=true" },
-  { label: "Out of Stock", href: "/products?availability=outofstock" },
+  { label: "Bestsellers", href: "/shop?orderby=popularity" },
+  { label: "New Arrivals", href: "/shop?orderby=date" },
+  { label: "Top Rated", href: "/shop?orderby=rating" },
+  { label: "On Sale", href: "/shop?on_sale=true" },
+  { label: "Out of Stock", href: "/shop?availability=outofstock" },
 ] as const;
 
 /** Fallback topic list — real categories from WooCommerce take precedence. */

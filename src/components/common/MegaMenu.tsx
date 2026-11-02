@@ -39,7 +39,7 @@ export function MegaMenu({ open, onNavigate, onMouseEnter, onMouseLeave }: MegaM
             <p className={sectionHeaderCls}>All Books</p>
             <ul className="space-y-0.5">
               <li>
-                <Link href="/products" onClick={onNavigate} className={itemCls}>
+                <Link href="/shop" onClick={onNavigate} className={itemCls}>
                   <span className="font-semibold">View All</span>
                   <span aria-hidden="true" className="text-xs text-charcoal/40">↗</span>
                 </Link>
@@ -56,7 +56,7 @@ export function MegaMenu({ open, onNavigate, onMouseEnter, onMouseLeave }: MegaM
             <ul className="space-y-0.5">
               <li>
                 <Link
-                  href="/products?publisher=248"
+                  href="/shop?publisher=248"
                   onClick={onNavigate}
                   className={itemCls}
                 >
@@ -65,7 +65,7 @@ export function MegaMenu({ open, onNavigate, onMouseEnter, onMouseLeave }: MegaM
               </li>
               <li>
                 <Link
-                  href="/products?publisher=1108"
+                  href="/shop?publisher=1108"
                   onClick={onNavigate}
                   className={itemCls}
                 >
@@ -74,7 +74,7 @@ export function MegaMenu({ open, onNavigate, onMouseEnter, onMouseLeave }: MegaM
               </li>
               <li>
                 <Link
-                  href="/products?publisher=1887"
+                  href="/shop?publisher=1887"
                   onClick={onNavigate}
                   className={itemCls}
                 >
@@ -83,7 +83,7 @@ export function MegaMenu({ open, onNavigate, onMouseEnter, onMouseLeave }: MegaM
               </li>
               <li>
                 <Link
-                  href="/products?publisher=163"
+                  href="/shop?publisher=163"
                   onClick={onNavigate}
                   className={itemCls}
                 >
@@ -106,7 +106,7 @@ export function MegaMenu({ open, onNavigate, onMouseEnter, onMouseLeave }: MegaM
               ))}
               <li>
                 <Link
-                  href="/products?price=0-299"
+                  href="/shop?price=0-299"
                   onClick={onNavigate}
                   className={itemCls}
                 >

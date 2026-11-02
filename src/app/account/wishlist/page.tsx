@@ -62,7 +62,7 @@ export default function WishlistPage() {
           <p className="mt-2 text-sm text-charcoal/45">
             Tap the heart on any book to save it here.
           </p>
-          <Link href="/products" className="btn-gold mt-6 inline-flex">
+          <Link href="/shop" className="btn-gold mt-6 inline-flex">
             Browse the Shelves
           </Link>
         </div>

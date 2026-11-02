@@ -40,7 +40,7 @@ export default function CartPage() {
         <p className="mt-3 text-sm text-charcoal/45">
           The shelves are full though — go take a look.
         </p>
-        <Link href="/products" className="btn-gold mt-8 inline-flex">
+        <Link href="/shop" className="btn-gold mt-8 inline-flex">
           Browse the Shelves
         </Link>
       </div>
@@ -160,7 +160,7 @@ export default function CartPage() {
             Proceed to Checkout
           </Link>
           <Link
-            href="/products"
+            href="/shop"
             className="mt-3 block text-center text-xs font-semibold uppercase tracking-widest text-charcoal/45 hover:text-gold-dark"
           >
             Continue shopping

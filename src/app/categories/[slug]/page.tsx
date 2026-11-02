@@ -32,13 +32,16 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const cleanName = formatCategoryName(category.name);
   const excerpt =
     category.description?.replace(/<[^>]+>/g, "").slice(0, 160) ||
-    `Browse curated ${cleanName} books at For The Truth.`;
+    `Browse curated ${cleanName} books at For The Truth. Fast shipping across India.`;
 
   return {
-    title: cleanName,
+    title: `${cleanName} Books`,
     description: excerpt,
+    alternates: {
+      canonical: `/categories/${slug}`,
+    },
     openGraph: {
-      title: `${cleanName} Christian Books`,
+      title: `${cleanName} Christian Books — For The Truth`,
       description: excerpt,
       url: `https://forthetruth.in/categories/${slug}`,
       siteName: "For The Truth",
@@ -50,6 +53,12 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       title: `${cleanName} Christian Books`,
       description: excerpt,
     },
+    keywords: [
+      `${cleanName} Christian books`,
+      `${cleanName} books India`,
+      `${cleanName} theology`,
+      "Christian books India",
+    ],
   };
 }
 
@@ -72,8 +81,63 @@ export default async function CategoryPage({ params, searchParams }: Props) {
     category: category.id,
   }).catch(() => ({ products: [], total: 0, totalPages: 1 }));
 
+  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://forthetruth.in";
+  const cleanCategoryName = formatCategoryName(category.name);
+
+  const breadcrumbJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: [
+      {
+        "@type": "ListItem",
+        position: 1,
+        name: "Home",
+        item: baseUrl,
+      },
+      {
+        "@type": "ListItem",
+        position: 2,
+        name: "Categories",
+        item: `${baseUrl}/categories`,
+      },
+      {
+        "@type": "ListItem",
+        position: 3,
+        name: cleanCategoryName,
+        item: `${baseUrl}/categories/${slug}`,
+      },
+    ],
+  };
+
+  const collectionJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "CollectionPage",
+    name: `${cleanCategoryName} Christian Books`,
+    description:
+      category.description?.replace(/<[^>]+>/g, "").slice(0, 200) ||
+      `Browse curated ${cleanCategoryName} books at For The Truth.`,
+    url: `${baseUrl}/categories/${slug}`,
+    mainEntity: {
+      "@type": "ItemList",
+      itemListElement: result.products.slice(0, 20).map((prod, idx) => ({
+        "@type": "ListItem",
+        position: idx + 1,
+        url: `${baseUrl}/products/${prod.slug}`,
+        name: prod.name,
+      })),
+    },
+  };
+
   return (
     <div className="mx-auto max-w-7xl px-4 py-10 lg:px-8">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd) }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(collectionJsonLd) }}
+      />
       <nav aria-label="Breadcrumb" className="mb-6 text-xs text-charcoal/50">
         <Link href="/" className="hover:text-gold-dark">Home</Link>
         <span className="mx-2">/</span>
@@ -125,7 +189,7 @@ export default async function CategoryPage({ params, searchParams }: Props) {
           <h2 className="font-display text-2xl font-bold">
             Nothing on this shelf yet
           </h2>
-          <Link href="/products" className="btn-gold mt-6 inline-block">
+          <Link href="/shop" className="btn-gold mt-6 inline-block">
             Browse All Books
           </Link>
         </div>

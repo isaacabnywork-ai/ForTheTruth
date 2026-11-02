@@ -223,7 +223,7 @@ export function RecentlyViewedMegaSection({
 
       {/* Footer Link */}
       <Link
-        href="/products"
+        href="/shop"
         onClick={onNavigate}
         className="mt-4 inline-flex items-center gap-1.5 text-xs font-semibold text-gold-dark transition-smooth hover:gap-2.5 hover:underline"
       >

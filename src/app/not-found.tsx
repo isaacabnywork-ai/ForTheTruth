@@ -28,7 +28,7 @@ export default function NotFound() {
           <Link href="/" className="btn-gold">
             Back Home
           </Link>
-          <Link href="/products" className="btn-outline">
+          <Link href="/shop" className="btn-outline">
             Browse Books
           </Link>
           <Link href="/faq" className="btn-outline">
@@ -43,7 +43,7 @@ export default function NotFound() {
           </p>
           <ul className="space-y-2.5">
             {[
-              { label: "Bestselling Books", href: "/products?orderby=popularity" },
+              { label: "Bestselling Books", href: "/shop?orderby=popularity" },
               { label: "Bible Study Titles", href: "/categories" },
               { label: "Contact Us", href: "/contact" },
               { label: "My Account & Orders", href: "/account/dashboard" },

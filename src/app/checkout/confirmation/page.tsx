@@ -421,7 +421,7 @@ function Confirmation() {
           ) : (
             <>
               <Link href="/account/orders" className="btn-gold">View My Orders</Link>
-              <Link href="/products" className="btn-outline">Continue Shopping</Link>
+              <Link href="/shop" className="btn-outline">Continue Shopping</Link>
             </>
           )}
         </div>

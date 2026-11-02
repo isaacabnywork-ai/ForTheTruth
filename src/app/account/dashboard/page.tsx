@@ -68,7 +68,7 @@ export default function DashboardPage() {
         ) : orders.length === 0 ? (
           <p className="mt-4 text-sm text-charcoal/50">
             No orders yet —{" "}
-            <Link href="/products" className="font-semibold text-gold-dark hover:underline">
+            <Link href="/shop" className="font-semibold text-gold-dark hover:underline">
               browse the shelves
             </Link>
             .

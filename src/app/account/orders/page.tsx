@@ -32,7 +32,7 @@ export default function OrdersPage() {
         ) : orders.length === 0 ? (
           <div className="p-12 text-center">
             <p className="font-display text-xl text-charcoal/60">No orders yet.</p>
-            <Link href="/products" className="btn-gold mt-6 inline-flex">
+            <Link href="/shop" className="btn-gold mt-6 inline-flex">
               Browse Books
             </Link>
           </div>

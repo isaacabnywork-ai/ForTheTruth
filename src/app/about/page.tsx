@@ -2,9 +2,27 @@ import type { Metadata } from "next";
 import Link from "next/link";
 
 export const metadata: Metadata = {
-  title: "About Us | For The Truth",
+  title: "About Us — Our Vision & Mission",
   description:
-    "For The Truth is an online Christian Bookstore in India. FOR THE TRUTH is a publishing ministry that exists to publish, distribute, and develop faithful biblical resources for the Church in India.",
+    "For The Truth is an online Christian Bookstore and publishing ministry in India, providing faithful biblical resources, sound theology, and affordable literature for the Church in India.",
+  alternates: {
+    canonical: "/about",
+  },
+  openGraph: {
+    title: "About Us — For The Truth",
+    description:
+      "Publishing ministry and Christian bookstore providing sound biblical resources for the Church in India.",
+    url: "https://forthetruth.in/about",
+    siteName: "For The Truth",
+    locale: "en_IN",
+    type: "website",
+  },
+  twitter: {
+    card: "summary",
+    title: "About Us — For The Truth",
+    description:
+      "Publishing ministry and Christian bookstore providing sound biblical resources for the Church in India.",
+  },
 };
 
 const GOALS = [
@@ -29,8 +47,44 @@ const GOALS = [
 ];
 
 export default function AboutPage() {
+  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://forthetruth.in";
+  const aboutJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "AboutPage",
+    name: "About For The Truth",
+    description:
+      "For The Truth is an online Christian Bookstore and publishing ministry in India, providing faithful biblical resources for the Church.",
+    url: `${baseUrl}/about`,
+  };
+  const breadcrumbJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: [
+      {
+        "@type": "ListItem",
+        position: 1,
+        name: "Home",
+        item: baseUrl,
+      },
+      {
+        "@type": "ListItem",
+        position: 2,
+        name: "About Us",
+        item: `${baseUrl}/about`,
+      },
+    ],
+  };
+
   return (
     <div className="bg-offwhite min-h-screen">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(aboutJsonLd) }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd) }}
+      />
       {/* Hero Section */}
       <section className="bg-navy-gradient py-16 text-white md:py-24">
         <div className="mx-auto max-w-4xl px-4 text-center lg:px-8">
@@ -104,7 +158,7 @@ export default function AboutPage() {
             Discover classic and contemporary Christian literature chosen with theological discernment.
           </p>
           <div className="mt-6 flex flex-wrap items-center justify-center gap-3">
-            <Link href="/products" className="btn-cta text-sm px-6 py-2.5">
+            <Link href="/shop" className="btn-cta text-sm px-6 py-2.5">
               Browse Books <span aria-hidden="true">→</span>
             </Link>
             <Link href="/statement-of-faith" className="btn-outline text-sm px-6 py-2.5">

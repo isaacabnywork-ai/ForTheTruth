@@ -1,14 +1,54 @@
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Privacy Policy & Store Policies | For The Truth",
+  title: "Privacy Policy & Store Policies",
   description:
     "Privacy Policy, Return and Refund Policy, and Shipping Policy for For The Truth Press Pvt. Ltd.",
+  alternates: {
+    canonical: "/privacy",
+  },
+  openGraph: {
+    title: "Privacy Policy & Store Policies — For The Truth",
+    description: "Privacy Policy, Return and Refund Policy, and Shipping Policy for For The Truth.",
+    url: "https://forthetruth.in/privacy",
+    siteName: "For The Truth",
+    locale: "en_IN",
+    type: "website",
+  },
+  twitter: {
+    card: "summary",
+    title: "Privacy Policy & Store Policies — For The Truth",
+    description: "Privacy Policy, Return and Refund Policy, and Shipping Policy for For The Truth.",
+  },
 };
 
 export default function PrivacyPage() {
+  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://forthetruth.in";
+  const breadcrumbJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: [
+      {
+        "@type": "ListItem",
+        position: 1,
+        name: "Home",
+        item: baseUrl,
+      },
+      {
+        "@type": "ListItem",
+        position: 2,
+        name: "Privacy Policy",
+        item: `${baseUrl}/privacy`,
+      },
+    ],
+  };
+
   return (
     <div className="bg-offwhite min-h-screen py-12 md:py-20">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd) }}
+      />
       <div className="mx-auto max-w-4xl px-4 lg:px-8">
         <div className="mb-10 text-center sm:text-left">
           <p className="overline-label text-gold-dark">Legal &amp; Store Policies</p>

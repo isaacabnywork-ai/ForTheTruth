@@ -2,13 +2,54 @@ import type { Metadata } from "next";
 import Link from "next/link";
 
 export const metadata: Metadata = {
-  title: "Shipping & Delivery Policy | For The Truth",
-  description: "Learn about shipping rates, dispatch times, free delivery terms, and tracking options across India.",
+  title: "Shipping & Delivery Policy",
+  description:
+    "Learn about shipping rates, dispatch times, free delivery terms, and tracking options across India for For The Truth orders.",
+  alternates: {
+    canonical: "/shipping",
+  },
+  openGraph: {
+    title: "Shipping & Delivery Policy — For The Truth",
+    description: "Learn about shipping rates, dispatch times, and free delivery across India.",
+    url: "https://forthetruth.in/shipping",
+    siteName: "For The Truth",
+    locale: "en_IN",
+    type: "website",
+  },
+  twitter: {
+    card: "summary",
+    title: "Shipping & Delivery Policy — For The Truth",
+    description: "Learn about shipping rates, dispatch times, and free delivery across India.",
+  },
 };
 
 export default function ShippingPage() {
+  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://forthetruth.in";
+  const breadcrumbJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: [
+      {
+        "@type": "ListItem",
+        position: 1,
+        name: "Home",
+        item: baseUrl,
+      },
+      {
+        "@type": "ListItem",
+        position: 2,
+        name: "Shipping & Delivery",
+        item: `${baseUrl}/shipping`,
+      },
+    ],
+  };
+
   return (
     <div className="bg-offwhite min-h-screen py-12 md:py-20">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd) }}
+      />
       <div className="mx-auto max-w-4xl px-4 lg:px-8">
         <div className="mb-10">
           <p className="overline-label">Store Policy</p>

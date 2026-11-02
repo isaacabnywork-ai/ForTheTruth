@@ -4,9 +4,27 @@ import { FreeEbooksGrid } from "@/components/ebooks/FreeEbooksGrid";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Free E-Books — For The Truth",
+  title: "Free Christian E-Books & Downloads",
   description:
-    "Download free Christian e-books from For The Truth. Explore Bible studies, devotionals, and ministry resources — completely free of charge.",
+    "Download free Christian e-books from For The Truth. Explore Bible studies, devotionals, and church ministry resources in PDF format — completely free.",
+  alternates: {
+    canonical: "/free-ebooks",
+  },
+  openGraph: {
+    title: "Free Christian E-Books & Downloads — For The Truth",
+    description:
+      "Download free Christian e-books from For The Truth. Bible studies, devotionals, and church ministry resources.",
+    url: "https://forthetruth.in/free-ebooks",
+    siteName: "For The Truth",
+    locale: "en_IN",
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Free Christian E-Books & Downloads",
+    description:
+      "Download free Christian e-books from For The Truth. Bible studies, devotionals, and church ministry resources.",
+  },
 };
 
 export const revalidate = 3600;
@@ -17,8 +35,32 @@ async function EbooksContent() {
 }
 
 export default function FreeEbooksPage() {
+  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://forthetruth.in";
+  const breadcrumbJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: [
+      {
+        "@type": "ListItem",
+        position: 1,
+        name: "Home",
+        item: baseUrl,
+      },
+      {
+        "@type": "ListItem",
+        position: 2,
+        name: "Free E-Books",
+        item: `${baseUrl}/free-ebooks`,
+      },
+    ],
+  };
+
   return (
     <main className="min-h-screen bg-cream">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd) }}
+      />
       {/* Hero */}
       <section className="relative overflow-hidden bg-navy py-16 md:py-20">
         {/* Decorative gradient */}

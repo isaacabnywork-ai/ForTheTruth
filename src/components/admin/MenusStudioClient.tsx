@@ -44,7 +44,7 @@ export function MenusStudioClient({ initialConfig }: MenusStudioClientProps) {
     const newItem: MenuItem = {
       id: `h-${Date.now()}`,
       label: "New Link",
-      href: "/products",
+      href: "/shop",
       menuType: "link",
     };
     setConfig({ ...config, headerNav: [...config.headerNav, newItem] });
@@ -225,7 +225,7 @@ export function MenusStudioClient({ initialConfig }: MenusStudioClientProps) {
                       type="text"
                       value={item.href}
                       onChange={(e) => handleUpdateHeaderItem(idx, { href: e.target.value })}
-                      placeholder="Link URL (e.g. /products)"
+                      placeholder="Link URL (e.g. /shop)"
                       className="w-48 rounded-xl border border-slate-300 bg-white px-3 py-1.5 text-xs font-mono text-slate-700 outline-none focus:border-gold"
                     />
                   </div>

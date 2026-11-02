@@ -2,9 +2,27 @@ import type { Metadata } from "next";
 import Link from "next/link";
 
 export const metadata: Metadata = {
-  title: "Statement of Faith | For The Truth",
+  title: "Statement of Faith",
   description:
     "The doctrinal convictions and Statement of Faith of FOR THE TRUTH PRESS — Scripture, God, Christ, Salvation, the Church, and Eternity.",
+  alternates: {
+    canonical: "/statement-of-faith",
+  },
+  openGraph: {
+    title: "Statement of Faith — For The Truth",
+    description:
+      "The doctrinal convictions and Statement of Faith of FOR THE TRUTH PRESS.",
+    url: "https://forthetruth.in/statement-of-faith",
+    siteName: "For The Truth",
+    locale: "en_IN",
+    type: "website",
+  },
+  twitter: {
+    card: "summary",
+    title: "Statement of Faith — For The Truth",
+    description:
+      "The doctrinal convictions and Statement of Faith of FOR THE TRUTH PRESS.",
+  },
 };
 
 const ARTICLES = [
@@ -101,8 +119,32 @@ const ARTICLES = [
 ];
 
 export default function StatementOfFaithPage() {
+  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://forthetruth.in";
+  const breadcrumbJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: [
+      {
+        "@type": "ListItem",
+        position: 1,
+        name: "Home",
+        item: baseUrl,
+      },
+      {
+        "@type": "ListItem",
+        position: 2,
+        name: "Statement of Faith",
+        item: `${baseUrl}/statement-of-faith`,
+      },
+    ],
+  };
+
   return (
     <div className="bg-offwhite min-h-screen">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd) }}
+      />
       {/* Hero */}
       <section className="bg-navy-gradient py-16 text-white md:py-20">
         <div className="mx-auto max-w-4xl px-4 text-center lg:px-8">
@@ -152,7 +194,7 @@ export default function StatementOfFaithPage() {
             Discover resources aligned with sound doctrine, rich theology, and gospel-centred living.
           </p>
           <div className="mt-6 flex flex-wrap justify-center gap-3">
-            <Link href="/products" className="btn-cta text-sm px-6 py-2.5">
+            <Link href="/shop" className="btn-cta text-sm px-6 py-2.5">
               Explore All Books →
             </Link>
             <Link href="/about" className="btn-outline text-sm px-6 py-2.5">

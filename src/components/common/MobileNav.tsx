@@ -41,7 +41,7 @@ export function MobileNav({ categories }: { categories: WCCategory[] }) {
   if (isSingleBookPage) return null;
 
   const isHome = pathname === "/";
-  const isShop = pathname.startsWith("/products") && !pathname.startsWith("/products/search");
+  const isShop = pathname === "/shop" || (pathname.startsWith("/shop") && !pathname.startsWith("/shop/search"));
   const isSearch = pathname.startsWith("/products/search");
   const isCart = pathname.startsWith("/cart");
 
@@ -77,7 +77,7 @@ export function MobileNav({ categories }: { categories: WCCategory[] }) {
 
         {/* 2. Shop */}
         <Link
-          href="/products"
+          href="/shop"
           onClick={() => triggerHaptic("tap")}
           aria-current={isShop ? "page" : undefined}
           className={`relative flex flex-1 flex-col items-center justify-center py-1 transition-all duration-200 active:scale-95 ${
@@ -239,7 +239,7 @@ export function MobileNav({ categories }: { categories: WCCategory[] }) {
                 <span>Theology</span>
                 <span className="text-xs text-charcoal/30">→</span>
               </Link>
-              <Link href="/products?availability=outofstock" className="flex items-center justify-between py-2 text-sm text-charcoal/70 transition-smooth hover:pl-1 hover:text-gold-dark">
+              <Link href="/shop?availability=outofstock" className="flex items-center justify-between py-2 text-sm text-charcoal/70 transition-smooth hover:pl-1 hover:text-gold-dark">
                 <span>Upcoming</span>
                 <span className="text-xs text-charcoal/30">→</span>
               </Link>
@@ -253,16 +253,16 @@ export function MobileNav({ categories }: { categories: WCCategory[] }) {
           <div className="mt-8">
             <p className="text-xs font-bold text-charcoal/60 mb-3">Publishers</p>
             <div className="space-y-1">
-              <Link href="/products?publisher=248" className="block py-2 text-sm text-charcoal/70 transition-smooth hover:pl-1 hover:text-gold-dark">
+              <Link href="/shop?publisher=248" className="block py-2 text-sm text-charcoal/70 transition-smooth hover:pl-1 hover:text-gold-dark">
                 For The Truth
               </Link>
-              <Link href="/products?publisher=1108" className="block py-2 text-sm text-charcoal/70 transition-smooth hover:pl-1 hover:text-gold-dark">
+              <Link href="/shop?publisher=1108" className="block py-2 text-sm text-charcoal/70 transition-smooth hover:pl-1 hover:text-gold-dark">
                 Shepherd Press
               </Link>
-              <Link href="/products?publisher=1887" className="block py-2 text-sm text-charcoal/70 transition-smooth hover:pl-1 hover:text-gold-dark">
+              <Link href="/shop?publisher=1887" className="block py-2 text-sm text-charcoal/70 transition-smooth hover:pl-1 hover:text-gold-dark">
                 10 Publishing
               </Link>
-              <Link href="/products?publisher=163" className="block py-2 text-sm text-charcoal/70 transition-smooth hover:pl-1 hover:text-gold-dark">
+              <Link href="/shop?publisher=163" className="block py-2 text-sm text-charcoal/70 transition-smooth hover:pl-1 hover:text-gold-dark">
                 The Good Book Company
               </Link>
             </div>

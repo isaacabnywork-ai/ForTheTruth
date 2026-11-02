@@ -107,27 +107,27 @@ export function CategoriesMegaMenu({
             <p className={subHeaderCls}>Shop By Age Range</p>
             <ul className="space-y-0.5">
               <li>
-                <Link href="/products?category=114&age=424" onClick={onNavigate} className={itemCls}>
+                <Link href="/shop?category=114&age=424" onClick={onNavigate} className={itemCls}>
                   Age 2–4
                 </Link>
               </li>
               <li>
-                <Link href="/products?category=114&age=469" onClick={onNavigate} className={itemCls}>
+                <Link href="/shop?category=114&age=469" onClick={onNavigate} className={itemCls}>
                   Age 2–6
                 </Link>
               </li>
               <li>
-                <Link href="/products?category=114&age=426" onClick={onNavigate} className={itemCls}>
+                <Link href="/shop?category=114&age=426" onClick={onNavigate} className={itemCls}>
                   Age 3–6
                 </Link>
               </li>
               <li>
-                <Link href="/products?category=114&age=423" onClick={onNavigate} className={itemCls}>
+                <Link href="/shop?category=114&age=423" onClick={onNavigate} className={itemCls}>
                   Age 4–8
                 </Link>
               </li>
               <li>
-                <Link href="/products?category=114&age=572" onClick={onNavigate} className={itemCls}>
+                <Link href="/shop?category=114&age=572" onClick={onNavigate} className={itemCls}>
                   Age 14–18
                 </Link>
               </li>
@@ -208,7 +208,7 @@ export function CategoriesMegaMenu({
                 </Link>
               </li>
               <li>
-                <Link href="/products?category=112&orderby=popularity" onClick={onNavigate} className={itemCls}>
+                <Link href="/shop?category=112&orderby=popularity" onClick={onNavigate} className={itemCls}>
                   Shop By Series
                 </Link>
               </li>
@@ -245,7 +245,7 @@ export function CategoriesMegaMenu({
               <p className={sectionHeaderCls}>Upcoming</p>
               <ul className="space-y-0.5">
                 <li>
-                  <Link href="/products?availability=outofstock" onClick={onNavigate} className={itemCls}>
+                  <Link href="/shop?availability=outofstock" onClick={onNavigate} className={itemCls}>
                     Upcoming Titles →
                   </Link>
                 </li>

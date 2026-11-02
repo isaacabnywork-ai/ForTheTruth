@@ -8,7 +8,13 @@ import { parseProductQuery, type SearchParamsMap } from "@/lib/productQuery";
 import { getProductsPaged } from "@/services/woocommerce";
 import { sortProductsByRelevance } from "@/utils/search";
 
-export const metadata: Metadata = { title: "Search" };
+export const metadata: Metadata = {
+  title: "Search Books",
+  robots: {
+    index: false,
+    follow: true,
+  },
+};
 
 export default async function SearchPage({
   searchParams,

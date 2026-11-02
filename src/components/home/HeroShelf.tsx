@@ -122,6 +122,9 @@ export function HeroShelf({
       aria-label="Featured Books Hero Slider"
     >
       <div className="relative overflow-hidden rounded-3xl md:rounded-[2.5rem] bg-white shadow-panel group/hero flex flex-col justify-between h-[calc(100dvh-200px)] min-h-[460px] lg:h-auto lg:min-h-0">
+        <h1 className="sr-only lg:hidden">
+          {title ? `${title} — For The Truth Online Christian Bookstore India` : "For The Truth — Curated Sound Christian Books & Literature in India"}
+        </h1>
         <div className="pointer-events-none absolute inset-0 bg-cream-mesh opacity-80" />
         <div className="pointer-events-none absolute inset-0 bg-paper-texture opacity-50" />
 
@@ -153,10 +156,10 @@ export function HeroShelf({
             )}
 
             <div className="mt-8 flex flex-wrap items-center gap-3 justify-start">
-              <Link href="/products" className="btn-cta text-sm px-8 py-3.5">
+              <Link href="/shop" className="btn-cta text-sm px-8 py-3.5">
                 Start Browsing <span aria-hidden="true">↗</span>
               </Link>
-              <Link href="/products?orderby=popularity" className="btn-outline text-sm px-8 py-3.5">
+              <Link href="/shop?orderby=popularity" className="btn-outline text-sm px-8 py-3.5">
                 Bestsellers
               </Link>
             </div>

@@ -10,8 +10,7 @@ import {
   getProducts,
   getProductReviews,
 } from "@/services/woocommerce";
-import type { Product, ProductReview } from "@/types/product";
-
+import { getAuthor, getFormat, type Product, type ProductReview } from "@/types/product";
 import { cleanExcerpt } from "@/utils/text";
 
 export const revalidate = 3600;
@@ -30,10 +29,14 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 
     const excerpt = cleanExcerpt(product.short_description || product.description, 160) || `Buy ${product.name} at For The Truth`;
     const image = product.images?.[0]?.src;
+    const authorName = getAuthor(product);
 
     return {
-      title: product.name, // Layout template will append " | For The Truth" cleanly without duplication
+      title: product.name,
       description: excerpt,
+      alternates: {
+        canonical: `/products/${slug}`,
+      },
       openGraph: {
         title: `${product.name} — Buy Online in India`,
         description: excerpt,
@@ -58,6 +61,13 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
         description: excerpt,
         ...(image && { images: [image] }),
       },
+      keywords: [
+        product.name,
+        ...(authorName ? [authorName, `books by ${authorName}`] : []),
+        "Christian books India",
+        "sound Christian doctrine",
+        ...(product.categories?.map((c) => c.name) || []),
+      ],
     };
   } catch {
     return { title: "Book Details" };
@@ -124,20 +134,51 @@ export default async function SingleProductPage({ params }: PageProps) {
     notFound();
   }
 
-  const jsonLd = {
+  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://forthetruth.in";
+  const authorName = getAuthor(product);
+  const format = getFormat(product);
+  const primaryCategory = product.categories?.[0];
+
+  const bookJsonLd = {
     "@context": "https://schema.org",
     "@type": "Book",
+    "@id": `${baseUrl}/products/${slug}#book`,
     name: product.name,
-    isbn: product.sku || undefined,
-    image: product.images[0]?.src,
+    description: cleanExcerpt(product.short_description || product.description, 400) || undefined,
+    url: `${baseUrl}/products/${slug}`,
+    image:
+      product.images && product.images.length > 0
+        ? product.images.map((img) => img.src)
+        : undefined,
+    sku: product.sku || String(product.id),
+    isbn: product.sku && /^[0-9-]{10,17}$/.test(product.sku) ? product.sku.replace(/-/g, "") : undefined,
+    author: authorName ? { "@type": "Person", name: authorName } : undefined,
+    publisher: {
+      "@type": "Organization",
+      name: "For The Truth",
+    },
+    bookFormat: format?.toLowerCase().includes("hardback")
+      ? "https://schema.org/Hardcover"
+      : format?.toLowerCase().includes("paperback")
+      ? "https://schema.org/Paperback"
+      : format?.toLowerCase().includes("ebook")
+      ? "https://schema.org/EBook"
+      : undefined,
     offers: {
       "@type": "Offer",
-      price: product.price,
+      price: product.price || product.regular_price || "0",
       priceCurrency: "INR",
+      priceValidUntil: new Date(Date.now() + 90 * 24 * 60 * 60 * 1000).toISOString().split("T")[0],
+      itemCondition: "https://schema.org/NewCondition",
       availability:
         product.stock_status === "instock"
           ? "https://schema.org/InStock"
           : "https://schema.org/OutOfStock",
+      url: `${baseUrl}/products/${slug}`,
+      seller: {
+        "@type": "Organization",
+        name: "For The Truth",
+      },
     },
     aggregateRating:
       product.rating_count > 0
@@ -145,15 +186,78 @@ export default async function SingleProductPage({ params }: PageProps) {
             "@type": "AggregateRating",
             ratingValue: product.average_rating,
             reviewCount: product.rating_count,
+            bestRating: 5,
+            worstRating: 1,
           }
         : undefined,
+    review:
+      reviews.length > 0
+        ? reviews.slice(0, 5).map((r) => ({
+            "@type": "Review",
+            author: { "@type": "Person", name: r.reviewer },
+            datePublished: r.date_created,
+            reviewBody: cleanExcerpt(r.review, 400),
+            reviewRating: {
+              "@type": "Rating",
+              ratingValue: r.rating,
+              bestRating: 5,
+              worstRating: 1,
+            },
+          }))
+        : undefined,
+  };
+
+  const breadcrumbJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: [
+      {
+        "@type": "ListItem",
+        position: 1,
+        name: "Home",
+        item: baseUrl,
+      },
+      {
+        "@type": "ListItem",
+        position: 2,
+        name: "Shop",
+        item: `${baseUrl}/shop`,
+      },
+      ...(primaryCategory
+        ? [
+            {
+              "@type": "ListItem",
+              position: 3,
+              name: primaryCategory.name,
+              item: `${baseUrl}/categories/${primaryCategory.slug}`,
+            },
+            {
+              "@type": "ListItem",
+              position: 4,
+              name: product.name,
+              item: `${baseUrl}/products/${slug}`,
+            },
+          ]
+        : [
+            {
+              "@type": "ListItem",
+              position: 3,
+              name: product.name,
+              item: `${baseUrl}/products/${slug}`,
+            },
+          ]),
+    ],
   };
 
   return (
     <div className="w-full bg-cream">
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(bookJsonLd) }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd) }}
       />
       <ProductDetail product={product} reviews={reviews} />
 

@@ -138,7 +138,7 @@ export function FreeEbooksGrid({ books }: Props) {
         </div>
         <h2 className="font-display text-2xl font-bold text-charcoal">No Free E-Books Yet</h2>
         <p className="mt-2 text-charcoal/60">Check back soon — we&apos;re adding more titles regularly.</p>
-        <Link href="/products" className="btn-gold mt-6 inline-flex">Browse All Books</Link>
+        <Link href="/shop" className="btn-gold mt-6 inline-flex">Browse All Books</Link>
       </div>
     );
   }
