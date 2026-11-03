@@ -1,6 +1,14 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 
+const selectedBookItemSchema = z.object({
+  id: z.union([z.string(), z.number()]),
+  name: z.string(),
+  author: z.string().nullable().optional(),
+  quantity: z.number().min(1).default(1),
+  price: z.union([z.string(), z.number()]).optional(),
+});
+
 const bookstallRegistrationSchema = z.object({
   churchName: z.string().min(2, "Church or Ministry name is required").max(200),
   cityState: z.string().min(2, "City and State is required").max(150),
@@ -8,11 +16,11 @@ const bookstallRegistrationSchema = z.object({
   role: z.string().min(1, "Role is required").max(80),
   email: z.string().email("Please enter a valid email address"),
   phone: z.string().min(10, "Please enter a valid 10-digit phone/WhatsApp number").max(25),
-  congregationSize: z.string().min(1, "Congregation size is required"),
   eventType: z.string().min(1, "Event type is required"),
-  eventDate: z.string().min(1, "Event date or timeframe is required"),
-  bookCategories: z.array(z.string()).min(1, "Please select at least one book category"),
-  estimatedBudgetOrVolume: z.string().optional(),
+  customEventType: z.string().optional(),
+  bookCategories: z.array(z.string()).default([]),
+  bookVolumeDescription: z.string().min(1, "Please describe the approximate number of books needed"),
+  selectedBooks: z.array(selectedBookItemSchema).optional().default([]),
   additionalNotes: z.string().max(2000).optional(),
 });
 
@@ -68,26 +76,32 @@ export async function POST(req: NextRequest) {
                 <td style="padding: 10px 0;"><a href="https://wa.me/${data.phone.replace(/[^0-9]/g, '')}" style="color: #10B981; font-weight: bold;">${data.phone}</a></td>
               </tr>
               <tr style="border-bottom: 1px solid #F3F4F6;">
-                <td style="padding: 10px 0; font-weight: bold; color: #1F2937;">Congregation Size:</td>
-                <td style="padding: 10px 0;">${data.congregationSize} members</td>
-              </tr>
-              <tr style="border-bottom: 1px solid #F3F4F6;">
                 <td style="padding: 10px 0; font-weight: bold; color: #1F2937;">Event / Gathering:</td>
-                <td style="padding: 10px 0;">${data.eventType} (${data.eventDate})</td>
+                <td style="padding: 10px 0;">${data.eventType}${data.customEventType ? ` — <em>${data.customEventType}</em>` : ""}</td>
               </tr>
               <tr style="border-bottom: 1px solid #F3F4F6;">
-                <td style="padding: 10px 0; font-weight: bold; color: #1F2937;">Categories of Interest:</td>
+                <td style="padding: 10px 0; font-weight: bold; color: #1F2937;">Desired Book Volume:</td>
+                <td style="padding: 10px 0;">${data.bookVolumeDescription}</td>
+              </tr>
+              ${data.bookCategories && data.bookCategories.length > 0 ? `
+              <tr style="border-bottom: 1px solid #F3F4F6;">
+                <td style="padding: 10px 0; font-weight: bold; color: #1F2937;">Selected Categories:</td>
                 <td style="padding: 10px 0;">${data.bookCategories.join(", ")}</td>
               </tr>
-              ${data.estimatedBudgetOrVolume ? `
+              ` : ''}
+              ${data.selectedBooks && data.selectedBooks.length > 0 ? `
               <tr style="border-bottom: 1px solid #F3F4F6;">
-                <td style="padding: 10px 0; font-weight: bold; color: #1F2937;">Desired Book Count:</td>
-                <td style="padding: 10px 0;">${data.estimatedBudgetOrVolume}</td>
+                <td style="padding: 10px 0; font-weight: bold; color: #1F2937; vertical-align: top;">Specific Books Requested (${data.selectedBooks.length}):</td>
+                <td style="padding: 10px 0;">
+                  <ul style="margin: 0; padding-left: 18px; color: #374151;">
+                    ${data.selectedBooks.map((b) => `<li><strong>${b.quantity}x</strong> ${b.name}${b.author ? ` <span style="color:#6B7280;">by ${b.author}</span>` : ""}</li>`).join("")}
+                  </ul>
+                </td>
               </tr>
               ` : ''}
               ${data.additionalNotes ? `
               <tr>
-                <td style="padding: 10px 0; font-weight: bold; color: #1F2937; vertical-align: top;">Notes / Special Titles:</td>
+                <td style="padding: 10px 0; font-weight: bold; color: #1F2937; vertical-align: top;">Additional Notes:</td>
                 <td style="padding: 10px 0; line-height: 1.5;">${data.additionalNotes}</td>
               </tr>
               ` : ''}
