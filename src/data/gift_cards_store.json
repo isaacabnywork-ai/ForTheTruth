@@ -1,0 +1,176 @@
+{
+  "cards": [
+    {
+      "id": "gc_1793682323215_9b4c0e",
+      "code": "FTT-5G8R-E69G-XBEW",
+      "codeHash": "89a1b2eb8337ae02318518693e73d505dacfa5baa355dc4c98cf1dddc6fc028c",
+      "designId": "gift-exchange",
+      "designTitle": "Gift Exchange",
+      "designImage": "/images/gift-cards/gift-exchange.webp",
+      "initialAmount": 500,
+      "remainingBalance": 500,
+      "currency": "INR",
+      "senderName": "Pastor David",
+      "senderEmail": "david@example.com",
+      "recipientName": "Timothy Paul",
+      "recipientEmail": "timothy@example.com",
+      "message": "A gift for your studies!",
+      "status": "active",
+      "type": "purchased",
+      "orderId": 88795,
+      "expiryDate": "2027-11-03T05:05:23.215Z",
+      "createdAt": "2026-11-03T05:05:23.215Z",
+      "updatedAt": "2026-11-03T05:05:23.222Z",
+      "emailDeliveryStatus": "sent",
+      "emailHistory": [
+        {
+          "sentAt": "2026-11-03T05:05:23.222Z",
+          "recipientEmail": "timothy@example.com",
+          "status": "sent"
+        }
+      ]
+    },
+    {
+      "id": "gc_demo_sample_1",
+      "code": "FTT-7K2M-9P4X-W3A8",
+      "codeHash": "9ab4133df260779929de7d3f81b59f8d087f1628e93b5bdb4e85baabf67f625b",
+      "designId": "classic-gift-card",
+      "designTitle": "Classic Gift Card",
+      "designImage": "/images/gift-cards/classic-gift-card.webp",
+      "initialAmount": 1000,
+      "remainingBalance": 500,
+      "currency": "INR",
+      "senderName": "Pastor David",
+      "senderEmail": "david@example.com",
+      "recipientName": "Samuel Reader",
+      "recipientEmail": "samuel@example.com",
+      "message": "May these books encourage you in the knowledge and love of Christ!",
+      "status": "active",
+      "type": "complimentary",
+      "orderId": 80001,
+      "expiryDate": "2027-11-03T05:01:12.135Z",
+      "createdAt": "2026-11-03T05:01:12.134Z",
+      "updatedAt": "2026-11-03T05:05:23.212Z",
+      "emailDeliveryStatus": "sent",
+      "emailHistory": [
+        {
+          "sentAt": "2026-11-03T05:01:12.134Z",
+          "recipientEmail": "samuel@example.com",
+          "status": "sent"
+        }
+      ],
+      "notes": "Pre-loaded demonstration gift card",
+      "lastUsedAt": "2026-11-03T05:05:23.212Z"
+    }
+  ],
+  "transactions": [
+    {
+      "id": "tx_1793682323215_c8da21",
+      "giftCardId": "gc_1793682323215_9b4c0e",
+      "giftCardCodeMasked": "FTT-••••-••••-XBEW",
+      "type": "issuance",
+      "amount": 500,
+      "balanceBefore": 0,
+      "balanceAfter": 500,
+      "orderId": 88795,
+      "note": "Purchased via Order #88795",
+      "performedBy": "System (Checkout)",
+      "createdAt": "2026-11-03T05:05:23.215Z"
+    },
+    {
+      "id": "tx_1793682323212_9028ca",
+      "giftCardId": "gc_demo_sample_1",
+      "giftCardCodeMasked": "FTT-••••-••••-W3A8",
+      "type": "redemption",
+      "amount": 500,
+      "balanceBefore": 1000,
+      "balanceAfter": 500,
+      "orderId": 88795,
+      "note": "Redeemed on Order #88795",
+      "performedBy": "david@example.com",
+      "createdAt": "2026-11-03T05:05:23.212Z"
+    },
+    {
+      "id": "tx_demo_sample_1",
+      "giftCardId": "gc_demo_sample_1",
+      "giftCardCodeMasked": "FTT-••••-••••-W3A8",
+      "type": "issuance",
+      "amount": 1000,
+      "balanceBefore": 0,
+      "balanceAfter": 1000,
+      "orderId": 80001,
+      "note": "Complimentary issuance for demo testing",
+      "performedBy": "System (Setup)",
+      "createdAt": "2026-11-03T05:01:12.134Z"
+    }
+  ],
+  "settings": {
+    "enabled": true,
+    "minAmount": 100,
+    "maxAmount": 10000,
+    "defaultValidityDays": 365,
+    "allowMultiplePerOrder": true,
+    "allowPartialRedemption": true,
+    "allowGuestRedemption": true,
+    "senderName": "For The Truth",
+    "senderEmail": "contact@forthetruth.in",
+    "designs": [
+      {
+        "id": "classic-gift-card",
+        "title": "Classic Gift Card",
+        "subtitle": "Stacked Books & Ribbon",
+        "description": "Our signature bookstore gift card adorned with a stacked pile of classic Christian books wrapped in a bright yellow ribbon.",
+        "image": "/images/gift-cards/classic-gift-card.webp",
+        "bgColor": "#FFFBF0",
+        "enabled": true
+      },
+      {
+        "id": "gift-exchange",
+        "title": "Gift Exchange",
+        "subtitle": "Hands Exchanging Present",
+        "description": "A joyful and vibrant design celebrating the fellowship and delight of giving thoughtful books to one another.",
+        "image": "/images/gift-cards/gift-exchange.webp",
+        "bgColor": "#FFD028",
+        "enabled": true
+      },
+      {
+        "id": "faith-journey",
+        "title": "Faith Journey",
+        "subtitle": "A Gift of Books for Your Walk",
+        "description": "An uplifting, warm pink illustration of an open Bible with the cross, encouraging spiritual depth and biblical discernment.",
+        "image": "/images/gift-cards/faith-journey.webp",
+        "bgColor": "#FFDFE5",
+        "enabled": true
+      },
+      {
+        "id": "birthday-gift-card",
+        "title": "Birthday Gift Card",
+        "subtitle": "Celebration Cake & Candle",
+        "description": "A cheerful sky-blue design with a frosted birthday cake and shining candle to bless someone on their special day.",
+        "image": "/images/gift-cards/birthday-gift-card.webp",
+        "bgColor": "#8FE0FF",
+        "enabled": true
+      },
+      {
+        "id": "christmas-gift-card",
+        "title": "Merry Christmas Gift Card",
+        "subtitle": "Christmas Tree & Gifts",
+        "description": "A cozy lavender card with a Christmas tree and gifts celebrating the incarnation of Christ and giving the gift of sound literature.",
+        "image": "/images/gift-cards/christmas-gift-card.webp",
+        "bgColor": "#DDD1F5",
+        "enabled": true
+      },
+      {
+        "id": "thank-you-gift-card",
+        "title": "Thank You Gift Card",
+        "subtitle": "Envelope & Heart",
+        "description": "A fresh mint-green design with a love-filled envelope expressing deep appreciation to pastors, mentors, family, and friends.",
+        "image": "/images/gift-cards/thank-you-gift-card.webp",
+        "bgColor": "#D5F5E3",
+        "enabled": true
+      }
+    ]
+  },
+  "version": 1,
+  "lastUpdated": "2026-11-03T05:05:23.222Z"
+}

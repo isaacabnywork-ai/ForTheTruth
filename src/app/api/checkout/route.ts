@@ -5,6 +5,8 @@ import { createRazorpayOrder } from "@/services/razorpay";
 import { createOrder, getProducts } from "@/services/woocommerce";
 import { calculateShipping } from "@/utils/shipping";
 import { getUnlockedRewards } from "@/utils/rewards";
+import { validateGiftCardForCheckout, redeemGiftCard, issueGiftCard } from "@/services/giftCards";
+import { sendGiftCardDeliveryEmail, sendPurchaserConfirmationEmail } from "@/services/giftCardEmail";
 
 const addressSchema = z.object({
   firstName: z.string().min(1),
@@ -18,12 +20,30 @@ const addressSchema = z.object({
   country: z.string().default("IN"),
 });
 
+const giftCardDetailsSchema = z.object({
+  designId: z.string(),
+  designTitle: z.string().optional(),
+  designName: z.string().optional(),
+  designImage: z.string().optional(),
+  artworkUrl: z.string().optional(),
+  recipientName: z.string(),
+  recipientEmail: z.string(),
+  senderName: z.string(),
+  senderEmail: z.string(),
+  message: z.string().optional(),
+  deliveryDate: z.string().optional(),
+});
+
 const schema = z.object({
   items: z
     .array(
       z.object({
-        productId: z.number().int().positive(),
+        productId: z.number().int(),
         quantity: z.number().int().min(1).max(20),
+        name: z.string().optional(),
+        price: z.number().optional(),
+        isVirtual: z.boolean().optional(),
+        giftCardDetails: giftCardDetailsSchema.optional(),
       })
     )
     .min(1)
@@ -32,6 +52,7 @@ const schema = z.object({
   billingSameAsShipping: z.boolean().default(true),
   billing: addressSchema.optional(),
   couponCode: z.string().max(50).optional(),
+  appliedGiftCardCode: z.string().optional(),
   isFreeOrder: z.boolean().optional().default(false),
   shippingMethod: z.enum(["delivery", "pickup"]).optional().default("delivery"),
 });
@@ -44,42 +65,67 @@ export async function POST(req: NextRequest) {
       { status: 400 }
     );
   }
-  const { items, shipping, billing, billingSameAsShipping, couponCode, shippingMethod } =
-    parsed.data;
+  const {
+    items,
+    shipping,
+    billing,
+    billingSameAsShipping,
+    couponCode,
+    appliedGiftCardCode,
+    shippingMethod,
+  } = parsed.data;
 
   try {
-    // 1. NEVER trust client prices — refetch from WooCommerce
-    const products = await getProducts({
-      include: items.map((i) => i.productId),
-      perPage: items.length,
-      revalidate: 0,
-    });
-    if (products.length !== items.length) {
-      return NextResponse.json(
-        { error: "Some items are no longer available" },
-        { status: 409 }
-      );
+    const regularItems = items.filter((i) => !i.giftCardDetails);
+    const giftCardItems = items.filter((i) => !!i.giftCardDetails);
+
+    // 1. Refetch regular items from WooCommerce
+    let subtotal = 0;
+    const shippingItems: Array<{ quantity: number; weight?: number; isVirtual: boolean }> = [];
+
+    if (regularItems.length > 0) {
+      const products = await getProducts({
+        include: regularItems.map((i) => i.productId),
+        perPage: regularItems.length,
+        revalidate: 0,
+      });
+      if (products.length !== regularItems.length) {
+        return NextResponse.json(
+          { error: "Some items are no longer available" },
+          { status: 409 }
+        );
+      }
+
+      for (const item of regularItems) {
+        const product = products.find((p) => p.id === item.productId)!;
+        if (
+          product.stock_status === "outofstock" ||
+          (product.stock_quantity != null &&
+            product.stock_quantity < item.quantity)
+        ) {
+          throw new StockError(product.name);
+        }
+        subtotal += parseFloat(product.price) * item.quantity;
+        const isVirtual = product.categories?.some((c) => c.slug === "e-books") || false;
+        const weight = product.weight ? parseFloat(product.weight) : undefined;
+        shippingItems.push({
+          quantity: item.quantity,
+          weight,
+          isVirtual,
+        });
+      }
     }
 
-    let subtotal = 0;
-    const shippingItems = items.map((item) => {
-      const product = products.find((p) => p.id === item.productId)!;
-      if (
-        product.stock_status === "outofstock" ||
-        (product.stock_quantity != null &&
-          product.stock_quantity < item.quantity)
-      ) {
-        throw new StockError(product.name);
-      }
-      subtotal += parseFloat(product.price) * item.quantity;
-      const isVirtual = product.categories?.some((c) => c.slug === "e-books") || false;
-      const weight = product.weight ? parseFloat(product.weight) : undefined;
-      return {
+    // Add gift card items
+    for (const item of giftCardItems) {
+      const price = item.price || 0;
+      subtotal += price * item.quantity;
+      shippingItems.push({
         quantity: item.quantity,
-        weight,
-        isVirtual,
-      };
-    });
+        weight: 0,
+        isVirtual: true,
+      });
+    }
 
     const earnedRewards = getUnlockedRewards(subtotal);
     const rewardLineItems = earnedRewards.map((reward) => ({
@@ -93,13 +139,26 @@ export async function POST(req: NextRequest) {
       ],
     }));
 
-    const lineItems = [
-      ...items.map((item) => ({
-        product_id: item.productId,
-        quantity: item.quantity,
-      })),
-      ...rewardLineItems,
-    ];
+    const regularLineItems = regularItems.map((item) => ({
+      product_id: item.productId,
+      quantity: item.quantity,
+    }));
+
+    const giftCardLineItems = giftCardItems.map((item) => ({
+      name: item.name || `Digital Gift Card - ${item.giftCardDetails?.designName || "For The Truth"}`,
+      subtotal: String((item.price || 0) * item.quantity),
+      total: String((item.price || 0) * item.quantity),
+      quantity: item.quantity,
+      meta_data: [
+        { key: "Type", value: "Digital Gift Card" },
+        { key: "Recipient", value: `${item.giftCardDetails?.recipientName} (${item.giftCardDetails?.recipientEmail})` },
+        { key: "Sender", value: `${item.giftCardDetails?.senderName} (${item.giftCardDetails?.senderEmail})` },
+        ...(item.giftCardDetails?.message ? [{ key: "Personal Message", value: item.giftCardDetails.message }] : []),
+        { key: "_gift_card_data", value: JSON.stringify(item.giftCardDetails) },
+      ],
+    }));
+
+    const lineItems = [...regularLineItems, ...rewardLineItems, ...giftCardLineItems];
 
     const bill = billing || shipping;
     if (!bill) {
@@ -113,7 +172,25 @@ export async function POST(req: NextRequest) {
       shippingMethod,
       subtotal,
     });
-    const shippingCost = shippingCalc.cost;
+    // Virtual only orders have 0 shipping
+    const shippingCost = shippingItems.every((i) => i.isVirtual) ? 0 : shippingCalc.cost;
+
+    // Validate Applied Gift Card (Redemption)
+    let appliedGiftCardDeduction = 0;
+    let validatedCard = null;
+    if (appliedGiftCardCode) {
+      const validation = await validateGiftCardForCheckout(
+        appliedGiftCardCode,
+        subtotal + shippingCost
+      );
+      if (validation.valid) {
+        validatedCard = validation;
+        appliedGiftCardDeduction = Math.min(
+          validation.availableBalance,
+          subtotal + shippingCost
+        );
+      }
+    }
 
     const user = await getSessionUser().catch(() => null);
 
@@ -148,14 +225,18 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    const isFree = subtotal + shippingCost === 0;
+    const totalBeforeGiftCard = subtotal + shippingCost;
+    const finalPayable = Math.max(0, totalBeforeGiftCard - appliedGiftCardDeduction);
+    const isFree = finalPayable === 0;
 
-    // 2. Create the WooCommerce order (pending payment or completed if free).
-    //    WooCommerce recomputes item prices and applies the coupon itself.
     const orderPayload: any = {
       status: isFree ? "completed" : "pending",
-      payment_method: isFree ? "free" : "razorpay",
-      payment_method_title: isFree ? "Free Download" : "Razorpay",
+      payment_method: isFree
+        ? (appliedGiftCardDeduction > 0 ? "gift_card" : "free")
+        : "razorpay",
+      payment_method_title: isFree
+        ? (appliedGiftCardDeduction > 0 ? "Gift Card Redemption" : "Free Download")
+        : "Razorpay",
       set_paid: isFree,
       customer_id: resolvedCustomerId,
       billing: {
@@ -170,10 +251,24 @@ export async function POST(req: NextRequest) {
         country: bill.country,
       },
       line_items: lineItems,
-      ...(earnedRewards.length > 0 && {
-        customer_note: `🎁 Included ${earnedRewards.length} Free Reward Book(s): ${earnedRewards.map((r) => r.title).join(", ")}`,
+      ...(appliedGiftCardDeduction > 0 && {
+        fee_lines: [
+          {
+            name: `Gift Card (${validatedCard?.maskedCode || appliedGiftCardCode})`,
+            total: `-${appliedGiftCardDeduction}`,
+            tax_status: "none",
+          },
+        ],
       }),
-      ...(shipping && {
+      customer_note: [
+        ...(earnedRewards.length > 0
+          ? [`🎁 Included ${earnedRewards.length} Free Reward Book(s): ${earnedRewards.map((r) => r.title).join(", ")}`]
+          : []),
+        ...(appliedGiftCardDeduction > 0
+          ? [`🎟️ Redeemed Gift Card: ${validatedCard?.maskedCode} (-₹${appliedGiftCardDeduction})`]
+          : []),
+      ].join(" | "),
+      ...(shipping && !shippingItems.every((i) => i.isVirtual) && {
         shipping: {
           first_name: shipping.firstName,
           last_name: shipping.lastName,
@@ -182,9 +277,9 @@ export async function POST(req: NextRequest) {
           state: shippingMethod === "pickup" ? "" : shipping.state,
           postcode: shippingMethod === "pickup" ? "" : shipping.postcode,
           country: shipping.country,
-        }
+        },
       }),
-      ...(shippingMethod !== undefined && {
+      ...(shippingMethod !== undefined && !shippingItems.every((i) => i.isVirtual) && {
         shipping_lines:
           shippingMethod === "pickup"
             ? [
@@ -215,31 +310,28 @@ export async function POST(req: NextRequest) {
 
     let order;
     try {
-      // Stage 1: Attempt standard order creation in WooCommerce
       order = await createOrder(orderPayload);
     } catch (createErr) {
       console.warn("Stage 1 WooCommerce Order Creation failed:", createErr instanceof Error ? createErr.message : createErr);
       try {
-        // Stage 2: Retry with safe guest order (customer_id: 0) and minimal payload so order is ALWAYS created in WooCommerce
         const fallbackPayload: any = {
           status: isFree ? "completed" : "pending",
           customer_id: 0,
           billing: orderPayload.billing,
           shipping: orderPayload.shipping,
           line_items: orderPayload.line_items,
+          fee_lines: orderPayload.fee_lines,
           coupon_lines: orderPayload.coupon_lines,
         };
         if (isFree) {
-          fallbackPayload.payment_method = "free";
-          fallbackPayload.payment_method_title = "Free Download";
+          fallbackPayload.payment_method = isFree && appliedGiftCardDeduction > 0 ? "gift_card" : "free";
+          fallbackPayload.payment_method_title = isFree && appliedGiftCardDeduction > 0 ? "Gift Card Redemption" : "Free Download";
           fallbackPayload.set_paid = true;
         }
         order = await createOrder(fallbackPayload);
       } catch (retryErr) {
         console.warn("Stage 2 Minimal Guest Order Creation failed:", retryErr instanceof Error ? retryErr.message : retryErr);
-
-        // Stage 3: Sandbox simulation fallback
-        const simulatedTotal = subtotal + shippingCost;
+        const simulatedTotal = finalPayable;
         order = {
           id: Math.floor(80000 + Math.random() * 19999),
           order_key: `wc_order_sim_${Date.now()}`,
@@ -252,20 +344,62 @@ export async function POST(req: NextRequest) {
             },
           ],
         };
-        console.info(`Stage 3 Activated: Created fallback sandbox order #${order.id} (₹${order.total}) for uninterrupted testing.`);
       }
     }
 
-    // 3. If total is ₹0 (all free items / e-books), complete order directly — no Razorpay needed
-    const amount = parseFloat(order.total ?? "0");
-    if (amount === 0) {
-      // Mark order as completed directly in WooCommerce
+    // 3. If total payable is ₹0 (covered by gift card or free download), complete immediately
+    if (finalPayable === 0) {
+      // Execute gift card redemption
+      if (appliedGiftCardCode && appliedGiftCardDeduction > 0) {
+        try {
+          await redeemGiftCard({
+            code: appliedGiftCardCode,
+            amount: appliedGiftCardDeduction,
+            orderId: order.id,
+            performedBy: bill.email,
+            note: `Redeemed on Order #${order.id}`,
+          });
+        } catch (redeemErr) {
+          console.error("Gift card redemption execution failed:", redeemErr);
+        }
+      }
+
+      // Execute gift card issuance for any purchased cards
+      if (giftCardItems.length > 0) {
+        for (const item of giftCardItems) {
+          if (!item.giftCardDetails) continue;
+          try {
+            const { giftCard } = await issueGiftCard({
+              amount: item.price || 0,
+              designId: item.giftCardDetails.designId,
+              senderName: item.giftCardDetails.senderName,
+              senderEmail: item.giftCardDetails.senderEmail,
+              recipientName: item.giftCardDetails.recipientName,
+              recipientEmail: item.giftCardDetails.recipientEmail,
+              message: item.giftCardDetails.message,
+              orderId: order.id,
+              type: "purchased",
+            });
+            await sendGiftCardDeliveryEmail({ giftCard, fullCode: giftCard.code });
+            await sendPurchaserConfirmationEmail({ giftCard });
+          } catch (issueErr) {
+            console.error("Gift card issuance on free order failed:", issueErr);
+          }
+        }
+      }
+
       try {
         const { updateOrder } = await import("@/services/woocommerce");
-        await updateOrder(order.id, { status: "completed", payment_method: "free", payment_method_title: "Free Download" });
+        await updateOrder(order.id, {
+          status: "completed",
+          payment_method: appliedGiftCardDeduction > 0 ? "gift_card" : "free",
+          payment_method_title: appliedGiftCardDeduction > 0 ? "Gift Card Redemption" : "Free Download",
+          set_paid: true,
+        });
       } catch (updateErr) {
-        console.warn("Could not mark free order as completed:", updateErr);
+        console.warn("Could not mark free/gift-card order as completed:", updateErr);
       }
+
       return NextResponse.json({
         wcOrderId: order.id,
         orderKey: order.order_key,
@@ -273,10 +407,12 @@ export async function POST(req: NextRequest) {
         amount: 0,
         shippingCost: 0,
         shippingTitle: "Free",
+        giftCardDeduction: appliedGiftCardDeduction,
       });
     }
 
-    const rzpOrder = await createRazorpayOrder(amount, `wc_${order.id}`);
+    // Otherwise, create Razorpay order for the remaining payable amount
+    const rzpOrder = await createRazorpayOrder(finalPayable, `wc_${order.id}`);
 
     return NextResponse.json({
       wcOrderId: order.id,
@@ -288,8 +424,8 @@ export async function POST(req: NextRequest) {
       shippingCost,
       shippingTitle: shippingCalc.label,
       totalWeightKg: shippingCalc.totalWeightKg,
+      giftCardDeduction: appliedGiftCardDeduction,
     });
-
   } catch (err) {
     if (err instanceof StockError) {
       return NextResponse.json(
@@ -303,7 +439,6 @@ export async function POST(req: NextRequest) {
       if (err.message.includes("coupon")) {
         message = "Invalid coupon code";
       } else {
-        // Pass real error message to UI for clear debugging and visibility
         message = `Checkout failed: ${err.message}`;
       }
     }

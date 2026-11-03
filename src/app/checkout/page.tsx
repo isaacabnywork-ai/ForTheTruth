@@ -39,6 +39,15 @@ function loadRazorpay(): Promise<boolean> {
   });
 }
 
+interface AppliedGiftCard {
+  code: string;
+  maskedCode: string;
+  availableBalance: number;
+  appliedAmount: number;
+  designTitle?: string;
+  designImage?: string;
+}
+
 export default function CheckoutPage() {
   const { items, clearCart } = useCartStore();
   const { user } = useAuth();
@@ -51,6 +60,13 @@ export default function CheckoutPage() {
   const [shippingMethod, setShippingMethod] = useState<"delivery" | "pickup">("delivery");
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
+
+  // Gift Card State
+  const [giftCardCode, setGiftCardCode] = useState("");
+  const [giftCardBusy, setGiftCardBusy] = useState(false);
+  const [giftCardError, setGiftCardError] = useState("");
+  const [appliedGiftCard, setAppliedGiftCard] = useState<AppliedGiftCard | null>(null);
+
   const [mockPaymentModal, setMockPaymentModal] = useState<{
     wcOrderId: number;
     orderKey?: string;
@@ -83,7 +99,49 @@ export default function CheckoutPage() {
   });
 
   const estShipping = requiresShipping ? shippingInfo.cost : 0;
-  const isFreeOrder = subtotal === 0 || (subtotal + estShipping === 0);
+  const totalBeforeGiftCard = subtotal + estShipping;
+  const appliedDeduction = appliedGiftCard
+    ? Math.min(appliedGiftCard.availableBalance, totalBeforeGiftCard)
+    : 0;
+  const finalPayable = Math.max(0, totalBeforeGiftCard - appliedDeduction);
+  const isCoveredByGiftCard = appliedGiftCard !== null && finalPayable === 0;
+  const isFreeOrder = finalPayable === 0;
+
+  async function handleApplyGiftCard() {
+    if (!giftCardCode.trim()) return;
+    setGiftCardBusy(true);
+    setGiftCardError("");
+
+    try {
+      const res = await fetch("/api/gift-cards/validate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          code: giftCardCode.trim(),
+          orderTotal: totalBeforeGiftCard,
+        }),
+      });
+
+      const data = await res.json();
+      if (!res.ok || !data.valid) {
+        setGiftCardError(data.error || "Invalid gift card code");
+        setAppliedGiftCard(null);
+      } else {
+        setAppliedGiftCard({
+          code: data.card.code,
+          maskedCode: data.card.maskedCode,
+          availableBalance: data.card.availableBalance,
+          appliedAmount: data.card.appliedAmount,
+          designTitle: data.card.designTitle,
+          designImage: data.card.designImage,
+        });
+      }
+    } catch {
+      setGiftCardError("Could not validate gift card. Check connection.");
+    } finally {
+      setGiftCardBusy(false);
+    }
+  }
 
   const saveOrderForConfirmation = (orderId: number, orderKey?: string, extra?: Record<string, unknown>) => {
     try {
@@ -91,9 +149,10 @@ export default function CheckoutPage() {
       const orderSnapshot = {
         id: orderId,
         order_key: orderKey || "",
-        total: (subtotal + estShipping).toString(),
+        total: finalPayable.toString(),
         subtotal: subtotal.toString(),
         shipping_total: estShipping.toString(),
+        gift_card_deduction: appliedDeduction.toString(),
         shipping_lines: [
           {
             method_title: shippingMethod === "pickup" ? "Store Pickup" : shippingInfo.label,
@@ -129,7 +188,11 @@ export default function CheckoutPage() {
           total: (i.price * i.quantity).toString(),
           image: i.image ? { id: 0, src: i.image } : undefined,
         })),
-        payment_method_title: isFreeOrder ? "Free Order" : "Razorpay (Online Payment)",
+        payment_method_title: isCoveredByGiftCard
+          ? "Gift Card Redemption"
+          : isFreeOrder
+          ? "Free Order"
+          : "Razorpay (Online Payment)",
         date_created: new Date().toISOString(),
         total_weight_kg: shippingInfo.totalWeightKg,
         ...extra,
@@ -166,29 +229,38 @@ export default function CheckoutPage() {
           items: items.map((i) => ({
             productId: i.productId,
             quantity: i.quantity,
+            price: i.price,
+            name: i.name,
+            isVirtual: i.isVirtual,
+            giftCardDetails: i.giftCardDetails,
           })),
           shipping: requiresShipping ? shipping : undefined,
           billingSameAsShipping: requiresShipping ? billingSame : false,
           billing: requiresShipping ? (billingSame ? undefined : billing) : shipping,
           couponCode: coupon.trim() || undefined,
+          appliedGiftCardCode: appliedGiftCard ? appliedGiftCard.code : undefined,
           shippingMethod: requiresShipping ? shippingMethod : undefined,
         }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error ?? "Checkout failed");
 
-      // Free order (₹0 total) — no payment needed, redirect straight to confirmation
+      // Free or 100% gift card covered order — redirect directly to confirmation
       if (data.freeOrder) {
         saveOrderForConfirmation(data.wcOrderId, data.orderKey, {
-          payment_method_title: "Free Download",
+          payment_method_title: isCoveredByGiftCard ? "Gift Card Redemption" : "Free Download",
           total: "0",
         });
         clearCart();
-        router.push(`/checkout/confirmation?order=${data.wcOrderId}&key=${data.orderKey ?? ""}&free=1`);
+        router.push(
+          `/checkout/confirmation?order=${data.wcOrderId}&key=${data.orderKey ?? ""}&free=1${
+            isCoveredByGiftCard ? "&giftCard=1" : ""
+          }`
+        );
         return;
       }
 
-      // Switch to interactive simulated checkout modal if running in test sandbox mode without real keys
+      // Switch to interactive simulated checkout modal if running in test sandbox mode
       if (
         String(data.razorpayOrderId).startsWith("order_mock_") ||
         !data.keyId ||
@@ -210,6 +282,7 @@ export default function CheckoutPage() {
         throw new Error("Could not load the payment window. Check your connection.");
       }
 
+      const bill = billingSame ? shipping : billing;
       const rzp = new window.Razorpay({
         key: data.keyId,
         order_id: data.razorpayOrderId,
@@ -218,9 +291,9 @@ export default function CheckoutPage() {
         name: "For The Truth",
         description: `Order #${data.wcOrderId}`,
         prefill: {
-          name: `${shipping.firstName} ${shipping.lastName}`,
-          email: shipping.email,
-          contact: shipping.phone,
+          name: `${bill.firstName} ${bill.lastName}`,
+          email: bill.email,
+          contact: bill.phone,
         },
         theme: { color: "#C89B3C" },
         handler: async (response: {
@@ -236,6 +309,9 @@ export default function CheckoutPage() {
               razorpayOrderId: response.razorpay_order_id,
               razorpayPaymentId: response.razorpay_payment_id,
               razorpaySignature: response.razorpay_signature,
+              appliedGiftCardCode: appliedGiftCard?.code,
+              giftCardDeduction: appliedDeduction,
+              purchasedGiftCards: items.filter((i) => !!i.giftCardDetails),
             }),
           });
           if (verify.ok) {
@@ -270,72 +346,72 @@ export default function CheckoutPage() {
         <div className="space-y-8">
           {/* Shipping Method */}
           {requiresShipping && (
-          <section className="rounded-2xl border border-sand bg-white p-6 shadow-card md:p-8">
-            <h2 className="mb-4 font-serif text-lg font-bold">Shipping Method</h2>
-            <div className="grid gap-3 sm:grid-cols-2">
-              <label
-                onClick={() => setShippingMethod("delivery")}
-                className={`flex cursor-pointer items-start gap-3 rounded-2xl border p-4 transition-all ${
-                  shippingMethod === "delivery"
-                    ? "border-gold bg-gold/5 ring-2 ring-gold/40 shadow-sm"
-                    : "border-sand bg-white hover:border-gold/50"
-                }`}
-              >
-                <input
-                  type="radio"
-                  name="shippingMethod"
-                  value="delivery"
-                  checked={shippingMethod === "delivery"}
-                  onChange={() => setShippingMethod("delivery")}
-                  className="mt-0.5 h-4 w-4 accent-[#C89B3C]"
-                />
-                <div className="flex-1">
-                  <div className="flex items-center justify-between">
-                    <p className="font-bold text-charcoal text-sm">{shippingInfo.label}</p>
-                    <span className="font-bold text-xs">
-                      {estShipping === 0 ? (
-                        <span className="text-emerald-600">FREE</span>
-                      ) : (
-                        formatPrice(estShipping)
-                      )}
-                    </span>
+            <section className="rounded-2xl border border-sand bg-white p-6 shadow-card md:p-8">
+              <h2 className="mb-4 font-serif text-lg font-bold">Shipping Method</h2>
+              <div className="grid gap-3 sm:grid-cols-2">
+                <label
+                  onClick={() => setShippingMethod("delivery")}
+                  className={`flex cursor-pointer items-start gap-3 rounded-2xl border p-4 transition-all ${
+                    shippingMethod === "delivery"
+                      ? "border-gold bg-gold/5 ring-2 ring-gold/40 shadow-sm"
+                      : "border-sand bg-white hover:border-gold/50"
+                  }`}
+                >
+                  <input
+                    type="radio"
+                    name="shippingMethod"
+                    value="delivery"
+                    checked={shippingMethod === "delivery"}
+                    onChange={() => setShippingMethod("delivery")}
+                    className="mt-0.5 h-4 w-4 accent-[#C89B3C]"
+                  />
+                  <div className="flex-1">
+                    <div className="flex items-center justify-between">
+                      <p className="font-bold text-charcoal text-sm">{shippingInfo.label}</p>
+                      <span className="font-bold text-xs">
+                        {estShipping === 0 ? (
+                          <span className="text-emerald-600">FREE</span>
+                        ) : (
+                          formatPrice(estShipping)
+                        )}
+                      </span>
+                    </div>
+                    <p className="mt-1 text-xs text-charcoal/60 leading-relaxed">
+                      {shippingInfo.isInternational
+                        ? "International air courier (outside India)"
+                        : "Delivery across India within 4–7 business days"} · {shippingInfo.breakdown}
+                    </p>
                   </div>
-                  <p className="mt-1 text-xs text-charcoal/60 leading-relaxed">
-                    {shippingInfo.isInternational
-                      ? "International air courier (outside India)"
-                      : "Delivery across India within 4–7 business days"} · {shippingInfo.breakdown}
-                  </p>
-                </div>
-              </label>
+                </label>
 
-              <label
-                onClick={() => setShippingMethod("pickup")}
-                className={`flex cursor-pointer items-start gap-3 rounded-2xl border p-4 transition-all ${
-                  shippingMethod === "pickup"
-                    ? "border-gold bg-gold/5 ring-2 ring-gold/40 shadow-sm"
-                    : "border-sand bg-white hover:border-gold/50"
-                }`}
-              >
-                <input
-                  type="radio"
-                  name="shippingMethod"
-                  value="pickup"
-                  checked={shippingMethod === "pickup"}
-                  onChange={() => setShippingMethod("pickup")}
-                  className="mt-0.5 h-4 w-4 accent-[#C89B3C]"
-                />
-                <div className="flex-1">
-                  <div className="flex items-center justify-between">
-                    <p className="font-bold text-charcoal text-sm">Store Pickup</p>
-                    <span className="font-bold text-xs text-emerald-600">FREE</span>
+                <label
+                  onClick={() => setShippingMethod("pickup")}
+                  className={`flex cursor-pointer items-start gap-3 rounded-2xl border p-4 transition-all ${
+                    shippingMethod === "pickup"
+                      ? "border-gold bg-gold/5 ring-2 ring-gold/40 shadow-sm"
+                      : "border-sand bg-white hover:border-gold/50"
+                  }`}
+                >
+                  <input
+                    type="radio"
+                    name="shippingMethod"
+                    value="pickup"
+                    checked={shippingMethod === "pickup"}
+                    onChange={() => setShippingMethod("pickup")}
+                    className="mt-0.5 h-4 w-4 accent-[#C89B3C]"
+                  />
+                  <div className="flex-1">
+                    <div className="flex items-center justify-between">
+                      <p className="font-bold text-charcoal text-sm">Store Pickup</p>
+                      <span className="font-bold text-xs text-emerald-600">FREE</span>
+                    </div>
+                    <p className="mt-1 text-xs text-charcoal/60 leading-relaxed">
+                      Pick up directly from For The Truth bookstore. No delivery charge.
+                    </p>
                   </div>
-                  <p className="mt-1 text-xs text-charcoal/60 leading-relaxed">
-                    Pick up directly from For The Truth bookstore. No delivery charge.
-                  </p>
-                </div>
-              </label>
-            </div>
-          </section>
+                </label>
+              </div>
+            </section>
           )}
 
           <section className="rounded-2xl border border-sand bg-white p-6 shadow-card md:p-8">
@@ -355,22 +431,22 @@ export default function CheckoutPage() {
           </section>
 
           {requiresShipping && (
-          <section className="rounded-2xl border border-sand bg-white p-6 shadow-card md:p-8">
-            <label className="flex cursor-pointer items-center gap-3 font-serif text-lg font-bold">
-              <input
-                type="checkbox"
-                checked={billingSame}
-                onChange={(e) => setBillingSame(e.target.checked)}
-                className="h-4 w-4 accent-[#C89B3C]"
-              />
-              Billing address same as shipping
-            </label>
-            {!billingSame && (
-              <div className="mt-6">
-                <AddressForm prefix="bill" address={billing} onChange={setBilling} />
-              </div>
-            )}
-          </section>
+            <section className="rounded-2xl border border-sand bg-white p-6 shadow-card md:p-8">
+              <label className="flex cursor-pointer items-center gap-3 font-serif text-lg font-bold">
+                <input
+                  type="checkbox"
+                  checked={billingSame}
+                  onChange={(e) => setBillingSame(e.target.checked)}
+                  className="h-4 w-4 accent-[#C89B3C]"
+                />
+                Billing address same as shipping
+              </label>
+              {!billingSame && (
+                <div className="mt-6">
+                  <AddressForm prefix="bill" address={billing} onChange={setBilling} />
+                </div>
+              )}
+            </section>
           )}
         </div>
 
@@ -382,6 +458,11 @@ export default function CheckoutPage() {
               <li key={i.productId} className="flex justify-between gap-3">
                 <span className="text-charcoal/65">
                   {i.name} <span className="text-charcoal/40">× {i.quantity}</span>
+                  {i.giftCardDetails && (
+                    <span className="block text-[11px] text-gold-dark font-medium">
+                      To: {i.giftCardDetails.recipientName}
+                    </span>
+                  )}
                 </span>
                 <span className="shrink-0 font-semibold">
                   {formatPrice(i.price * i.quantity)}
@@ -411,6 +492,7 @@ export default function CheckoutPage() {
             </div>
           )}
 
+          {/* Coupon Input */}
           <div className="mt-5 flex gap-2">
             <input
               value={coupon}
@@ -423,6 +505,85 @@ export default function CheckoutPage() {
           <p className="mt-2 text-[11px] text-charcoal/40">
             Coupons are validated and applied when you pay.
           </p>
+
+          {/* Gift Card Redemption Box */}
+          <div className="mt-5 rounded-2xl border border-sand/80 bg-cream/30 p-4">
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-xs font-bold text-charcoal uppercase tracking-wider flex items-center gap-1.5">
+                <span>🎁</span> Have a Gift Card?
+              </span>
+              {appliedGiftCard && (
+                <span className="text-[11px] font-bold text-emerald-700 bg-emerald-100/80 px-2 py-0.5 rounded-full">
+                  Applied
+                </span>
+              )}
+            </div>
+
+            {!appliedGiftCard ? (
+              <div>
+                <div className="flex gap-2">
+                  <input
+                    value={giftCardCode}
+                    onChange={(e) => {
+                      setGiftCardCode(e.target.value.toUpperCase());
+                      setGiftCardError("");
+                    }}
+                    placeholder="FTT-XXXX-XXXX-XXXX"
+                    aria-label="Gift card code"
+                    className="w-full rounded-full border border-sand bg-white px-4 py-2 font-mono text-xs tracking-wider uppercase focus:border-gold focus:outline-none focus:ring-2 focus:ring-gold/25"
+                  />
+                  <button
+                    type="button"
+                    onClick={handleApplyGiftCard}
+                    disabled={giftCardBusy || !giftCardCode.trim()}
+                    className="shrink-0 rounded-full bg-[#11426B] px-4 py-2 text-xs font-bold text-white hover:bg-[#0c2f4d] disabled:opacity-50 transition-colors"
+                  >
+                    {giftCardBusy ? "..." : "Apply"}
+                  </button>
+                </div>
+                {giftCardError && (
+                  <p className="mt-2 text-xs text-red-600 font-medium">{giftCardError}</p>
+                )}
+              </div>
+            ) : (
+              <div className="rounded-xl border border-emerald-200 bg-emerald-50/60 p-3 text-xs">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="font-mono font-bold text-slate-800 tracking-wide">
+                      {appliedGiftCard.maskedCode}
+                    </p>
+                    <p className="text-[11px] text-emerald-800 mt-0.5">
+                      Card Balance: {formatPrice(appliedGiftCard.availableBalance)}
+                    </p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setAppliedGiftCard(null);
+                      setGiftCardCode("");
+                    }}
+                    className="text-[11px] font-bold text-red-600 hover:underline"
+                  >
+                    Remove
+                  </button>
+                </div>
+                <div className="mt-2 pt-2 border-t border-emerald-200/60 flex justify-between text-[11px]">
+                  <span className="text-slate-600">Applied to this order:</span>
+                  <span className="font-bold text-emerald-700">
+                    -{formatPrice(appliedDeduction)}
+                  </span>
+                </div>
+                {appliedGiftCard.availableBalance > appliedDeduction && (
+                  <div className="flex justify-between text-[11px] text-slate-500 mt-0.5">
+                    <span>Remaining after purchase:</span>
+                    <span className="font-medium">
+                      {formatPrice(appliedGiftCard.availableBalance - appliedDeduction)}
+                    </span>
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
 
           <dl className="mt-5 space-y-2.5 border-t border-sand pt-4 text-sm">
             <div className="flex justify-between">
@@ -437,10 +598,18 @@ export default function CheckoutPage() {
                 </dd>
               </div>
             )}
+            {appliedGiftCard && appliedDeduction > 0 && (
+              <div className="flex justify-between text-emerald-700">
+                <dt className="font-medium flex items-center gap-1">
+                  <span>🎁</span> Gift Card ({appliedGiftCard.maskedCode})
+                </dt>
+                <dd className="font-bold">-{formatPrice(appliedDeduction)}</dd>
+              </div>
+            )}
             <div className="flex justify-between border-t border-sand pt-3">
-              <dt className="font-bold">Total</dt>
+              <dt className="font-bold">Total Payable</dt>
               <dd className="font-display text-xl font-bold text-gold-dark">
-                {formatPrice(subtotal + estShipping)}
+                {formatPrice(finalPayable)}
               </dd>
             </div>
           </dl>
@@ -457,12 +626,24 @@ export default function CheckoutPage() {
             className="btn-gold mt-6 w-full justify-center disabled:opacity-60"
           >
             {busy
-              ? (isFreeOrder ? "Placing order…" : "Opening payment…")
-              : (isFreeOrder ? "Place Free Order →" : "Pay with Razorpay")}
+              ? (isCoveredByGiftCard
+                  ? "Placing order with Gift Card…"
+                  : isFreeOrder
+                  ? "Placing order…"
+                  : "Opening payment…")
+              : (isCoveredByGiftCard
+                  ? "Complete Order with Gift Card →"
+                  : isFreeOrder
+                  ? "Place Free Order →"
+                  : "Pay with Razorpay")}
           </button>
-          {isFreeOrder ? (
+          {isCoveredByGiftCard ? (
             <p className="mt-3 text-center text-[11px] text-emerald-600 font-semibold">
-              ✓ No payment required — your e-book is completely free!
+              ✓ 100% covered by your Gift Card! No extra payment required.
+            </p>
+          ) : isFreeOrder ? (
+            <p className="mt-3 text-center text-[11px] text-emerald-600 font-semibold">
+              ✓ No payment required — your order is completely free!
             </p>
           ) : (
             <div className="mt-3 flex items-center justify-center gap-1.5 text-[11px] text-charcoal/50">
@@ -526,6 +707,9 @@ export default function CheckoutPage() {
                       razorpayOrderId: mockPaymentModal.razorpayOrderId,
                       razorpayPaymentId: `pay_mock_${Date.now()}`,
                       razorpaySignature: "mock_valid_signature",
+                      appliedGiftCardCode: appliedGiftCard?.code,
+                      giftCardDeduction: appliedDeduction,
+                      purchasedGiftCards: items.filter((i) => !!i.giftCardDetails),
                     }),
                   });
                   if (verify.ok) {
