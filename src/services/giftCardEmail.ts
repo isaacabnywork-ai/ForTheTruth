@@ -2,8 +2,8 @@ import { GiftCard } from "@/types/giftCard";
 import { recordGiftCardEmail } from "./giftCards";
 
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://www.forthetruth.in";
-const SENDER_NAME = "For The Truth Christian Bookstore";
-const SENDER_EMAIL = "contact@forthetruth.in";
+const SENDER_NAME = process.env.BREVO_SENDER_NAME || "For The Truth Christian Bookstore";
+const SENDER_EMAIL = process.env.BREVO_SENDER_EMAIL || process.env.EMAIL_FROM || "contact@forthetruth.in";
 
 /**
  * Builds the recipient gift card delivery HTML email.
