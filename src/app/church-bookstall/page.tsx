@@ -158,14 +158,10 @@ export default function ChurchBookstallPage() {
             For Pastors, Administrators &amp; Ministry Teams
           </span>
 
-          <h1 className="mt-6 font-display text-4xl font-black tracking-tight sm:text-5xl lg:text-6xl leading-[1.15] text-white !text-white">
+          <h1 className="mt-5 font-display text-3xl font-bold tracking-tight sm:text-4xl lg:text-5xl leading-[1.2] text-white !text-white">
             Equip Your Congregation With a <br className="hidden sm:inline" />
             <span className="text-[#F2D082] !text-[#F2D082]">Church Bookstall on Consignment</span>
           </h1>
-
-          <p className="mx-auto mt-6 max-w-2xl text-base sm:text-lg leading-relaxed text-slate-200">
-            Set up an engaging, faithful Christian book table at your church during Sunday services, Christmas gatherings, conferences, or retreats. Zero upfront financial burden — pay only for what you sell.
-          </p>
 
           <div className="mt-8 flex flex-col sm:flex-row items-center justify-center gap-4">
             <a
@@ -417,7 +413,7 @@ export default function ChurchBookstallPage() {
               </a>
               <a
                 href="mailto:contact@forthetruth.in?subject=Church%20Bookstall%20Inquiry"
-                className="inline-flex items-center gap-2 rounded-xl border border-white/20 bg-white/10 px-6 py-3 font-display text-xs font-bold uppercase tracking-wider text-white hover:bg-white/15 transition"
+                className="inline-flex items-center gap-2 rounded-xl border border-white/20 bg-white/10 px-6 py-3 font-display text-xs font-semibold normal-case text-white hover:bg-white/15 transition"
               >
                 <span>Email: contact@forthetruth.in</span>
               </a>
