@@ -89,7 +89,10 @@ export default function CheckoutPage() {
 
   const requiresShipping = items.some((i) => !i.isVirtual);
   const subtotal = items.reduce((sum, i) => sum + i.price * i.quantity, 0);
-  const earnedRewards = getUnlockedRewards(subtotal);
+  const eligibleBookSubtotal = items
+    .filter((i) => !i.giftCardDetails)
+    .reduce((sum, i) => sum + i.price * i.quantity, 0);
+  const earnedRewards = getUnlockedRewards(eligibleBookSubtotal);
 
   const shippingInfo = calculateShipping({
     destinationCountry: shipping.country,

@@ -24,6 +24,11 @@ export default function CartPage() {
   }
 
   const subtotal = items.reduce((sum, i) => sum + i.price * i.quantity, 0);
+  const eligibleBookSubtotal = items
+    .filter((i) => !i.giftCardDetails)
+    .reduce((sum, i) => sum + i.price * i.quantity, 0);
+  const hasPhysicalBooks = items.some((i) => !i.isVirtual);
+
   const shippingInfo = calculateShipping({
     destinationCountry: "IN",
     items,
@@ -55,8 +60,8 @@ export default function CartPage() {
       <div className="mt-8 grid gap-8 lg:grid-cols-[1fr_360px]">
         {/* Left Column: Delivery bar, Reward box, and Cart items */}
         <div className="space-y-6">
-          <FreeDeliveryBar subtotal={subtotal} />
-          <RewardOfferBox subtotal={subtotal} />
+          {hasPhysicalBooks && <FreeDeliveryBar subtotal={eligibleBookSubtotal} />}
+          {eligibleBookSubtotal > 0 && <RewardOfferBox subtotal={eligibleBookSubtotal} />}
 
           <div className="space-y-4 pt-1">
             {items.map((item) => (
@@ -65,7 +70,7 @@ export default function CartPage() {
                 className="flex gap-5 rounded-2xl border border-sand bg-white p-4 shadow-card"
               >
                 <Link
-                  href={`/products/${item.slug}`}
+                  href={item.giftCardDetails ? "/gift-cards" : `/products/${item.slug || ""}`}
                   className="relative flex h-28 w-20 shrink-0 items-center justify-center overflow-hidden rounded-lg bg-cream/30 p-1 shadow-book"
                 >
                   {item.image ? (
@@ -77,11 +82,16 @@ export default function CartPage() {
 
                 <div className="flex flex-1 flex-col">
                   <Link
-                    href={`/products/${item.slug}`}
+                    href={item.giftCardDetails ? "/gift-cards" : `/products/${item.slug || ""}`}
                     className="font-serif font-bold leading-snug hover:text-gold-dark"
                   >
                     {item.name}
                   </Link>
+                  {item.giftCardDetails && (
+                    <p className="mt-1 text-xs text-gold-dark font-medium">
+                      Recipient: {item.giftCardDetails.recipientName} ({item.giftCardDetails.recipientEmail})
+                    </p>
+                  )}
                   <p className="mt-1 text-sm text-charcoal/50">
                     {formatPrice(item.price)} each
                   </p>

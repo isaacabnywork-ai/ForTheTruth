@@ -81,6 +81,7 @@ export async function POST(req: NextRequest) {
 
     // 1. Refetch regular items from WooCommerce
     let subtotal = 0;
+    let regularSubtotal = 0;
     const shippingItems: Array<{ quantity: number; weight?: number; isVirtual: boolean }> = [];
 
     if (regularItems.length > 0) {
@@ -105,7 +106,9 @@ export async function POST(req: NextRequest) {
         ) {
           throw new StockError(product.name);
         }
-        subtotal += parseFloat(product.price) * item.quantity;
+        const itemTotal = parseFloat(product.price) * item.quantity;
+        subtotal += itemTotal;
+        regularSubtotal += itemTotal;
         const isVirtual = product.categories?.some((c) => c.slug === "e-books") || false;
         const weight = product.weight ? parseFloat(product.weight) : undefined;
         shippingItems.push({
@@ -127,7 +130,8 @@ export async function POST(req: NextRequest) {
       });
     }
 
-    const earnedRewards = getUnlockedRewards(subtotal);
+    // Free reward books only apply to eligible book purchases, NOT gift card vouchers
+    const earnedRewards = getUnlockedRewards(regularSubtotal);
     const rewardLineItems = earnedRewards.map((reward) => ({
       product_id: reward.productId,
       quantity: 1,
