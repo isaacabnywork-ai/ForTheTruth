@@ -686,16 +686,13 @@ export function ChurchBookstallRegistrationForm() {
             {selectedBooks.length > 0 && (
               <div className="mt-4 rounded-3xl border border-sand bg-cream/30 p-4 sm:p-5 shadow-sm">
                 <div className="flex items-center justify-between mb-3 border-b border-sand pb-3">
-                  <div className="flex items-center gap-2">
-                    <span className="text-base">📚</span>
-                    <div>
-                      <h4 className="text-xs font-bold uppercase tracking-wider text-navy">
-                        Selected Books for Your Bookstall
-                      </h4>
-                      <p className="text-[11px] text-charcoal/60">
-                        {selectedBooks.length} distinct titles · <strong>{totalCopies} total copies requested</strong>
-                      </p>
-                    </div>
+                  <div>
+                    <h4 className="text-xs font-bold uppercase tracking-wider text-navy">
+                      Selected Books for Your Bookstall
+                    </h4>
+                    <p className="text-[11px] text-charcoal/60 mt-0.5">
+                      {selectedBooks.length} distinct titles · <strong>{totalCopies} total copies requested</strong>
+                    </p>
                   </div>
 
                   <div className="flex items-center gap-3">
@@ -844,19 +841,14 @@ export function ChurchBookstallRegistrationForm() {
       {/* Floating Bottom Cart Bar (if user added books) */}
       {selectedBooks.length > 0 && !cartDrawerOpen && (
         <div className="fixed bottom-4 left-4 right-4 z-40 max-w-xl mx-auto animate-in slide-in-from-bottom-5">
-          <div className="rounded-2xl bg-navy text-white p-3.5 sm:p-4 shadow-2xl flex items-center justify-between border border-gold/40">
-            <div className="flex items-center gap-3">
-              <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-gold text-navy font-bold text-sm">
-                📚
-              </span>
-              <div>
-                <p className="text-xs font-bold text-white">
-                  {selectedBooks.length} titles requested ({totalCopies} copies)
-                </p>
-                <p className="text-[10px] text-white/70">
-                  Ready to be submitted with your registration
-                </p>
-              </div>
+          <div className="rounded-2xl bg-navy text-white px-5 py-3.5 shadow-2xl flex items-center justify-between border border-gold/40">
+            <div>
+              <p className="text-xs font-bold text-white">
+                {selectedBooks.length} titles requested ({totalCopies} copies)
+              </p>
+              <p className="text-[10px] text-white/70">
+                Ready to be submitted with your registration
+              </p>
             </div>
 
             <button
@@ -876,16 +868,13 @@ export function ChurchBookstallRegistrationForm() {
           <div className="relative w-full max-w-2xl max-h-[85vh] rounded-3xl bg-white shadow-2xl flex flex-col overflow-hidden">
             {/* Header */}
             <div className="flex items-center justify-between border-b border-sand px-6 py-4 bg-[#FAF8F5]">
-              <div className="flex items-center gap-2">
-                <span className="text-lg">🛒</span>
-                <div>
-                  <h3 className="font-display text-xl font-bold text-navy">
-                    Your Bookstall Selections
-                  </h3>
-                  <p className="text-xs text-charcoal/60">
-                    {selectedBooks.length} titles · {totalCopies} total copies requested
-                  </p>
-                </div>
+              <div>
+                <h3 className="font-display text-xl font-bold text-navy">
+                  Your Bookstall Selections
+                </h3>
+                <p className="text-xs text-charcoal/60 mt-0.5">
+                  {selectedBooks.length} titles · {totalCopies} total copies requested
+                </p>
               </div>
               <button
                 type="button"
