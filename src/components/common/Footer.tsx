@@ -16,6 +16,7 @@ const COMPANY_LINKS = [
 ];
 
 const QUICK_LINKS = [
+  { label: "Church Bookstall Program", href: "/church-bookstall" },
   { label: "Out of Stock", href: "/shop?availability=outofstock" },
   { label: "My Account", href: "/account/dashboard" },
   { label: "My Cart", href: "/cart" },
