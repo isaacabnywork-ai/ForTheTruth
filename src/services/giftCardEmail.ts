@@ -255,6 +255,34 @@ export async function sendGiftCardDeliveryEmail(params: {
       });
 
       return { success: true, simulated: false };
+    } else if (process.env.RESEND_API_KEY) {
+      const fromEmail = process.env.EMAIL_FROM || `${SENDER_NAME} <onboarding@resend.dev>`;
+      const res = await fetch("https://api.resend.com/emails", {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${process.env.RESEND_API_KEY}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          from: fromEmail,
+          to: [giftCard.recipientEmail],
+          subject,
+          html: htmlContent,
+        }),
+      });
+
+      if (!res.ok) {
+        const errorText = await res.text();
+        throw new Error(`Resend API Error (${res.status}): ${errorText}`);
+      }
+
+      await recordGiftCardEmail(giftCard.id, {
+        sentAt: new Date().toISOString(),
+        recipientEmail: giftCard.recipientEmail,
+        status: "sent",
+      });
+
+      return { success: true, simulated: false };
     } else {
       console.log("-----------------------------------------------------------------");
       console.log(`[SIMULATED EMAIL] To: ${giftCard.recipientEmail} (${giftCard.recipientName})`);
@@ -315,6 +343,28 @@ export async function sendPurchaserConfirmationEmail(params: {
       if (!res.ok) {
         const errorText = await res.text();
         throw new Error(`Brevo API Error (${res.status}): ${errorText}`);
+      }
+
+      return { success: true, simulated: false };
+    } else if (process.env.RESEND_API_KEY) {
+      const fromEmail = process.env.EMAIL_FROM || `${SENDER_NAME} <onboarding@resend.dev>`;
+      const res = await fetch("https://api.resend.com/emails", {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${process.env.RESEND_API_KEY}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          from: fromEmail,
+          to: [giftCard.senderEmail],
+          subject,
+          html: htmlContent,
+        }),
+      });
+
+      if (!res.ok) {
+        const errorText = await res.text();
+        throw new Error(`Resend API Error (${res.status}): ${errorText}`);
       }
 
       return { success: true, simulated: false };
