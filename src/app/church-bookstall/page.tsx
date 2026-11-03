@@ -121,10 +121,6 @@ const FAQS = [
     a: "Any unsold copies in clean, resalable condition can simply be packed back into the box. We guide your coordinator through return courier options or arrange doorstep pickups depending on your location.",
   },
   {
-    q: "Can we request both English and vernacular titles?",
-    a: "Yes. Alongside our main English catalog from Banner of Truth, Crossway, and Reformation Trust, we coordinate Hindi and bilingual titles in partnership with Marg Satya Jeevan.",
-  },
-  {
     q: "How early should we register before our event?",
     a: "We recommend registering 2 to 3 weeks ahead so our team can coordinate book availability and ensure smooth courier transit across India.",
   },
