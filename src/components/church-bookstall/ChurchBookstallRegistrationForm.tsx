@@ -495,84 +495,11 @@ export function ChurchBookstallRegistrationForm() {
             )}
           </div>
 
-          {/* Website Categories Selector & Browse Books per Category */}
-          <div className="pt-2">
-            <div className="flex items-center justify-between mb-2">
-              <label className="block text-xs font-bold uppercase tracking-wider text-charcoal/80">
-                Browse Categories &amp; Select Books
-              </label>
-              <div className="flex items-center gap-2">
-                {selectedBooks.length > 0 && (
-                  <button
-                    type="button"
-                    onClick={() => setCartDrawerOpen(true)}
-                    className="inline-flex items-center gap-1.5 rounded-full bg-navy px-3 py-1 text-xs font-semibold text-white shadow-sm hover:bg-navy/90 transition"
-                  >
-                    <span>🛒 View Selected Books</span>
-                    <span className="rounded-full bg-gold px-1.5 py-0.2 text-[10px] font-black text-navy">
-                      {totalCopies}
-                    </span>
-                  </button>
-                )}
-                <span className="text-xs text-charcoal/50">
-                  {formData.bookCategories.length} categories chosen
-                </span>
-              </div>
-            </div>
-            <p className="text-xs text-charcoal/60 mb-3">
-              Click any category pill below to <strong>open its books and pick specific titles</strong>, or use the checkmark to request the whole category.
-            </p>
-
-            {loadingCategories ? (
-              <div className="flex items-center gap-2 py-4 text-xs text-charcoal/50">
-                <div className="h-4 w-4 animate-spin rounded-full border-2 border-gold border-t-transparent" />
-                Loading categories from bookstore...
-              </div>
-            ) : (
-              <div className="flex flex-wrap gap-2">
-                {categories.map((cat) => {
-                  const isCatSelected = formData.bookCategories.includes(cat.name);
-                  return (
-                    <div
-                      key={cat.id}
-                      onClick={() => openCategoryModal(cat)}
-                      className={`group cursor-pointer inline-flex items-center gap-1.5 rounded-full px-3.5 py-1.5 text-xs font-medium transition-all ${
-                        isCatSelected
-                          ? "bg-navy text-white shadow-sm ring-1 ring-navy"
-                          : "bg-cream/50 text-charcoal/80 border border-sand hover:border-gold hover:bg-white"
-                      }`}
-                      title="Click to view all books in this category"
-                    >
-                      <span
-                        onClick={(e) => handleCategoryCheckbox(cat.name, e)}
-                        className={`text-xs px-1 hover:scale-125 transition-transform ${
-                          isCatSelected ? "text-gold font-bold" : "text-charcoal/40 hover:text-navy"
-                        }`}
-                        title={isCatSelected ? "Category selected" : "Click to select category"}
-                      >
-                        {isCatSelected ? "✓" : "+"}
-                      </span>
-                      <span>{cat.name}</span>
-                      {cat.count > 0 && (
-                        <span className={`text-[10px] ${isCatSelected ? "text-white/70" : "text-charcoal/40"}`}>
-                          ({cat.count})
-                        </span>
-                      )}
-                      <span className="ml-1 text-[10px] opacity-60 group-hover:opacity-100 group-hover:translate-x-0.5 transition-all">
-                        📖
-                      </span>
-                    </div>
-                  );
-                })}
-              </div>
-            )}
-          </div>
-
           {/* Book Search Bar & Specific Titles Picker */}
           <div className="pt-2">
             <div className="flex items-center justify-between mb-1.5">
               <label className="block text-xs font-bold uppercase tracking-wider text-charcoal/80">
-                Search &amp; Add Specific Books
+                Search &amp; Add Specific Books (Optional)
               </label>
               {selectedBooks.length > 0 && (
                 <button
@@ -580,7 +507,7 @@ export function ChurchBookstallRegistrationForm() {
                   onClick={() => setCartDrawerOpen(true)}
                   className="text-xs font-semibold text-navy hover:text-gold transition flex items-center gap-1"
                 >
-                  <span>🛒 View Cart ({totalCopies} copies)</span>
+                  <span>View Selected ({totalCopies} copies)</span>
                   <span>→</span>
                 </button>
               )}

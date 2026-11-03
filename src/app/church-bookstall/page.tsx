@@ -29,21 +29,9 @@ const PROCESS_STEPS = [
   },
   {
     step: "02",
-    title: "Curate Books",
-    desc: "Select specific titles or let our team curate a balanced box across kids, parents, and discipleship.",
-    badge: "Zero Upfront Cost",
-  },
-  {
-    step: "03",
     title: "Confirm Terms",
     desc: "We agree on dispatch dates, partner margins, and convenient delivery straight to your church address.",
     badge: "Pan-India Courier",
-  },
-  {
-    step: "04",
-    title: "Host & Reconcile",
-    desc: "Display the books during your gathering, settle payments for books sold, and easily return unsold copies.",
-    badge: "Return Unsold",
   },
 ];
 
@@ -286,14 +274,14 @@ export default function ChurchBookstallPage() {
           <div className="text-center max-w-2xl mx-auto">
             <p className="overline-label text-gold-dark">Consignment Model</p>
             <h2 className="mt-2 font-display text-3xl font-black text-navy sm:text-4xl">
-              How It Works: 4 Simple Steps
+              How It Works: Simple Steps
             </h2>
             <p className="mt-2 text-sm text-charcoal/60">
               A hassle-free process designed for pastors, church secretaries, and resource coordinators.
             </p>
           </div>
 
-          <div className="mt-12 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+          <div className="mt-12 grid gap-6 sm:grid-cols-2 max-w-3xl mx-auto">
             {PROCESS_STEPS.map((item, idx) => (
               <div
                 key={idx}
