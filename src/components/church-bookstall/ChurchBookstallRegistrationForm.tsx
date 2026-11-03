@@ -26,6 +26,7 @@ interface SelectedBook {
   author?: string | null;
   price?: number;
   quantity: number;
+  image?: string | null;
 }
 
 const DEFAULT_EVENT_OPTIONS = [
@@ -56,6 +57,9 @@ export function ChurchBookstallRegistrationForm() {
   // Selected specific books
   const [selectedBooks, setSelectedBooks] = useState<SelectedBook[]>([]);
 
+  // Cart drawer / review drawer state
+  const [cartDrawerOpen, setCartDrawerOpen] = useState(false);
+
   // Categories fetched from WooCommerce
   const [categories, setCategories] = useState<Category[]>([]);
   const [loadingCategories, setLoadingCategories] = useState(true);
@@ -76,6 +80,9 @@ export function ChurchBookstallRegistrationForm() {
   const [loading, setLoading] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [error, setError] = useState("");
+
+  // Total copies across all selected books
+  const totalCopies = selectedBooks.reduce((sum, b) => sum + b.quantity, 0);
 
   // Fetch real categories from website
   useEffect(() => {
@@ -198,6 +205,7 @@ export function ChurchBookstallRegistrationForm() {
           author: book.author,
           price: book.price,
           quantity: 1,
+          image: book.image,
         },
       ];
     });
@@ -208,6 +216,13 @@ export function ChurchBookstallRegistrationForm() {
       prev
         .map((b) => (b.id === id ? { ...b, quantity: Math.max(1, b.quantity + delta) } : b))
         .filter((b) => b.quantity > 0)
+    );
+  };
+
+  const setExactQuantity = (id: number, val: number) => {
+    const valid = Math.max(1, Math.min(999, isNaN(val) ? 1 : val));
+    setSelectedBooks((prev) =>
+      prev.map((b) => (b.id === id ? { ...b, quantity: valid } : b))
     );
   };
 
@@ -292,7 +307,7 @@ export function ChurchBookstallRegistrationForm() {
 
         <div className="mt-8 rounded-2xl bg-cream/40 p-5 text-left border border-sand text-xs text-charcoal/80 space-y-2 max-w-lg mx-auto">
           <p className="font-bold text-navy text-sm">Next Steps in the Consignment Process:</p>
-          <p>1. We review your requested categories ({formData.bookCategories.length} selected) and specific titles ({selectedBooks.length} titles requested).</p>
+          <p>1. We review your requested categories ({formData.bookCategories.length} selected) and specific titles ({selectedBooks.length} titles requested, {totalCopies} total copies).</p>
           <p>2. We share the confirmed consignment dispatch list with church margin options.</p>
           <p>3. Books are safely packed and delivered directly to your church address.</p>
         </div>
@@ -486,9 +501,23 @@ export function ChurchBookstallRegistrationForm() {
               <label className="block text-xs font-bold uppercase tracking-wider text-charcoal/80">
                 Browse Categories &amp; Select Books
               </label>
-              <span className="text-xs text-charcoal/50">
-                {formData.bookCategories.length} categories chosen · {selectedBooks.length} titles requested
-              </span>
+              <div className="flex items-center gap-2">
+                {selectedBooks.length > 0 && (
+                  <button
+                    type="button"
+                    onClick={() => setCartDrawerOpen(true)}
+                    className="inline-flex items-center gap-1.5 rounded-full bg-navy px-3 py-1 text-xs font-semibold text-white shadow-sm hover:bg-navy/90 transition"
+                  >
+                    <span>🛒 View Selected Books</span>
+                    <span className="rounded-full bg-gold px-1.5 py-0.2 text-[10px] font-black text-navy">
+                      {totalCopies}
+                    </span>
+                  </button>
+                )}
+                <span className="text-xs text-charcoal/50">
+                  {formData.bookCategories.length} categories chosen
+                </span>
+              </div>
             </div>
             <p className="text-xs text-charcoal/60 mb-3">
               Click any category pill below to <strong>open its books and pick specific titles</strong>, or use the checkmark to request the whole category.
@@ -541,9 +570,21 @@ export function ChurchBookstallRegistrationForm() {
 
           {/* Book Search Bar & Specific Titles Picker */}
           <div className="pt-2">
-            <label className="block text-xs font-bold uppercase tracking-wider text-charcoal/80 mb-1.5">
-              Search &amp; Add Specific Books
-            </label>
+            <div className="flex items-center justify-between mb-1.5">
+              <label className="block text-xs font-bold uppercase tracking-wider text-charcoal/80">
+                Search &amp; Add Specific Books
+              </label>
+              {selectedBooks.length > 0 && (
+                <button
+                  type="button"
+                  onClick={() => setCartDrawerOpen(true)}
+                  className="text-xs font-semibold text-navy hover:text-gold transition flex items-center gap-1"
+                >
+                  <span>🛒 View Cart ({totalCopies} copies)</span>
+                  <span>→</span>
+                </button>
+              )}
+            </div>
             <p className="text-xs text-charcoal/60 mb-3">
               Search by title or author to request specific books for your church consignment table.
             </p>
@@ -605,18 +646,33 @@ export function ChurchBookstallRegistrationForm() {
                           </div>
 
                           <div className="flex items-center gap-2">
-                            {qty > 0 && (
-                              <span className="text-xs font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-md border border-emerald-200">
-                                {qty} in list
-                              </span>
+                            {qty > 0 ? (
+                              <div className="flex items-center rounded-lg border border-sand bg-white shadow-sm">
+                                <button
+                                  type="button"
+                                  onClick={() => updateQuantity(book.id, -1)}
+                                  className="px-2 py-1 text-charcoal hover:bg-cream transition rounded-l"
+                                >
+                                  -
+                                </button>
+                                <span className="px-2 font-bold text-navy text-xs">{qty}</span>
+                                <button
+                                  type="button"
+                                  onClick={() => updateQuantity(book.id, 1)}
+                                  className="px-2 py-1 text-charcoal hover:bg-cream transition rounded-r"
+                                >
+                                  +
+                                </button>
+                              </div>
+                            ) : (
+                              <button
+                                type="button"
+                                onClick={() => addBook(book)}
+                                className="rounded-lg bg-navy px-3 py-1.5 text-xs font-semibold text-white hover:bg-navy/90 transition"
+                              >
+                                + Add
+                              </button>
                             )}
-                            <button
-                              type="button"
-                              onClick={() => addBook(book)}
-                              className="rounded-lg bg-navy px-3 py-1.5 text-xs font-semibold text-white hover:bg-navy/90 transition"
-                            >
-                              + Add
-                            </button>
                           </div>
                         </div>
                       );
@@ -626,47 +682,96 @@ export function ChurchBookstallRegistrationForm() {
               )}
             </div>
 
-            {/* Selected Books List */}
+            {/* Selected Books Cart Preview Card */}
             {selectedBooks.length > 0 && (
-              <div className="mt-4 rounded-2xl border border-sand bg-cream/20 p-4">
-                <div className="flex items-center justify-between mb-3 border-b border-sand pb-2">
-                  <span className="text-xs font-bold uppercase tracking-wider text-navy">
-                    Requested Specific Titles ({selectedBooks.length})
-                  </span>
-                  <button
-                    type="button"
-                    onClick={() => setSelectedBooks([])}
-                    className="text-[11px] text-charcoal/50 hover:text-red-600 transition"
-                  >
-                    Clear All
-                  </button>
+              <div className="mt-4 rounded-3xl border border-sand bg-cream/30 p-4 sm:p-5 shadow-sm">
+                <div className="flex items-center justify-between mb-3 border-b border-sand pb-3">
+                  <div className="flex items-center gap-2">
+                    <span className="text-base">📚</span>
+                    <div>
+                      <h4 className="text-xs font-bold uppercase tracking-wider text-navy">
+                        Selected Books for Your Bookstall
+                      </h4>
+                      <p className="text-[11px] text-charcoal/60">
+                        {selectedBooks.length} distinct titles · <strong>{totalCopies} total copies requested</strong>
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-3">
+                    <button
+                      type="button"
+                      onClick={() => setCartDrawerOpen(true)}
+                      className="rounded-xl bg-navy px-3 py-1.5 text-xs font-bold text-white hover:bg-navy/90 transition shadow-sm"
+                    >
+                      Open Full Cart View
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setSelectedBooks([])}
+                      className="text-[11px] text-charcoal/50 hover:text-red-600 transition"
+                      title="Clear all"
+                    >
+                      Clear All
+                    </button>
+                  </div>
                 </div>
 
-                <div className="space-y-2 max-h-64 overflow-y-auto pr-1">
+                {/* Items List */}
+                <div className="space-y-2.5 max-h-72 overflow-y-auto pr-1">
                   {selectedBooks.map((book) => (
                     <div
                       key={book.id}
-                      className="flex items-center justify-between gap-3 bg-white p-2.5 rounded-xl border border-sand/60 text-xs"
+                      className="flex items-center justify-between gap-3 bg-white p-3 rounded-2xl border border-sand/70 shadow-2xs text-xs"
                     >
-                      <div className="min-w-0 flex-1">
-                        <p className="font-semibold text-charcoal truncate">{book.name}</p>
-                        {book.author && <p className="text-[11px] text-charcoal/60 truncate">{book.author}</p>}
+                      <div className="flex items-center gap-3 min-w-0 flex-1">
+                        {book.image ? (
+                          <div className="relative h-12 w-9 flex-shrink-0 overflow-hidden rounded bg-cream">
+                            <Image
+                              src={book.image}
+                              alt={book.name}
+                              fill
+                              sizes="36px"
+                              className="object-cover"
+                            />
+                          </div>
+                        ) : (
+                          <div className="h-12 w-9 flex-shrink-0 rounded bg-cream flex items-center justify-center text-xs text-charcoal/40">
+                            📖
+                          </div>
+                        )}
+                        <div className="min-w-0">
+                          <p className="font-bold text-navy truncate">{book.name}</p>
+                          {book.author && <p className="text-[11px] text-charcoal/60 truncate">by {book.author}</p>}
+                          {book.price ? <p className="text-[11px] font-semibold text-gold">₹{book.price} retail</p> : null}
+                        </div>
                       </div>
 
-                      <div className="flex items-center gap-2 flex-shrink-0">
-                        <div className="flex items-center rounded-lg border border-sand bg-cream/30">
+                      {/* Quantity Editor */}
+                      <div className="flex items-center gap-2.5 flex-shrink-0">
+                        <div className="flex items-center rounded-xl border border-sand bg-[#FAF8F5]">
                           <button
                             type="button"
                             onClick={() => updateQuantity(book.id, -1)}
-                            className="px-2 py-1 text-charcoal hover:bg-sand/30 transition rounded-l"
+                            className="px-2.5 py-1.5 text-charcoal hover:bg-sand/30 transition rounded-l-xl font-bold"
+                            title="Decrease copies"
                           >
                             -
                           </button>
-                          <span className="px-2 font-bold text-navy text-xs">{book.quantity}</span>
+                          <input
+                            type="number"
+                            min="1"
+                            max="999"
+                            value={book.quantity}
+                            onChange={(e) => setExactQuantity(book.id, parseInt(e.target.value, 10))}
+                            className="w-12 text-center font-bold text-navy text-xs bg-transparent focus:outline-none"
+                            title="Enter custom quantity"
+                          />
                           <button
                             type="button"
                             onClick={() => updateQuantity(book.id, 1)}
-                            className="px-2 py-1 text-charcoal hover:bg-sand/30 transition rounded-r"
+                            className="px-2.5 py-1.5 text-charcoal hover:bg-sand/30 transition rounded-r-xl font-bold"
+                            title="Increase copies"
                           >
                             +
                           </button>
@@ -675,8 +780,8 @@ export function ChurchBookstallRegistrationForm() {
                         <button
                           type="button"
                           onClick={() => removeBook(book.id)}
-                          className="text-charcoal/40 hover:text-red-600 p-1 transition"
-                          title="Remove"
+                          className="h-8 w-8 flex items-center justify-center rounded-xl border border-sand/60 text-charcoal/40 hover:text-red-600 hover:border-red-200 hover:bg-red-50 transition"
+                          title="Remove from list"
                         >
                           ✕
                         </button>
@@ -691,7 +796,7 @@ export function ChurchBookstallRegistrationForm() {
           {/* Desired Book Volume (Free text description) */}
           <div>
             <label className="block text-xs font-bold uppercase tracking-wider text-charcoal/80 mb-2">
-              How Many Books Do You Need? <span className="text-red-500">*</span>
+              How Many Books Do You Need in Total? <span className="text-red-500">*</span>
             </label>
             <input
               type="text"
@@ -735,6 +840,176 @@ export function ChurchBookstallRegistrationForm() {
           </div>
         </div>
       </form>
+
+      {/* Floating Bottom Cart Bar (if user added books) */}
+      {selectedBooks.length > 0 && !cartDrawerOpen && (
+        <div className="fixed bottom-4 left-4 right-4 z-40 max-w-xl mx-auto animate-in slide-in-from-bottom-5">
+          <div className="rounded-2xl bg-navy text-white p-3.5 sm:p-4 shadow-2xl flex items-center justify-between border border-gold/40">
+            <div className="flex items-center gap-3">
+              <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-gold text-navy font-bold text-sm">
+                📚
+              </span>
+              <div>
+                <p className="text-xs font-bold text-white">
+                  {selectedBooks.length} titles requested ({totalCopies} copies)
+                </p>
+                <p className="text-[10px] text-white/70">
+                  Ready to be submitted with your registration
+                </p>
+              </div>
+            </div>
+
+            <button
+              type="button"
+              onClick={() => setCartDrawerOpen(true)}
+              className="rounded-xl bg-gold-gradient px-4 py-2 font-display text-xs font-bold uppercase tracking-wider text-white shadow hover:opacity-95 transition"
+            >
+              Review / Edit Cart →
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Dedicated Cart Drawer / Modal for Reviewing and Editing All Added Books */}
+      {cartDrawerOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-in fade-in">
+          <div className="relative w-full max-w-2xl max-h-[85vh] rounded-3xl bg-white shadow-2xl flex flex-col overflow-hidden">
+            {/* Header */}
+            <div className="flex items-center justify-between border-b border-sand px-6 py-4 bg-[#FAF8F5]">
+              <div className="flex items-center gap-2">
+                <span className="text-lg">🛒</span>
+                <div>
+                  <h3 className="font-display text-xl font-bold text-navy">
+                    Your Bookstall Selections
+                  </h3>
+                  <p className="text-xs text-charcoal/60">
+                    {selectedBooks.length} titles · {totalCopies} total copies requested
+                  </p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setCartDrawerOpen(false)}
+                className="rounded-full h-8 w-8 flex items-center justify-center bg-white border border-sand text-charcoal/60 hover:text-navy hover:bg-cream transition"
+              >
+                ✕
+              </button>
+            </div>
+
+            {/* Book List in Cart */}
+            <div className="flex-1 overflow-y-auto p-5 space-y-3">
+              {selectedBooks.length === 0 ? (
+                <div className="py-16 text-center text-xs text-charcoal/50">
+                  No specific titles added yet. Browse categories or use the search bar to add books.
+                </div>
+              ) : (
+                selectedBooks.map((book) => (
+                  <div
+                    key={book.id}
+                    className="flex items-center justify-between gap-3 p-3.5 rounded-2xl border border-sand/70 bg-[#FAF8F5] hover:bg-white transition"
+                  >
+                    <div className="flex items-center gap-3 min-w-0 flex-1">
+                      {book.image ? (
+                        <div className="relative h-14 w-10 flex-shrink-0 overflow-hidden rounded bg-cream">
+                          <Image
+                            src={book.image}
+                            alt={book.name}
+                            fill
+                            sizes="40px"
+                            className="object-cover"
+                          />
+                        </div>
+                      ) : (
+                        <div className="h-14 w-10 flex-shrink-0 rounded bg-cream flex items-center justify-center text-xs text-charcoal/40">
+                          📖
+                        </div>
+                      )}
+                      <div className="min-w-0">
+                        <p className="text-xs font-bold text-navy truncate">{book.name}</p>
+                        {book.author && (
+                          <p className="text-[11px] text-charcoal/60 truncate">by {book.author}</p>
+                        )}
+                        {book.price ? (
+                          <p className="text-[11px] font-semibold text-gold mt-0.5">₹{book.price} retail</p>
+                        ) : null}
+                      </div>
+                    </div>
+
+                    {/* Quantity controls */}
+                    <div className="flex items-center gap-3 flex-shrink-0">
+                      <div className="flex items-center rounded-xl border border-sand bg-white shadow-sm">
+                        <button
+                          type="button"
+                          onClick={() => updateQuantity(book.id, -1)}
+                          className="px-2.5 py-1.5 text-charcoal hover:bg-cream transition rounded-l-xl font-bold"
+                          title="Decrease copies"
+                        >
+                          -
+                        </button>
+                        <input
+                          type="number"
+                          min="1"
+                          max="999"
+                          value={book.quantity}
+                          onChange={(e) => setExactQuantity(book.id, parseInt(e.target.value, 10))}
+                          className="w-12 text-center font-bold text-navy text-xs bg-transparent focus:outline-none"
+                          title="Type quantity"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => updateQuantity(book.id, 1)}
+                          className="px-2.5 py-1.5 text-charcoal hover:bg-cream transition rounded-r-xl font-bold"
+                          title="Increase copies"
+                        >
+                          +
+                        </button>
+                      </div>
+
+                      <button
+                        type="button"
+                        onClick={() => removeBook(book.id)}
+                        className="h-8 w-8 flex items-center justify-center rounded-xl border border-sand/60 text-charcoal/40 hover:text-red-600 hover:border-red-200 hover:bg-red-50 transition"
+                        title="Remove title"
+                      >
+                        ✕
+                      </button>
+                    </div>
+                  </div>
+                ))
+              )}
+            </div>
+
+            {/* Footer */}
+            <div className="border-t border-sand px-6 py-4 bg-[#FAF8F5] flex items-center justify-between">
+              <div>
+                <p className="text-xs font-bold text-navy">
+                  Total: {totalCopies} copies across {selectedBooks.length} titles
+                </p>
+                <p className="text-[11px] text-charcoal/50">
+                  Consignment discount &amp; terms will be confirmed prior to dispatch.
+                </p>
+              </div>
+
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => setSelectedBooks([])}
+                  className="rounded-xl border border-sand bg-white px-3 py-2 text-xs font-semibold text-charcoal/60 hover:text-red-600 transition"
+                >
+                  Clear All
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setCartDrawerOpen(false)}
+                  className="rounded-xl bg-gold-gradient px-5 py-2 font-display text-xs font-bold uppercase tracking-wider text-white shadow hover:opacity-95 transition"
+                >
+                  Done Editing
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Category Books Selection Modal */}
       {activeCategory && (
