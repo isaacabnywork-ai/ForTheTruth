@@ -1,6 +1,36 @@
 {
   "cards": [
     {
+      "id": "gc_1793686156091_52e9c3",
+      "code": "FTT-WTDF-KASK-HCDW",
+      "codeHash": "6cc5580fc84a4c5bc75cf698c6fe9152f27b49c7f156f884f242693e3e76125c",
+      "designId": "faith-journey",
+      "designTitle": "Faith Journey",
+      "designImage": "/images/gift-cards/faith-journey.webp",
+      "initialAmount": 1000,
+      "remainingBalance": 1000,
+      "currency": "INR",
+      "senderName": "Prince",
+      "senderEmail": "prince@test.com",
+      "recipientName": "Timothy",
+      "recipientEmail": "timothy@test.com",
+      "message": "Enjoy this gift card!",
+      "status": "active",
+      "type": "purchased",
+      "orderId": 87799,
+      "expiryDate": "2027-11-03T06:09:16.090Z",
+      "createdAt": "2026-11-03T06:09:16.091Z",
+      "updatedAt": "2026-11-03T06:09:16.098Z",
+      "emailDeliveryStatus": "sent",
+      "emailHistory": [
+        {
+          "sentAt": "2026-11-03T06:09:16.098Z",
+          "recipientEmail": "timothy@test.com",
+          "status": "sent"
+        }
+      ]
+    },
+    {
       "id": "gc_1793682323215_9b4c0e",
       "code": "FTT-5G8R-E69G-XBEW",
       "codeHash": "89a1b2eb8337ae02318518693e73d505dacfa5baa355dc4c98cf1dddc6fc028c",
@@ -64,6 +94,19 @@
     }
   ],
   "transactions": [
+    {
+      "id": "tx_1793686156091_ac0a52",
+      "giftCardId": "gc_1793686156091_52e9c3",
+      "giftCardCodeMasked": "FTT-••••-••••-HCDW",
+      "type": "issuance",
+      "amount": 1000,
+      "balanceBefore": 0,
+      "balanceAfter": 1000,
+      "orderId": 87799,
+      "note": "Purchased via Order #87799",
+      "performedBy": "System (Checkout)",
+      "createdAt": "2026-11-03T06:09:16.091Z"
+    },
     {
       "id": "tx_1793682323215_c8da21",
       "giftCardId": "gc_1793682323215_9b4c0e",
@@ -172,5 +215,5 @@
     ]
   },
   "version": 1,
-  "lastUpdated": "2026-11-03T05:05:23.222Z"
+  "lastUpdated": "2026-11-03T06:09:16.098Z"
 }

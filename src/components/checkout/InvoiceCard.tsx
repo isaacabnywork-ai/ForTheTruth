@@ -25,6 +25,13 @@ export interface OrderInvoiceData {
   transaction_id?: string;
   total_weight_kg?: number;
   status?: string;
+  issuedGiftCards?: Array<{
+    code: string;
+    recipientEmail: string;
+    recipientName: string;
+    amount: number;
+    designTitle?: string;
+  }>;
 }
 
 interface InvoiceCardProps {

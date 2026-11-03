@@ -21,13 +21,21 @@ function Confirmation() {
   const orderId = searchParams.get("order");
   const orderKey = searchParams.get("key");
   const isFree = searchParams.get("free") === "1";
+  const isGiftCardParam = searchParams.get("giftCard") === "1";
+  const isAdminParam = searchParams.get("admin") === "1";
   const [order, setOrder] = useState<OrderInvoiceData | null>(null);
   const [downloads, setDownloads] = useState<DownloadLink[]>([]);
-  const [loadingDownloads, setLoadingDownloads] = useState(isFree);
+  const [loadingDownloads, setLoadingDownloads] = useState(isFree && !isGiftCardParam);
+  const [copiedCode, setCopiedCode] = useState<string | null>(null);
 
   // Review modal state
   const [reviewTarget, setReviewTarget] = useState<{ productId: number; productName: string } | null>(null);
   const [reviewBookSelectorOpen, setReviewBookSelectorOpen] = useState(false);
+
+  const isGiftCardOrder =
+    isGiftCardParam ||
+    (order?.line_items?.some((i) => i.name.toLowerCase().includes("gift card")) ?? false) ||
+    Boolean(order?.issuedGiftCards && order.issuedGiftCards.length > 0);
 
   useEffect(() => {
     // 1. Immediately read cached order details for instant 0ms invoice render
@@ -59,6 +67,7 @@ function Confirmation() {
             return {
               ...(prev || {}),
               ...d.order,
+              issuedGiftCards: prev?.issuedGiftCards || (d.order as any)?.issuedGiftCards,
               line_items: mergedLineItems,
               shipping_total: d.order.shipping_total ?? prev?.shipping_total,
               shipping_lines: d.order.shipping_lines ?? prev?.shipping_lines,
@@ -73,9 +82,9 @@ function Confirmation() {
       .catch(() => {});
   }, [orderId, orderKey]);
 
-  // Fetch download links for free/ebook orders
+  // Fetch download links for free/ebook orders (unless it's purely a gift card order)
   useEffect(() => {
-    if (!isFree) return;
+    if (!isFree || isGiftCardOrder) return;
     setLoadingDownloads(true);
     fetch("/api/ebooks")
       .then((r) => r.ok ? r.json() : { downloads: [] })
@@ -84,7 +93,7 @@ function Confirmation() {
         setLoadingDownloads(false);
       })
       .catch(() => setLoadingDownloads(false));
-  }, [isFree]);
+  }, [isFree, isGiftCardOrder]);
 
   const isFreeOrder = isFree || (order && parseFloat(order.total) === 0);
 
@@ -141,18 +150,112 @@ function Confirmation() {
           </motion.div>
 
           <h1 className="mt-8 font-display text-4xl font-black text-charcoal md:text-5xl">
-            {isFreeOrder ? "Your E-Book is Ready! 🎉" : "Order Confirmed! 🎉"}
+            {isGiftCardOrder
+              ? "Gift Card Issued! 🎁"
+              : isFreeOrder
+              ? "Your E-Book is Ready! 🎉"
+              : "Order Confirmed! 🎉"}
           </h1>
           <p className="mt-4 max-w-md text-base leading-relaxed text-charcoal/60">
-            {isFreeOrder
-              ? <>Your free download is confirmed — order <span className="font-bold text-gold-dark">#{orderId}</span>. Download your PDF below!</>
-              : <>Thank you for your purchase{orderId && (<> — order <span className="font-bold text-gold-dark">#{orderId}</span></>)}. A confirmation email is on its way to your inbox.</>
-            }
+            {isGiftCardOrder ? (
+              <>
+                Your digital gift card order <span className="font-bold text-gold-dark">#{orderId}</span> is confirmed! The gift card has been generated and delivered to the recipient.
+              </>
+            ) : isFreeOrder ? (
+              <>
+                Your free download is confirmed — order <span className="font-bold text-gold-dark">#{orderId}</span>. Download your PDF below!
+              </>
+            ) : (
+              <>
+                Thank you for your purchase{orderId && (<> — order <span className="font-bold text-gold-dark">#{orderId}</span></>)}. A confirmation email is on its way to your inbox.
+              </>
+            )}
           </p>
         </div>
 
+        {/* ── Issued Gift Cards Section ── */}
+        {isGiftCardOrder && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.3, duration: 0.5 }}
+            className="mt-8 overflow-hidden rounded-3xl border-2 border-emerald-300 bg-emerald-50/80 shadow-card"
+          >
+            <div className="flex items-center gap-3 border-b border-emerald-200 bg-emerald-100/70 px-6 py-4">
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-emerald-600 text-white shadow-sm text-xl">
+                🎁
+              </div>
+              <div>
+                <h2 className="font-display text-lg font-bold text-emerald-950">
+                  Digital Gift Card Issued Successfully!
+                </h2>
+                <p className="text-xs text-emerald-700">
+                  A delivery email with this gift card has been dispatched to the recipient via Brevo.
+                </p>
+              </div>
+            </div>
+
+            <div className="p-6 space-y-4">
+              {order?.issuedGiftCards && order.issuedGiftCards.length > 0 ? (
+                order.issuedGiftCards.map((gc, i) => (
+                  <div
+                    key={i}
+                    className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 rounded-2xl border border-emerald-200 bg-white p-5 shadow-sm"
+                  >
+                    <div>
+                      <span className="text-[10px] font-bold uppercase tracking-wider text-charcoal/50">
+                        {gc.designTitle || "Digital Gift Card"} · Unique Code
+                      </span>
+                      <p className="font-mono text-2xl font-black tracking-widest text-[#11426B] mt-0.5 select-all">
+                        {gc.code}
+                      </p>
+                      <p className="mt-1 text-xs text-charcoal/70">
+                        Balance: <strong className="font-bold text-emerald-700">{formatPrice(gc.amount)}</strong> · Sent to: <strong className="text-charcoal font-semibold">{gc.recipientName}</strong> ({gc.recipientEmail})
+                      </p>
+                    </div>
+
+                    <button
+                      type="button"
+                      onClick={() => {
+                        navigator.clipboard.writeText(gc.code);
+                        setCopiedCode(gc.code);
+                        setTimeout(() => setCopiedCode(null), 3000);
+                      }}
+                      className="shrink-0 flex items-center justify-center gap-2 rounded-xl bg-[#C89B3C] px-5 py-2.5 font-display text-xs font-bold uppercase tracking-wider text-white shadow hover:bg-[#B08630] active:scale-95 transition-all"
+                    >
+                      {copiedCode === gc.code ? "✓ Copied to Clipboard!" : "📋 Copy Code"}
+                    </button>
+                  </div>
+                ))
+              ) : (
+                <div className="rounded-2xl border border-emerald-200 bg-white p-5 text-center">
+                  <p className="font-medium text-emerald-900 text-sm">
+                    Your gift card code has been generated and emailed directly to your recipient.
+                  </p>
+                  <p className="text-xs text-charcoal/50 mt-1">
+                    Check the recipient inbox for the Brevo email containing the full code and greeting card design.
+                  </p>
+                </div>
+              )}
+
+              <div className="flex flex-col sm:flex-row items-center justify-between gap-3 pt-3 border-t border-emerald-200/60">
+                <p className="text-xs text-emerald-800">
+                  Ready to test? Copy the code and apply it during checkout on your next order!
+                </p>
+                <Link
+                  href="/shop"
+                  className="btn-gold text-xs py-2 px-4 shadow-sm inline-flex items-center gap-1.5"
+                >
+                  <span>Go to Shop & Test Redemption</span>
+                  <span>→</span>
+                </Link>
+              </div>
+            </div>
+          </motion.div>
+        )}
+
         {/* ── PDF Download Section (for free/ebook orders) ── */}
-        {isFreeOrder && (
+        {isFreeOrder && !isGiftCardOrder && (
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}

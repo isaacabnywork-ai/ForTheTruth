@@ -82,47 +82,75 @@ let lastStoreMtime = 0;
 
 /**
  * Loads the gift card store from disk into memory with atomic fallback.
+ * Checks both the /tmp path (writable on serverless/Lambda) and bundled source path.
  */
 function loadStore(): GiftCardsStore {
-  // 1. Try bundled source file on disk
-  try {
-    if (fs.existsSync(STORE_FILE_PATH)) {
-      const stat = fs.statSync(STORE_FILE_PATH);
-      if (
-        !globalForGiftCards._fttGiftCardsStore ||
-        stat.mtimeMs !== lastStoreMtime
-      ) {
-        const content = fs.readFileSync(STORE_FILE_PATH, "utf-8");
-        const parsed = JSON.parse(content) as GiftCardsStore;
-        if (parsed && Array.isArray(parsed.cards)) {
-          lastStoreMtime = stat.mtimeMs;
-          globalForGiftCards._fttGiftCardsStore = parsed;
-          return parsed;
-        }
-      } else {
-        return globalForGiftCards._fttGiftCardsStore;
-      }
-    }
-  } catch (err) {
-    console.warn("Failed to load store from bundled path:", err);
-  }
-
-  // 2. Try in-memory cache if file read not needed
-  if (globalForGiftCards._fttGiftCardsStore) {
-    return globalForGiftCards._fttGiftCardsStore;
-  }
-
-  // 2. Try /tmp path
+  let tmpStore: GiftCardsStore | null = null;
+  let tmpMtime = 0;
   try {
     if (fs.existsSync(TMP_STORE_PATH)) {
+      const stat = fs.statSync(TMP_STORE_PATH);
+      tmpMtime = stat.mtimeMs;
       const content = fs.readFileSync(TMP_STORE_PATH, "utf-8");
       const parsed = JSON.parse(content) as GiftCardsStore;
       if (parsed && Array.isArray(parsed.cards)) {
-        globalForGiftCards._fttGiftCardsStore = parsed;
-        return parsed;
+        tmpStore = parsed;
       }
     }
   } catch {}
+
+  let bundledStore: GiftCardsStore | null = null;
+  let bundledMtime = 0;
+  try {
+    if (fs.existsSync(STORE_FILE_PATH)) {
+      const stat = fs.statSync(STORE_FILE_PATH);
+      bundledMtime = stat.mtimeMs;
+      const content = fs.readFileSync(STORE_FILE_PATH, "utf-8");
+      const parsed = JSON.parse(content) as GiftCardsStore;
+      if (parsed && Array.isArray(parsed.cards)) {
+        bundledStore = parsed;
+      }
+    }
+  } catch {}
+
+  // Determine which disk source is fresher
+  let bestDiskStore: GiftCardsStore | null = null;
+  if (tmpStore && bundledStore) {
+    const tmpDate = new Date(tmpStore.lastUpdated || 0).getTime();
+    const bundledDate = new Date(bundledStore.lastUpdated || 0).getTime();
+    if (
+      tmpStore.cards.length > bundledStore.cards.length ||
+      tmpDate >= bundledDate ||
+      tmpMtime > bundledMtime
+    ) {
+      bestDiskStore = tmpStore;
+    } else {
+      bestDiskStore = bundledStore;
+    }
+  } else {
+    bestDiskStore = tmpStore || bundledStore;
+  }
+
+  // Compare with in-memory store
+  if (globalForGiftCards._fttGiftCardsStore) {
+    const memDate = new Date(globalForGiftCards._fttGiftCardsStore.lastUpdated || 0).getTime();
+    const diskDate = new Date(bestDiskStore?.lastUpdated || 0).getTime();
+    if (
+      globalForGiftCards._fttGiftCardsStore.cards.length >= (bestDiskStore?.cards.length || 0) &&
+      memDate >= diskDate
+    ) {
+      return globalForGiftCards._fttGiftCardsStore;
+    }
+  }
+
+  if (bestDiskStore) {
+    globalForGiftCards._fttGiftCardsStore = bestDiskStore;
+    return bestDiskStore;
+  }
+
+  if (globalForGiftCards._fttGiftCardsStore) {
+    return globalForGiftCards._fttGiftCardsStore;
+  }
 
   const initial = getInitialStore();
   globalForGiftCards._fttGiftCardsStore = initial;

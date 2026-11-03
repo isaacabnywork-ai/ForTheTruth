@@ -340,6 +340,67 @@ export default function CheckoutPage() {
     }
   }
 
+  async function handleAdminPay() {
+    setError("");
+    const bill = requiresShipping ? (billingSame ? shipping : billing) : shipping;
+    if (!bill.firstName?.trim() || !bill.email?.trim()) {
+      setError("Please fill in your name and email above before proceeding with Admin Pay.");
+      return;
+    }
+
+    setBusy(true);
+
+    try {
+      const res = await fetch("/api/checkout", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          items: items.map((i) => ({
+            productId: i.productId,
+            quantity: i.quantity,
+            price: i.price,
+            name: i.name,
+            isVirtual: i.isVirtual,
+            giftCardDetails: i.giftCardDetails,
+          })),
+          shipping: requiresShipping ? shipping : undefined,
+          billingSameAsShipping: requiresShipping ? billingSame : false,
+          billing: requiresShipping ? (billingSame ? undefined : billing) : shipping,
+          couponCode: coupon.trim() || undefined,
+          appliedGiftCardCode: appliedGiftCard ? appliedGiftCard.code : undefined,
+          shippingMethod: requiresShipping ? shippingMethod : undefined,
+          adminPay: true,
+        }),
+      });
+
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error ?? "Admin test checkout failed");
+
+      saveOrderForConfirmation(data.wcOrderId, data.orderKey, {
+        payment_method_title: "Admin Test Pay (Free / Skip Razorpay)",
+        total: "0",
+        issuedGiftCards: data.issuedGiftCards,
+      });
+
+      clearCart();
+
+      const params = new URLSearchParams({
+        order: String(data.wcOrderId),
+        key: data.orderKey ?? "",
+        free: "1",
+        admin: "1",
+      });
+      if (items.some((i) => !!i.giftCardDetails)) {
+        params.set("giftCard", "1");
+      }
+
+      router.push(`/checkout/confirmation?${params.toString()}`);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Admin checkout failed");
+      setBusy(false);
+    }
+  }
+
   return (
     <div className="mx-auto max-w-7xl px-4 py-12 lg:px-8">
       <p className="overline-label mb-2">Secure checkout</p>
@@ -658,6 +719,27 @@ export default function CheckoutPage() {
               />
             </div>
           )}
+
+          {/* Admin Test Payment Option */}
+          <div className="mt-6 pt-5 border-t border-dashed border-sand">
+            <div className="rounded-2xl border-2 border-dashed border-emerald-400 bg-emerald-50/70 p-4 text-center">
+              <div className="flex items-center justify-center gap-1.5 text-xs font-bold uppercase tracking-wider text-emerald-800">
+                <span className="text-base">⚡</span>
+                <span>Admin Test Payment</span>
+              </div>
+              <p className="mt-1 text-[11px] text-emerald-700 leading-snug">
+                Bypasses Razorpay, issues the digital gift card & sends the Brevo email for free so you can test gift card codes immediately.
+              </p>
+              <button
+                type="button"
+                disabled={busy}
+                onClick={handleAdminPay}
+                className="mt-3 w-full flex items-center justify-center gap-2 rounded-xl bg-emerald-600 py-3 px-4 font-display text-xs font-bold uppercase tracking-wider text-white shadow-md hover:bg-emerald-700 active:scale-[0.98] transition-all disabled:opacity-50"
+              >
+                <span>{busy ? "Processing Test Order…" : "⚡ Admin Pay (Free / Skip Razorpay)"}</span>
+              </button>
+            </div>
+          </div>
         </aside>
       </form>
 

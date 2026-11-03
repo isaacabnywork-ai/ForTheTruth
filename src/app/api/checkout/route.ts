@@ -55,6 +55,7 @@ const schema = z.object({
   appliedGiftCardCode: z.string().optional(),
   isFreeOrder: z.boolean().optional().default(false),
   shippingMethod: z.enum(["delivery", "pickup"]).optional().default("delivery"),
+  adminPay: z.boolean().optional().default(false),
 });
 
 export async function POST(req: NextRequest) {
@@ -73,6 +74,7 @@ export async function POST(req: NextRequest) {
     couponCode,
     appliedGiftCardCode,
     shippingMethod,
+    adminPay,
   } = parsed.data;
 
   try {
@@ -230,15 +232,19 @@ export async function POST(req: NextRequest) {
     }
 
     const totalBeforeGiftCard = subtotal + shippingCost;
-    const finalPayable = Math.max(0, totalBeforeGiftCard - appliedGiftCardDeduction);
-    const isFree = finalPayable === 0;
+    const finalPayable = adminPay ? 0 : Math.max(0, totalBeforeGiftCard - appliedGiftCardDeduction);
+    const isFree = finalPayable === 0 || !!adminPay;
 
     const orderPayload: any = {
       status: isFree ? "completed" : "pending",
-      payment_method: isFree
+      payment_method: adminPay
+        ? "admin_test"
+        : isFree
         ? (appliedGiftCardDeduction > 0 ? "gift_card" : "free")
         : "razorpay",
-      payment_method_title: isFree
+      payment_method_title: adminPay
+        ? "Admin Test Pay (Free / Skip Razorpay)"
+        : isFree
         ? (appliedGiftCardDeduction > 0 ? "Gift Card Redemption" : "Free Download")
         : "Razorpay",
       set_paid: isFree,
@@ -265,6 +271,7 @@ export async function POST(req: NextRequest) {
         ],
       }),
       customer_note: [
+        ...(adminPay ? ["⚡ Admin Test Order — Razorpay Payment Bypassed for Testing"] : []),
         ...(earnedRewards.length > 0
           ? [`🎁 Included ${earnedRewards.length} Free Reward Book(s): ${earnedRewards.map((r) => r.title).join(", ")}`]
           : []),
@@ -351,8 +358,8 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    // 3. If total payable is ₹0 (covered by gift card or free download), complete immediately
-    if (finalPayable === 0) {
+    // 3. If total payable is ₹0 or Admin Test Pay, complete immediately
+    if (finalPayable === 0 || adminPay) {
       // Execute gift card redemption
       if (appliedGiftCardCode && appliedGiftCardDeduction > 0) {
         try {
@@ -369,6 +376,14 @@ export async function POST(req: NextRequest) {
       }
 
       // Execute gift card issuance for any purchased cards
+      const issuedGiftCards: Array<{
+        code: string;
+        recipientEmail: string;
+        recipientName: string;
+        amount: number;
+        designTitle?: string;
+      }> = [];
+
       if (giftCardItems.length > 0) {
         for (const item of giftCardItems) {
           if (!item.giftCardDetails) continue;
@@ -384,10 +399,17 @@ export async function POST(req: NextRequest) {
               orderId: order.id,
               type: "purchased",
             });
+            issuedGiftCards.push({
+              code: giftCard.code,
+              recipientEmail: giftCard.recipientEmail,
+              recipientName: giftCard.recipientName,
+              amount: giftCard.initialAmount,
+              designTitle: item.giftCardDetails.designTitle || item.giftCardDetails.designName,
+            });
             await sendGiftCardDeliveryEmail({ giftCard, fullCode: giftCard.code });
             await sendPurchaserConfirmationEmail({ giftCard });
           } catch (issueErr) {
-            console.error("Gift card issuance on free order failed:", issueErr);
+            console.error("Gift card issuance on free/admin order failed:", issueErr);
           }
         }
       }
@@ -396,8 +418,8 @@ export async function POST(req: NextRequest) {
         const { updateOrder } = await import("@/services/woocommerce");
         await updateOrder(order.id, {
           status: "completed",
-          payment_method: appliedGiftCardDeduction > 0 ? "gift_card" : "free",
-          payment_method_title: appliedGiftCardDeduction > 0 ? "Gift Card Redemption" : "Free Download",
+          payment_method: adminPay ? "admin_test" : appliedGiftCardDeduction > 0 ? "gift_card" : "free",
+          payment_method_title: adminPay ? "Admin Test Pay (Free / Skip Razorpay)" : appliedGiftCardDeduction > 0 ? "Gift Card Redemption" : "Free Download",
           set_paid: true,
         });
       } catch (updateErr) {
@@ -408,10 +430,12 @@ export async function POST(req: NextRequest) {
         wcOrderId: order.id,
         orderKey: order.order_key,
         freeOrder: true,
+        adminPay: !!adminPay,
         amount: 0,
         shippingCost: 0,
         shippingTitle: "Free",
         giftCardDeduction: appliedGiftCardDeduction,
+        issuedGiftCards,
       });
     }
 
