@@ -188,6 +188,100 @@ function saveStore(store: GiftCardsStore): void {
   } catch (err) {
     console.warn("Failed to write to /tmp store:", err);
   }
+
+  // 3. Asynchronously sync to WooCommerce cloud product 57010
+  syncStoreToCloud(store).catch(() => {});
+}
+
+const CONFIG_PRODUCT_ID = 57010;
+
+/**
+ * Asynchronously syncs the gift card store to WooCommerce product 57010 meta_data
+ * so that all stateless/serverless Lambda instances on AWS Amplify share the exact same store.
+ */
+export async function syncStoreToCloud(store: GiftCardsStore): Promise<void> {
+  const wpUrl = process.env.NEXT_PUBLIC_WORDPRESS_URL || "https://admin.forthetruth.in";
+  const key = process.env.WOOCOMMERCE_API_KEY || "ck_c6693ca02bf0d33b2828f8d311d879be4bf835d5";
+  const secret = process.env.WOOCOMMERCE_API_SECRET || "cs_8513b72208ead026d4f6667169466090ccc4f50d";
+
+  try {
+    const auth = Buffer.from(`${key}:${secret}`).toString("base64");
+    const url = `${wpUrl.replace(/\/$/, "")}/wp-json/wc/v3/products/${CONFIG_PRODUCT_ID}`;
+    await fetch(url, {
+      method: "PUT",
+      headers: {
+        Authorization: `Basic ${auth}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        meta_data: [
+          {
+            key: "_gift_cards_store",
+            value: JSON.stringify(store),
+          },
+        ],
+      }),
+      signal: AbortSignal.timeout(6000),
+    });
+  } catch (err) {
+    console.warn("Could not sync gift cards store to WooCommerce cloud product:", err);
+  }
+}
+
+/**
+ * Fetches the latest gift card store from WooCommerce product 57010
+ */
+export async function fetchCloudStore(): Promise<GiftCardsStore | null> {
+  const wpUrl = process.env.NEXT_PUBLIC_WORDPRESS_URL || "https://admin.forthetruth.in";
+  const key = process.env.WOOCOMMERCE_API_KEY || "ck_c6693ca02bf0d33b2828f8d311d879be4bf835d5";
+  const secret = process.env.WOOCOMMERCE_API_SECRET || "cs_8513b72208ead026d4f6667169466090ccc4f50d";
+
+  try {
+    const auth = Buffer.from(`${key}:${secret}`).toString("base64");
+    const url = `${wpUrl.replace(/\/$/, "")}/wp-json/wc/v3/products/${CONFIG_PRODUCT_ID}`;
+    const res = await fetch(url, {
+      headers: { Authorization: `Basic ${auth}` },
+      signal: AbortSignal.timeout(5000),
+      cache: "no-store",
+    });
+
+    if (res.ok) {
+      const product = await res.json();
+      const meta = product.meta_data?.find((m: any) => m.key === "_gift_cards_store");
+      if (meta && meta.value) {
+        const parsed = (typeof meta.value === "string" ? JSON.parse(meta.value) : meta.value) as GiftCardsStore;
+        if (parsed && Array.isArray(parsed.cards)) {
+          // Merge with any existing cards in memory
+          const local = loadStore();
+          const mergedCardsMap = new Map<string, GiftCard>();
+          for (const c of local.cards) {
+            mergedCardsMap.set(c.id, c);
+          }
+          for (const c of parsed.cards) {
+            mergedCardsMap.set(c.id, c);
+          }
+          const mergedCards = Array.from(mergedCardsMap.values());
+
+          const merged: GiftCardsStore = {
+            ...parsed,
+            cards: mergedCards,
+            transactions: parsed.transactions?.length ? parsed.transactions : local.transactions,
+            settings: parsed.settings || local.settings,
+            lastUpdated: new Date().toISOString(),
+          };
+
+          globalForGiftCards._fttGiftCardsStore = merged;
+          try {
+            fs.writeFileSync(TMP_STORE_PATH, JSON.stringify(merged, null, 2), "utf-8");
+          } catch {}
+          return merged;
+        }
+      }
+    }
+  } catch (err) {
+    console.warn("Could not fetch gift card store from cloud:", err);
+  }
+  return null;
 }
 
 /**
@@ -335,17 +429,39 @@ export async function issueGiftCard(input: IssueGiftCardInput): Promise<{
   store.cards.unshift(giftCard);
   store.transactions.unshift(transaction);
   saveStore(store);
+  await syncStoreToCloud(store).catch(() => {});
 
   return { giftCard, transaction };
 }
 
 /**
  * Looks up a gift card by raw code (case-insensitive, ignores spaces/dashes).
+ * Searches local memory/disk first; if not found, queries the WooCommerce cloud store.
  */
 export async function getGiftCardByCode(rawCode: string): Promise<GiftCard | null> {
-  const store = loadStore();
+  let store = loadStore();
   const codeHash = hashGiftCardCode(rawCode);
-  const card = store.cards.find((c) => c.codeHash === codeHash);
+  const normalizedRaw = rawCode.replace(/[\s-]/g, "").toUpperCase();
+
+  let card = store.cards.find(
+    (c) =>
+      c.codeHash === codeHash ||
+      c.code.replace(/[\s-]/g, "").toUpperCase() === normalizedRaw
+  );
+
+  // If not found in local memory/disk, query WooCommerce cloud store
+  if (!card) {
+    const cloudStore = await fetchCloudStore();
+    if (cloudStore) {
+      store = cloudStore;
+      card = store.cards.find(
+        (c) =>
+          c.codeHash === codeHash ||
+          c.code.replace(/[\s-]/g, "").toUpperCase() === normalizedRaw
+      );
+    }
+  }
+
   if (!card) return null;
 
   // Check expiry
@@ -501,9 +617,26 @@ export async function redeemGiftCard(params: {
   giftCard: GiftCard;
   transaction: GiftCardTransaction;
 }> {
-  const store = loadStore();
+  let store = loadStore();
   const codeHash = hashGiftCardCode(params.code);
-  const cardIndex = store.cards.findIndex((c) => c.codeHash === codeHash);
+  const normalizedRaw = params.code.replace(/[\s-]/g, "").toUpperCase();
+  let cardIndex = store.cards.findIndex(
+    (c) =>
+      c.codeHash === codeHash ||
+      c.code.replace(/[\s-]/g, "").toUpperCase() === normalizedRaw
+  );
+
+  if (cardIndex === -1) {
+    const cloudStore = await fetchCloudStore();
+    if (cloudStore) {
+      store = cloudStore;
+      cardIndex = store.cards.findIndex(
+        (c) =>
+          c.codeHash === codeHash ||
+          c.code.replace(/[\s-]/g, "").toUpperCase() === normalizedRaw
+      );
+    }
+  }
 
   if (cardIndex === -1) {
     throw new Error("Gift card not found");
@@ -560,6 +693,7 @@ export async function redeemGiftCard(params: {
 
   store.transactions.unshift(transaction);
   saveStore(store);
+  await syncStoreToCloud(store).catch(() => {});
 
   return { giftCard: card, transaction };
 }

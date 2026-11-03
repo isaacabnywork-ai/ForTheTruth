@@ -1,6 +1,27 @@
 {
   "cards": [
     {
+      "id": "gc_user_live_1793686898732",
+      "code": "FTT-EHYG-9R6N-J6N5",
+      "codeHash": "9e47e07d46cda963c1baae1682f54e0e5db70a391e1a1cff4bfc735cb7b68ec9",
+      "designId": "christmas-gift-card",
+      "designTitle": "Merry Christmas Gift Card",
+      "designImage": "/images/gift-cards/christmas-gift-card.webp",
+      "initialAmount": 1000,
+      "remainingBalance": 1000,
+      "currency": "INR",
+      "senderName": "Prince",
+      "senderEmail": "prince.abnyweb@gmail.com",
+      "recipientName": "Prince",
+      "recipientEmail": "prince.abnyweb@gmail.com",
+      "message": "Merry Christmas!",
+      "status": "active",
+      "type": "purchased",
+      "expiryDate": "2027-11-03T06:21:38.732Z",
+      "createdAt": "2026-11-03T06:21:38.733Z",
+      "updatedAt": "2026-11-03T06:21:38.733Z"
+    },
+    {
       "id": "gc_1793686156091_52e9c3",
       "code": "FTT-WTDF-KASK-HCDW",
       "codeHash": "6cc5580fc84a4c5bc75cf698c6fe9152f27b49c7f156f884f242693e3e76125c",

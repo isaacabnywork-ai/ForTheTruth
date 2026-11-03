@@ -151,6 +151,7 @@ export async function POST(req: NextRequest) {
     }));
 
     const giftCardLineItems = giftCardItems.map((item) => ({
+      product_id: 57010,
       name: item.name || `Digital Gift Card - ${item.giftCardDetails?.designName || "For The Truth"}`,
       subtotal: String((item.price || 0) * item.quantity),
       total: String((item.price || 0) * item.quantity),
