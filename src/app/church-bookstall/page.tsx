@@ -97,6 +97,16 @@ const OCCASIONS = [
   },
 ];
 
+const CONFIRM_ITEMS = [
+  "Available book titles, quantities and retail prices.",
+  "The church's agreed margin or discount arrangement.",
+  "Who collects customer payments and when settlement is due.",
+  "Delivery charges and dispatch arrangements.",
+  "Return window and conditions for eligible unsold books.",
+  "How damaged, missing or additional stock is handled.",
+  "How to request updates or restocking during the campaign.",
+];
+
 const FAQS = [
   {
     q: "How does the consignment model work?",
@@ -149,135 +159,125 @@ export default function ChurchBookstallPage() {
         dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd) }}
       />
 
-      {/* Hero Section */}
-      <section className="relative overflow-hidden bg-gradient-to-b from-[#11426B] to-[#0A2942] py-20 text-white lg:py-28">
-        <div className="absolute inset-0 opacity-10 bg-[radial-gradient(#C89B3C_1px,transparent_1px)] [background-size:24px_24px]" />
-        
-        <div className="relative mx-auto max-w-5xl px-4 sm:px-6 lg:px-8 text-center">
-          <span className="inline-flex items-center gap-2 rounded-full border border-gold/40 bg-gold/15 px-4 py-1.5 text-xs font-bold uppercase tracking-widest text-[#F2D082]">
-            For Pastors, Administrators &amp; Ministry Teams
-          </span>
+      {/* Hero Section (Replaced as shown in Image 3) */}
+      <section className="py-16 md:py-24 border-b border-sand">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <div className="grid gap-12 lg:grid-cols-12 lg:items-center">
+            {/* Left Column: Heading, description, CTA buttons */}
+            <div className="lg:col-span-7">
+              <h1 className="font-display text-4xl sm:text-5xl lg:text-6xl font-black text-[#1F2937] leading-[1.1]">
+                This Christmas, <br />
+                <span className="italic font-serif text-[#2D5A46] font-normal">bring Christian books</span> <br />
+                to your church.
+              </h1>
 
-          <h1 className="mt-5 font-display text-3xl font-bold tracking-tight sm:text-4xl lg:text-5xl leading-[1.2] text-white !text-white">
-            Equip Your Congregation With a <br className="hidden sm:inline" />
-            <span className="text-[#F2D082] !text-[#F2D082]">Church Bookstall on Consignment</span>
-          </h1>
+              <p className="mt-6 text-sm sm:text-base text-[#4B5563] leading-relaxed max-w-xl">
+                Help your congregation discover books that encourage faith, strengthen families and point people to Christ. Host a For The Truth bookstall with a curated selection of Christian books on consignment, subject to agreed terms.
+              </p>
 
-          <div className="mt-8 flex flex-col sm:flex-row items-center justify-center gap-4">
-            <a
-              href="#register"
-              className="w-full sm:w-auto inline-flex items-center justify-center gap-2 rounded-2xl bg-gold-gradient px-8 py-4 font-display text-sm font-bold uppercase tracking-wider text-white shadow-gold hover:opacity-95 transition active:scale-95"
-            >
-              <span>Register Your Church Bookstall</span>
-              <span>↓</span>
-            </a>
-            <a
-              href="#how-it-works"
-              className="w-full sm:w-auto inline-flex items-center justify-center gap-2 rounded-2xl border border-white/20 bg-white/10 px-8 py-4 font-display text-sm font-bold uppercase tracking-wider text-white backdrop-blur hover:bg-white/15 transition"
-            >
-              See How It Works
-            </a>
-          </div>
+              <div className="mt-8 flex flex-wrap items-center gap-4">
+                <a
+                  href="#register"
+                  className="inline-flex items-center justify-center gap-2 rounded-xl bg-[#2D5A46] px-6 py-3.5 font-sans text-sm font-semibold text-white shadow hover:bg-[#234737] transition cursor-pointer"
+                >
+                  <span>Register your church</span>
+                  <span>→</span>
+                </a>
+                <a
+                  href="#how-it-works"
+                  className="inline-flex items-center justify-center gap-2 rounded-xl border border-[#D1D5DB] bg-[#F3F4F6]/60 px-6 py-3.5 font-sans text-sm font-semibold text-[#374151] hover:bg-[#E5E7EB] transition cursor-pointer"
+                >
+                  See how it works
+                </a>
+              </div>
 
-          {/* Quick Metrics / Key Highlights */}
-          <div className="mt-14 grid grid-cols-2 gap-4 sm:grid-cols-4 border-t border-white/15 pt-8 text-center">
-            <div>
-              <p className="font-display text-2xl font-black text-[#F2D082]">₹0</p>
-              <p className="text-xs text-slate-300 mt-1">Upfront Book Purchase</p>
+              <p className="mt-8 text-xs text-[#6B7280]">
+                For pastors, church administrators and ministry teams across India.
+              </p>
             </div>
-            <div>
-              <p className="font-display text-2xl font-black text-[#F2D082]">100%</p>
-              <p className="text-xs text-slate-300 mt-1">Biblically Sound Literature</p>
-            </div>
-            <div>
-              <p className="font-display text-2xl font-black text-[#F2D082]">Pan-India</p>
-              <p className="text-xs text-slate-300 mt-1">Secure Courier Delivery</p>
-            </div>
-            <div>
-              <p className="font-display text-2xl font-black text-[#F2D082]">Consignment</p>
-              <p className="text-xs text-slate-300 mt-1">Return Unsold Stock</p>
+
+            {/* Right Column: Quote Card (A Christmas Invitation) */}
+            <div className="lg:col-span-5">
+              <div className="rounded-2xl border border-sand bg-white p-8 sm:p-10 shadow-sm">
+                <span className="text-[11px] font-bold uppercase tracking-widest text-[#4B5563]">
+                  A CHRISTMAS INVITATION
+                </span>
+
+                <blockquote className="mt-6">
+                  <p className="font-display text-2xl sm:text-3xl text-[#2D5A46] leading-snug">
+                    &ldquo;The Word became flesh and made his dwelling among us.&rdquo;
+                  </p>
+                  <cite className="block mt-4 text-xs font-semibold not-italic text-[#6B7280]">
+                    John 1:14
+                  </cite>
+                </blockquote>
+
+                <div className="mt-8 pt-6 border-t border-sand/70">
+                  <p className="text-xs text-[#4B5563] leading-relaxed">
+                    Help your church make thoughtful Christian reading part of the Christmas season.
+                  </p>
+                </div>
+              </div>
             </div>
           </div>
         </div>
       </section>
 
-      {/* Section 1: Why Church Bookstall & When Churches Host */}
-      <section className="py-16 md:py-20">
+      {/* Section 1: Clear From The Beginning / Partnership (Replaces previous section as shown in Images 1 & 2) */}
+      <section className="py-16 md:py-24">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <div className="grid gap-12 lg:grid-cols-2 lg:items-start">
-            {/* Left: Why a Bookstall */}
-            <div>
-              <p className="overline-label text-gold-dark">Why A Church Bookstall?</p>
-              <h2 className="mt-2 font-display text-3xl font-black text-navy sm:text-4xl">
-                Helping Your Congregation Build a Christ-Honoring Home Library
+          <div className="grid gap-12 lg:grid-cols-12 lg:items-start">
+            {/* Left: Built on clear communication */}
+            <div className="lg:col-span-5">
+              <div className="flex items-center gap-2">
+                <span className="h-0.5 w-6 bg-[#2D5A46]"></span>
+                <span className="text-xs font-bold uppercase tracking-widest text-[#2D5A46]">
+                  CLEAR FROM THE BEGINNING
+                </span>
+              </div>
+
+              <h2 className="mt-4 font-display text-4xl sm:text-5xl font-black text-[#1F2937] leading-[1.15]">
+                A partnership built <br />
+                on clear <br />
+                communication.
               </h2>
-              <p className="mt-4 text-sm sm:text-base text-charcoal/70 leading-relaxed">
-                Most church members rarely visit Christian bookstores or may not know which authors and theology can be trusted. A temporary church book table puts sound, gospel-centered literature directly into their hands.
+
+              <p className="mt-6 text-sm sm:text-base text-[#4B5563] leading-relaxed">
+                We want the process to be straightforward for your church team. Before dispatch, a For The Truth representative will explain the terms and answer your questions.
               </p>
 
-              <div className="mt-8 space-y-4">
-                <div className="rounded-2xl border border-sand bg-white p-4 shadow-sm flex items-start gap-3.5">
-                  <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-emerald-100 text-emerald-700 font-bold text-xs mt-0.5">
-                    ✓
-                  </div>
-                  <div>
-                    <h4 className="font-bold text-navy text-sm">Zero Capital Risk</h4>
-                    <p className="text-xs text-charcoal/65 mt-0.5">
-                      No upfront purchase required. Your church only settles for copies sold after the event.
-                    </p>
-                  </div>
-                </div>
-
-                <div className="rounded-2xl border border-sand bg-white p-4 shadow-sm flex items-start gap-3.5">
-                  <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-emerald-100 text-emerald-700 font-bold text-xs mt-0.5">
-                    ✓
-                  </div>
-                  <div>
-                    <h4 className="font-bold text-navy text-sm">Curated For Every Generation</h4>
-                    <p className="text-xs text-charcoal/65 mt-0.5">
-                      Carefully balanced titles for toddlers, school-age children, parents, and church elders.
-                    </p>
-                  </div>
-                </div>
-
-                <div className="rounded-2xl border border-sand bg-white p-4 shadow-sm flex items-start gap-3.5">
-                  <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-emerald-100 text-emerald-700 font-bold text-xs mt-0.5">
-                    ✓
-                  </div>
-                  <div>
-                    <h4 className="font-bold text-navy text-sm">Simple Stock Returns</h4>
-                    <p className="text-xs text-charcoal/65 mt-0.5">
-                      Return eligible unsold books in pristine condition according to transparent terms.
-                    </p>
-                  </div>
-                </div>
+              <div className="mt-8">
+                <a
+                  href="https://wa.me/918604685533?text=Hi%20For%20The%20Truth%2C%20we%20would%20like%20to%20start%20a%20conversation%20about%20a%20Church%20Bookstall."
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-2 rounded-xl bg-[#2D5A46] px-6 py-3.5 font-sans text-sm font-semibold text-white shadow hover:bg-[#234737] transition"
+                >
+                  <span>Start a conversation</span>
+                  <span>→</span>
+                </a>
               </div>
             </div>
 
-            {/* Right: When Churches Host */}
-            <div className="rounded-3xl border border-sand bg-white p-6 sm:p-8 shadow-card">
-              <span className="text-xs font-bold uppercase tracking-wider text-gold-dark">Ideal Occasions</span>
-              <h3 className="mt-1 font-display text-2xl font-bold text-navy">
-                When Do Churches Host Bookstalls?
-              </h3>
+            {/* Right: What we'll confirm together card */}
+            <div className="lg:col-span-7">
+              <div className="rounded-2xl border border-sand bg-white p-8 sm:p-10 shadow-sm">
+                <h3 className="font-display text-2xl font-bold text-[#1F2937]">
+                  What we&apos;ll confirm together
+                </h3>
 
-              <div className="mt-6 space-y-3">
-                {OCCASIONS.map((occ, idx) => (
-                  <div
-                    key={idx}
-                    className="rounded-2xl border border-sand/70 bg-[#FAF8F5] p-4 hover:border-gold/40 transition"
-                  >
-                    <div className="flex items-center justify-between gap-2">
-                      <h4 className="font-bold text-navy text-sm">{occ.title}</h4>
-                      <span className="rounded-full bg-cream px-2.5 py-0.5 text-[10px] font-semibold text-charcoal/70 border border-sand">
-                        {occ.tag}
-                      </span>
-                    </div>
-                    <p className="text-xs text-charcoal/65 mt-1.5 leading-snug">
-                      {occ.summary}
-                    </p>
-                  </div>
-                ))}
+                <ul className="mt-6 space-y-3.5 text-sm text-[#4B5563]">
+                  {CONFIRM_ITEMS.map((item, idx) => (
+                    <li key={idx} className="flex items-start gap-3">
+                      <span className="text-[#2D5A46] font-bold mt-0.5">•</span>
+                      <span>{item}</span>
+                    </li>
+                  ))}
+                </ul>
+
+                <div className="mt-8 rounded-xl bg-[#F4F1EA] p-4 border-l-4 border-[#C89B3C] text-xs text-[#4B5563] leading-relaxed">
+                  Registration does not automatically confirm an order. Book availability and the final consignment terms will be confirmed with your church before dispatch.
+                </div>
               </div>
             </div>
           </div>
