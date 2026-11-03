@@ -94,7 +94,6 @@ export function Footer({ menusConfig }: { menusConfig?: SiteMenusConfig }) {
       <div className="border-t border-white/10">
         <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-3 px-4 pt-5 pb-28 text-xs text-white/40 lg:px-8 lg:py-5">
           <div className="flex items-center gap-2 sm:gap-2.5">
-            <p>{copyright}</p>
             <Link
               href="/"
               className="inline-flex shrink-0 items-center transition-transform hover:scale-105"
@@ -108,6 +107,7 @@ export function Footer({ menusConfig }: { menusConfig?: SiteMenusConfig }) {
                 className="h-5 w-5 sm:h-[22px] sm:w-[22px] rounded-full object-contain"
               />
             </Link>
+            <p>{copyright}</p>
           </div>
           <PaymentLogosStrip />
         </div>
