@@ -11,7 +11,6 @@ const LINKS = [
   { label: "Orders", href: "/account/orders" },
   { label: "Downloads", href: "/account/downloads" },
   { label: "Wishlist", href: "/account/wishlist" },
-  { label: "Gift Cards", href: "/account/gift-cards" },
   { label: "Profile", href: "/account/profile" },
 ];
 

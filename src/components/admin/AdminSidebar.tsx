@@ -100,19 +100,6 @@ const NAV_ITEMS = [
     ),
   },
   {
-    label: "Gift Cards",
-    href: "/admin/gift-cards",
-    badge: "NEW",
-    icon: (
-      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-        <rect x="3" y="8" width="18" height="13" rx="2" />
-        <path d="M12 8v13" />
-        <path d="M19 12H5" />
-        <path d="M12 8a3 3 0 0 1-3-3c0-1.66 1.34-3 3-3a3 3 0 0 1 3 3c0 1.66-1.34 3-3 3Z" />
-      </svg>
-    ),
-  },
-  {
     label: "Header & Footer Menus",
     href: "/admin/menus",
     badge: "WP",

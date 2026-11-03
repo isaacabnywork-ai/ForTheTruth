@@ -570,85 +570,6 @@ export default function CheckoutPage() {
             Coupons are validated and applied when you pay.
           </p>
 
-          {/* Gift Card Redemption Box */}
-          <div className="mt-5 rounded-2xl border border-sand/80 bg-cream/30 p-4">
-            <div className="flex items-center justify-between mb-2">
-              <span className="text-xs font-bold text-charcoal uppercase tracking-wider flex items-center gap-1.5">
-                <span>🎁</span> Have a Gift Card?
-              </span>
-              {appliedGiftCard && (
-                <span className="text-[11px] font-bold text-emerald-700 bg-emerald-100/80 px-2 py-0.5 rounded-full">
-                  Applied
-                </span>
-              )}
-            </div>
-
-            {!appliedGiftCard ? (
-              <div>
-                <div className="flex gap-2">
-                  <input
-                    value={giftCardCode}
-                    onChange={(e) => {
-                      setGiftCardCode(e.target.value.toUpperCase());
-                      setGiftCardError("");
-                    }}
-                    placeholder="FTT-XXXX-XXXX-XXXX"
-                    aria-label="Gift card code"
-                    className="w-full rounded-full border border-sand bg-white px-4 py-2 font-mono text-xs tracking-wider uppercase focus:border-gold focus:outline-none focus:ring-2 focus:ring-gold/25"
-                  />
-                  <button
-                    type="button"
-                    onClick={handleApplyGiftCard}
-                    disabled={giftCardBusy || !giftCardCode.trim()}
-                    className="shrink-0 rounded-full bg-[#11426B] px-4 py-2 text-xs font-bold text-white hover:bg-[#0c2f4d] disabled:opacity-50 transition-colors"
-                  >
-                    {giftCardBusy ? "..." : "Apply"}
-                  </button>
-                </div>
-                {giftCardError && (
-                  <p className="mt-2 text-xs text-red-600 font-medium">{giftCardError}</p>
-                )}
-              </div>
-            ) : (
-              <div className="rounded-xl border border-emerald-200 bg-emerald-50/60 p-3 text-xs">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="font-mono font-bold text-slate-800 tracking-wide">
-                      {appliedGiftCard.maskedCode}
-                    </p>
-                    <p className="text-[11px] text-emerald-800 mt-0.5">
-                      Card Balance: {formatPrice(appliedGiftCard.availableBalance)}
-                    </p>
-                  </div>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setAppliedGiftCard(null);
-                      setGiftCardCode("");
-                    }}
-                    className="text-[11px] font-bold text-red-600 hover:underline"
-                  >
-                    Remove
-                  </button>
-                </div>
-                <div className="mt-2 pt-2 border-t border-emerald-200/60 flex justify-between text-[11px]">
-                  <span className="text-slate-600">Applied to this order:</span>
-                  <span className="font-bold text-emerald-700">
-                    -{formatPrice(appliedDeduction)}
-                  </span>
-                </div>
-                {appliedGiftCard.availableBalance > appliedDeduction && (
-                  <div className="flex justify-between text-[11px] text-slate-500 mt-0.5">
-                    <span>Remaining after purchase:</span>
-                    <span className="font-medium">
-                      {formatPrice(appliedGiftCard.availableBalance - appliedDeduction)}
-                    </span>
-                  </div>
-                )}
-              </div>
-            )}
-          </div>
-
           <dl className="mt-5 space-y-2.5 border-t border-sand pt-4 text-sm">
             <div className="flex justify-between">
               <dt className="text-charcoal/55">Subtotal</dt>
@@ -660,14 +581,6 @@ export default function CheckoutPage() {
                 <dd className="font-semibold">
                   {estShipping === 0 ? <span className="text-emerald-600 font-bold">Free</span> : formatPrice(estShipping)}
                 </dd>
-              </div>
-            )}
-            {appliedGiftCard && appliedDeduction > 0 && (
-              <div className="flex justify-between text-emerald-700">
-                <dt className="font-medium flex items-center gap-1">
-                  <span>🎁</span> Gift Card ({appliedGiftCard.maskedCode})
-                </dt>
-                <dd className="font-bold">-{formatPrice(appliedDeduction)}</dd>
               </div>
             )}
             <div className="flex justify-between border-t border-sand pt-3">
@@ -690,22 +603,14 @@ export default function CheckoutPage() {
             className="btn-gold mt-6 w-full justify-center disabled:opacity-60"
           >
             {busy
-              ? (isCoveredByGiftCard
-                  ? "Placing order with Gift Card…"
-                  : isFreeOrder
+              ? (isFreeOrder
                   ? "Placing order…"
                   : "Opening payment…")
-              : (isCoveredByGiftCard
-                  ? "Complete Order with Gift Card →"
-                  : isFreeOrder
+              : (isFreeOrder
                   ? "Place Free Order →"
                   : "Pay with Razorpay")}
           </button>
-          {isCoveredByGiftCard ? (
-            <p className="mt-3 text-center text-[11px] text-emerald-600 font-semibold">
-              ✓ 100% covered by your Gift Card! No extra payment required.
-            </p>
-          ) : isFreeOrder ? (
+          {isFreeOrder ? (
             <p className="mt-3 text-center text-[11px] text-emerald-600 font-semibold">
               ✓ No payment required — your order is completely free!
             </p>
@@ -719,27 +624,6 @@ export default function CheckoutPage() {
               />
             </div>
           )}
-
-          {/* Admin Test Payment Option */}
-          <div className="mt-6 pt-5 border-t border-dashed border-sand">
-            <div className="rounded-2xl border-2 border-dashed border-emerald-400 bg-emerald-50/70 p-4 text-center">
-              <div className="flex items-center justify-center gap-1.5 text-xs font-bold uppercase tracking-wider text-emerald-800">
-                <span className="text-base">⚡</span>
-                <span>Admin Test Payment</span>
-              </div>
-              <p className="mt-1 text-[11px] text-emerald-700 leading-snug">
-                Bypasses Razorpay, issues the digital gift card & sends the Brevo email for free so you can test gift card codes immediately.
-              </p>
-              <button
-                type="button"
-                disabled={busy}
-                onClick={handleAdminPay}
-                className="mt-3 w-full flex items-center justify-center gap-2 rounded-xl bg-emerald-600 py-3 px-4 font-display text-xs font-bold uppercase tracking-wider text-white shadow-md hover:bg-emerald-700 active:scale-[0.98] transition-all disabled:opacity-50"
-              >
-                <span>{busy ? "Processing Test Order…" : "⚡ Admin Pay (Free / Skip Razorpay)"}</span>
-              </button>
-            </div>
-          </div>
         </aside>
       </form>
 
