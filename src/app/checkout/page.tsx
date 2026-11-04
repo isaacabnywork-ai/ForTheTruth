@@ -440,11 +440,6 @@ export default function CheckoutPage() {
                         )}
                       </span>
                     </div>
-                    <p className="mt-1 text-xs text-charcoal/60 leading-relaxed">
-                      {shippingInfo.isInternational
-                        ? "International air courier (outside India)"
-                        : "Delivery across India within 4–7 business days"} · {shippingInfo.breakdown}
-                    </p>
                   </div>
                 </label>
 
@@ -470,7 +465,7 @@ export default function CheckoutPage() {
                       <span className="font-bold text-xs text-emerald-600">FREE</span>
                     </div>
                     <p className="mt-1 text-xs text-charcoal/60 leading-relaxed">
-                      Pick up directly from For The Truth bookstore. No delivery charge.
+                      Pick up directly from For The Truth bookstore.
                     </p>
                   </div>
                 </label>
