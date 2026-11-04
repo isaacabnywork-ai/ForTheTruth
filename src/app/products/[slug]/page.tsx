@@ -139,17 +139,97 @@ export default async function SingleProductPage({ params }: PageProps) {
   const format = getFormat(product);
   const primaryCategory = product.categories?.[0];
 
+  const canonicalUrl = `${baseUrl}/products/${slug}`;
+  const productImages =
+    product.images && product.images.length > 0
+      ? product.images.map((img) => img.src)
+      : undefined;
+  const productDescription =
+    cleanExcerpt(product.short_description || product.description, 400) || undefined;
+
+  // Validate price: must exist, not be empty, not be "0" or <= 0
+  const rawPrice = product.price || "";
+  const numericPrice = parseFloat(rawPrice);
+  const hasValidPrice = !isNaN(numericPrice) && numericPrice > 0;
+
+  // Map stock status to Schema.org ItemAvailability
+  const availabilityMap: Record<string, string> = {
+    instock: "https://schema.org/InStock",
+    outofstock: "https://schema.org/OutOfStock",
+    onbackorder: "https://schema.org/BackOrder",
+  };
+  const availability = availabilityMap[product.stock_status];
+
+  // Build Offer if valid price and known stock status are available
+  const productOffer =
+    hasValidPrice && availability
+      ? {
+          "@type": "Offer",
+          url: canonicalUrl,
+          price: rawPrice,
+          priceCurrency: "INR",
+          availability,
+          itemCondition: "https://schema.org/NewCondition",
+          seller: {
+            "@type": "Organization",
+            name: "For The Truth",
+          },
+        }
+      : undefined;
+
+  const aggregateRating =
+    product.rating_count > 0 && parseFloat(product.average_rating) > 0
+      ? {
+          "@type": "AggregateRating",
+          ratingValue: product.average_rating,
+          reviewCount: product.rating_count,
+          bestRating: 5,
+          worstRating: 1,
+        }
+      : undefined;
+
+  const reviewList =
+    reviews.length > 0
+      ? reviews.slice(0, 5).map((r) => ({
+          "@type": "Review",
+          author: { "@type": "Person", name: r.reviewer },
+          datePublished: r.date_created,
+          reviewBody: cleanExcerpt(r.review, 400),
+          reviewRating: {
+            "@type": "Rating",
+            ratingValue: r.rating,
+            bestRating: 5,
+            worstRating: 1,
+          },
+        }))
+      : undefined;
+
+  const productJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "Product",
+    "@id": `${canonicalUrl}#product`,
+    name: product.name,
+    ...(productDescription && { description: productDescription }),
+    url: canonicalUrl,
+    ...(productImages && { image: productImages }),
+    ...(product.sku && { sku: product.sku }),
+    brand: {
+      "@type": "Brand",
+      name: "For The Truth",
+    },
+    ...(productOffer && { offers: productOffer }),
+    ...(aggregateRating && { aggregateRating }),
+    ...(reviewList && { review: reviewList }),
+  };
+
   const bookJsonLd = {
     "@context": "https://schema.org",
     "@type": "Book",
     "@id": `${baseUrl}/products/${slug}#book`,
     name: product.name,
-    description: cleanExcerpt(product.short_description || product.description, 400) || undefined,
-    url: `${baseUrl}/products/${slug}`,
-    image:
-      product.images && product.images.length > 0
-        ? product.images.map((img) => img.src)
-        : undefined,
+    description: productDescription,
+    url: canonicalUrl,
+    image: productImages,
     sku: product.sku || String(product.id),
     isbn: product.sku && /^[0-9-]{10,17}$/.test(product.sku) ? product.sku.replace(/-/g, "") : undefined,
     author: authorName ? { "@type": "Person", name: authorName } : undefined,
@@ -164,47 +244,9 @@ export default async function SingleProductPage({ params }: PageProps) {
       : format?.toLowerCase().includes("ebook")
       ? "https://schema.org/EBook"
       : undefined,
-    offers: {
-      "@type": "Offer",
-      price: product.price || product.regular_price || "0",
-      priceCurrency: "INR",
-      priceValidUntil: new Date(Date.now() + 90 * 24 * 60 * 60 * 1000).toISOString().split("T")[0],
-      itemCondition: "https://schema.org/NewCondition",
-      availability:
-        product.stock_status === "instock"
-          ? "https://schema.org/InStock"
-          : "https://schema.org/OutOfStock",
-      url: `${baseUrl}/products/${slug}`,
-      seller: {
-        "@type": "Organization",
-        name: "For The Truth",
-      },
-    },
-    aggregateRating:
-      product.rating_count > 0
-        ? {
-            "@type": "AggregateRating",
-            ratingValue: product.average_rating,
-            reviewCount: product.rating_count,
-            bestRating: 5,
-            worstRating: 1,
-          }
-        : undefined,
-    review:
-      reviews.length > 0
-        ? reviews.slice(0, 5).map((r) => ({
-            "@type": "Review",
-            author: { "@type": "Person", name: r.reviewer },
-            datePublished: r.date_created,
-            reviewBody: cleanExcerpt(r.review, 400),
-            reviewRating: {
-              "@type": "Rating",
-              ratingValue: r.rating,
-              bestRating: 5,
-              worstRating: 1,
-            },
-          }))
-        : undefined,
+    ...(productOffer && { offers: productOffer }),
+    aggregateRating,
+    review: reviewList,
   };
 
   const breadcrumbJsonLd = {
@@ -251,6 +293,10 @@ export default async function SingleProductPage({ params }: PageProps) {
 
   return (
     <div className="w-full bg-cream">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(productJsonLd) }}
+      />
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(bookJsonLd) }}
