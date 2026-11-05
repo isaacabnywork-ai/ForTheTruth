@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { RatingStars } from "@/components/products/RatingStars";
 import { useCartStore } from "@/store/cartStore";
 import { useWishlistStore } from "@/store/wishlistStore";
@@ -63,11 +64,14 @@ export function FeaturedPick({
               className="group relative block h-[310px] sm:h-[350px] w-auto max-w-[320px] origin-bottom overflow-hidden rounded-lg shadow-book-lg transition-all duration-500 hover:-translate-y-3 hover:rotate-[-1.5deg]"
             >
               {product.images[0] ? (
-                <img
+                <Image
                   src={product.images[0].src}
                   alt={product.images[0].alt || product.name}
+                  width={340}
+                  height={460}
+                  sizes="(max-width: 640px) 300px, 340px"
                   loading="lazy"
-                  className="h-[310px] sm:h-[350px] w-auto max-w-[320px] block select-none object-contain"
+                  className="h-[310px] sm:h-[350px] w-auto h-auto max-w-[320px] block select-none object-contain"
                 />
               ) : (
                 <div className="flex h-[310px] sm:h-[350px] w-[220px] items-center justify-center bg-gold-gradient p-6 text-center">

@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { useState } from "react";
 import { formatPrice } from "@/utils/currency";
 import type { Product } from "@/types/product";
@@ -84,11 +85,14 @@ export function ProductCard({
       >
         <div className="relative inline-block max-h-full max-w-full transition-all duration-300 group-hover:-translate-y-1.5 overflow-hidden rounded-[3px]">
           {imageSrc ? (
-            <img
+            <Image
               src={imageSrc}
               alt={imageAlt || fullTitle}
+              width={260}
+              height={360}
+              sizes="(max-width: 640px) 165px, (max-width: 768px) 180px, 260px"
               loading="lazy"
-              className={`max-h-[210px] sm:max-h-[235px] md:max-h-[250px] lg:max-h-[260px] w-auto max-w-full rounded-[3px] shadow-xs border border-black/[0.06] object-contain block group-hover:shadow-md transition-all duration-300 ${
+              className={`max-h-[210px] sm:max-h-[235px] md:max-h-[250px] lg:max-h-[260px] w-auto h-auto max-w-full rounded-[3px] shadow-xs border border-black/[0.06] object-contain block group-hover:shadow-md transition-all duration-300 ${
                 !inStock ? "opacity-40" : ""
               }`}
             />

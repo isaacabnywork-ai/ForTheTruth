@@ -241,11 +241,14 @@ export function ProductDetail({ product, reviews = [] }: ProductDetailProps) {
                 >
                   {img.src ? (
                     <div className="relative flex items-center justify-center w-full px-4 sm:px-4 md:px-0">
-                      <img
+                      <Image
                         src={img.src}
                         alt={img.alt || product.name}
-                        className="h-[45vh] sm:h-[480px] md:h-auto md:max-h-[520px] w-auto max-w-[85%] sm:max-w-full object-contain block drop-shadow-md rounded-[3px] transition-all mx-auto"
-                        loading={idx === 0 ? "eager" : "lazy"}
+                        width={500}
+                        height={680}
+                        priority={idx === 0}
+                        sizes="(max-width: 640px) 85vw, (max-width: 1024px) 50vw, 520px"
+                        className="h-[45vh] sm:h-[480px] md:h-auto md:max-h-[520px] w-auto h-auto max-w-[85%] sm:max-w-full object-contain block drop-shadow-md rounded-[3px] transition-all mx-auto"
                       />
                     </div>
                   ) : (

@@ -13,7 +13,9 @@ const nextConfig: NextConfig = {
   images: {
     remotePatterns: [
       { protocol: "https", hostname: "admin.forthetruth.in" },
+      { protocol: "http", hostname: "admin.forthetruth.in" },
       { protocol: "https", hostname: "forthetruth.in" },
+      { protocol: "http", hostname: "forthetruth.in" },
       { protocol: "https", hostname: "demos.abnyweb.in" },
       { protocol: "https", hostname: "**.wp.com" },
       { protocol: "https", hostname: "images.unsplash.com" },

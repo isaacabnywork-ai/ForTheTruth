@@ -317,9 +317,13 @@ function HeroBookImage({ product }: { product: Product }) {
       aria-label={product.name}
     >
       {image ? (
-        <img
+        <Image
           src={image.src}
           alt={decodeHtmlEntities(image.alt || product.name)}
+          width={400}
+          height={550}
+          priority
+          sizes="(max-width: 640px) 280px, (max-width: 1024px) 380px, 440px"
           className="max-h-[340px] sm:max-h-[400px] md:max-h-[440px] w-auto h-auto max-w-full object-contain rounded-lg shadow-book-lg select-none"
         />
       ) : (
