@@ -1,6 +1,5 @@
 import { BookRow, BookRowSkeleton } from "@/components/products/BookRow";
 import { HeroShelf } from "@/components/home/HeroShelf";
-import { TopicGrid } from "@/components/home/TopicGrid";
 import {
   CategoryBookRows,
   type CategoryRowItem,
@@ -9,12 +8,12 @@ import { Testimonials } from "@/components/home/Testimonials";
 import { SpineSlider } from "@/components/home/SpineSlider";
 import { StoreMaintenancePage } from "@/components/common/StoreMaintenancePage";
 import { isWooConfigured } from "@/config/env";
-import { getCategories, getProducts } from "@/services/woocommerce";
+import { getProducts } from "@/services/woocommerce";
 import { fetchCuratedShelfConfigFromCloud } from "@/services/curation";
 import categoryRowsFallbackData from "@/data/category_rows_fallback.json";
 import { pruneProducts } from "@/utils/pruneProduct";
 import { toCdnImageUrl } from "@/utils/imageUrl";
-import type { Product, WCCategory } from "@/types/product";
+import type { Product } from "@/types/product";
 
 export const revalidate = 300; // 5-minute Edge cache (ISR) for fast initial paint across India
 
@@ -37,8 +36,6 @@ export default async function HomePage() {
   let newArrivals: Product[] = [];
   let bestsellers: Product[] = [];
   let spineProducts: Product[] = [];
-  let categories: WCCategory[] = [];
-  let coversByCategory: Record<number, Product[]> = {};
 
   let bibleSpeaksTodayProducts: Product[] = [];
   let christianLivingProducts: Product[] = [];
@@ -172,7 +169,6 @@ export default async function HomePage() {
         fetchedHero,
         fetchedNew,
         fetchedChildren,
-        fetchedCategories,
         fetchedSpine,
         fetchedBst,
         fetchedCl,
@@ -182,7 +178,6 @@ export default async function HomePage() {
         heroQuery,
         newQuery,
         childrenQuery,
-        getCategories().catch(() => []),
         spineQuery,
         bstQuery,
         clQuery,
@@ -253,19 +248,6 @@ export default async function HomePage() {
       } else {
         theologyProducts = getFallbackList(theologyIds);
       }
-
-      categories = fetchedCategories;
-
-      // Cover thumbnails for topic grid (pruned to lightweight objects)
-      const top = categories.slice(0, 8);
-      const covers = await Promise.all(
-        top.map((c) =>
-          getProducts({ category: c.id, perPage: 3 }).catch(() => [])
-        )
-      );
-      coversByCategory = Object.fromEntries(
-        top.map((c, i) => [c.id, pruneProducts(covers[i])])
-      );
     } catch (err) {
       console.error("Homepage: WooCommerce fetch failed", err);
     }
@@ -331,10 +313,7 @@ export default async function HomePage() {
         subtitle={curated.heroSubtitle}
       />
 
-      {/* 2 — Quick browse by topic */}
-      <TopicGrid categories={categories} coversByCategory={coversByCategory} />
-
-      {/* 3 — New Arrivals (Strictly book IDs only) */}
+      {/* 2 — New Arrivals (Strictly book IDs only) */}
       {storeReady ? (
         prunedNewArrivals.length > 0 && (
           <BookRow
