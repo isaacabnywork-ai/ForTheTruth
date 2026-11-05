@@ -219,7 +219,7 @@ export function ProductDetail({ product, reviews = [] }: ProductDetailProps) {
             {/* Carousel Container — Scaled to 45% Viewport Height on Mobile per User Design */}
             <div 
               ref={scrollContainerRef}
-              className="relative flex w-full overflow-x-auto snap-x snap-mandatory scroll-smooth scrollbar-hide items-center justify-start touch-pan-x select-none py-1 sm:py-2"
+              className="relative flex w-full h-[45vh] min-h-[320px] max-h-[480px] sm:h-[480px] md:h-[520px] overflow-x-auto snap-x snap-mandatory scroll-smooth scrollbar-hide items-center justify-start touch-pan-x select-none py-1 sm:py-2"
               style={{ scrollSnapType: "x mandatory", WebkitOverflowScrolling: "touch" }}
               onScroll={(e) => {
                 const scrollLeft = e.currentTarget.scrollLeft;
@@ -235,20 +235,23 @@ export function ProductDetail({ product, reviews = [] }: ProductDetailProps) {
               {images.map((img, idx) => (
                 <div 
                   key={img.id || idx}
-                  className="relative min-w-full w-full shrink-0 flex items-center justify-center snap-center snap-always select-none py-1 sm:py-2"
+                  className="relative min-w-full w-full h-full shrink-0 flex items-center justify-center snap-center snap-always select-none py-1 sm:py-2"
                   style={{ scrollSnapAlign: "center" }}
                 >
                   {img.src ? (
-                    <div className="relative flex items-center justify-center w-full px-4 sm:px-4 md:px-0">
+                    <div className="relative flex items-center justify-center w-full h-full px-4 sm:px-4 md:px-0">
+                      {/* Subtle book skeleton / placeholder while image is downloading */}
+                      <div className="absolute inset-y-2 w-[55%] max-w-[280px] rounded-[3px] bg-sand/30 animate-pulse pointer-events-none -z-10" />
                       <img
                         src={img.src}
                         alt={img.alt || product.name}
-                        decoding="async"
-                        className="h-[45vh] sm:h-[480px] md:h-auto md:max-h-[520px] w-auto max-w-[85%] sm:max-w-full object-contain block drop-shadow-md rounded-[3px] transition-all mx-auto"
+                        fetchPriority={idx === 0 ? "high" : "low"}
+                        loading={idx === 0 ? "eager" : "lazy"}
+                        className="h-full w-auto max-h-[45vh] sm:max-h-[480px] md:max-h-[520px] max-w-[85%] sm:max-w-full object-contain block drop-shadow-md rounded-[3px] transition-all mx-auto"
                       />
                     </div>
                   ) : (
-                    <div className="flex h-[45vh] w-[240px] items-center justify-center bg-gold-gradient p-6 sm:p-8 text-center rounded-r-md rounded-l-[2px] shadow-book-lg mx-auto">
+                    <div className="flex h-full w-[240px] items-center justify-center bg-gold-gradient p-6 sm:p-8 text-center rounded-r-md rounded-l-[2px] shadow-book-lg mx-auto">
                       <span className="font-display text-2xl italic text-white line-clamp-3">{product.name}</span>
                     </div>
                   )}

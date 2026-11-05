@@ -293,6 +293,10 @@ export default async function SingleProductPage({ params }: PageProps) {
 
   return (
     <div className="w-full bg-cream">
+      {/* High-priority preload for hero image in HTML head */}
+      {product.images?.[0]?.src && (
+        <link rel="preload" as="image" href={product.images[0].src} fetchPriority="high" />
+      )}
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(productJsonLd) }}
