@@ -70,7 +70,7 @@ export function FeaturedPick({
                   width={340}
                   height={460}
                   sizes="(max-width: 640px) 300px, 340px"
-                  loading="lazy"
+                  priority
                   className="h-[310px] sm:h-[350px] w-auto h-auto max-w-[320px] block select-none object-contain"
                 />
               ) : (

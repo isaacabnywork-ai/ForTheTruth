@@ -151,7 +151,6 @@ function ShelfBook({
           width={220}
           height={300}
           sizes="(max-width: 640px) 140px, 200px"
-          loading="lazy"
           className="h-44 sm:h-52 md:h-56 w-auto h-auto max-w-none block select-none object-contain"
         />
       ) : (

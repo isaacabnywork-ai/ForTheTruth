@@ -91,7 +91,7 @@ export function ProductCard({
               width={260}
               height={360}
               sizes="(max-width: 640px) 165px, (max-width: 768px) 180px, 260px"
-              loading="lazy"
+              priority={rank != null && rank <= 6}
               className={`max-h-[210px] sm:max-h-[235px] md:max-h-[250px] lg:max-h-[260px] w-auto h-auto max-w-full rounded-[3px] shadow-xs border border-black/[0.06] object-contain block group-hover:shadow-md transition-all duration-300 ${
                 !inStock ? "opacity-40" : ""
               }`}
