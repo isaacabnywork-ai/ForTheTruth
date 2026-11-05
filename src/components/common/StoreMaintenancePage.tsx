@@ -160,17 +160,6 @@ export function StoreMaintenancePage({
         <p className="mt-10 font-serif italic text-xs text-charcoal/45">
           &ldquo;The grass withers, the flower fades, but the word of our God will stand forever.&rdquo; — Isaiah 40:8
         </p>
-
-        {/* Church / AIPC POS Link for staff */}
-        <div className="mt-4 text-[11px] text-charcoal/40">
-          Bookstall coordinators &amp; event staff:{" "}
-          <Link
-            href="/admin/pos/aipc"
-            className="underline hover:text-charcoal transition-colors font-medium"
-          >
-            Access AIPC POS Terminal
-          </Link>
-        </div>
       </div>
     </div>
   );
