@@ -25,6 +25,7 @@ export function pruneProductForClient(p: Product): Product {
     on_sale: Boolean(p.on_sale),
     stock_status: p.stock_status || "instock",
     stock_quantity: p.stock_quantity ?? null,
+    manage_stock: Boolean(p.manage_stock),
     average_rating: p.average_rating || "0.00",
     rating_count: p.rating_count || 0,
     images:

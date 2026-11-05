@@ -253,10 +253,10 @@ export async function getProductsPaged(
 }
 
 export const CATALOG_FIELDS =
-  "id,name,slug,permalink,sku,price,regular_price,sale_price,on_sale,status,stock_status,stock_quantity,average_rating,rating_count,images,categories,attributes,meta_data,weight,dimensions";
+  "id,name,slug,permalink,sku,price,regular_price,sale_price,on_sale,status,stock_status,stock_quantity,manage_stock,average_rating,rating_count,images,categories,attributes,meta_data,weight,dimensions";
 
 const REQUIRED_FIELDS =
-  "id,name,slug,permalink,description,short_description,sku,price,regular_price,sale_price,on_sale,status,stock_status,stock_quantity,average_rating,rating_count,images,categories,attributes,meta_data,weight,dimensions";
+  "id,name,slug,permalink,description,short_description,sku,price,regular_price,sale_price,on_sale,status,stock_status,stock_quantity,manage_stock,average_rating,rating_count,images,categories,attributes,meta_data,weight,dimensions";
 
 const globalForCache = globalThis as unknown as {
   _wcProductsCache?: { data: Product[]; time: number };
