@@ -8,6 +8,7 @@ import { formatPrice } from "@/utils/currency";
 
 interface OrderSummary {
   id: number;
+  number?: string;
   status: string;
   total: string;
   date: string;
@@ -57,7 +58,7 @@ export default function OrdersPage() {
                         href={`/account/orders/${o.id}`}
                         className="font-bold text-gold-dark hover:underline"
                       >
-                        #{o.id}
+                        #{o.number || o.id}
                       </Link>
                     </td>
                     <td className="px-6 py-4 text-charcoal/60">

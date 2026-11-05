@@ -19,6 +19,7 @@ interface DownloadLink {
 function Confirmation() {
   const searchParams = useSearchParams();
   const orderId = searchParams.get("order");
+  const orderNumberParam = searchParams.get("orderNumber");
   const orderKey = searchParams.get("key");
   const isFree = searchParams.get("free") === "1";
   const isGiftCardParam = searchParams.get("giftCard") === "1";
@@ -31,6 +32,8 @@ function Confirmation() {
   // Review modal state
   const [reviewTarget, setReviewTarget] = useState<{ productId: number; productName: string } | null>(null);
   const [reviewBookSelectorOpen, setReviewBookSelectorOpen] = useState(false);
+
+  const displayOrderNumber = (order as any)?.number || orderNumberParam || orderId;
 
   const isGiftCardOrder =
     isGiftCardParam ||
@@ -123,7 +126,7 @@ function Confirmation() {
       // General feedback on the latest order
       setReviewTarget({
         productId: 57010, // General catalog reference
-        productName: `Order #${orderId || "Recent"} Experience`,
+        productName: `Order #${displayOrderNumber || "Recent"} Experience`,
       });
     }
   }
@@ -159,15 +162,15 @@ function Confirmation() {
           <p className="mt-4 max-w-md text-base leading-relaxed text-charcoal/60">
             {isGiftCardOrder ? (
               <>
-                Your digital gift card order <span className="font-bold text-gold-dark">#{orderId}</span> is confirmed! The gift card has been generated and delivered to the recipient.
+                Your digital gift card order <span className="font-bold text-gold-dark">#{displayOrderNumber}</span> is confirmed! The gift card has been generated and delivered to the recipient.
               </>
             ) : isFreeOrder ? (
               <>
-                Your free download is confirmed — order <span className="font-bold text-gold-dark">#{orderId}</span>. Download your PDF below!
+                Your free download is confirmed — order <span className="font-bold text-gold-dark">#{displayOrderNumber}</span>. Download your PDF below!
               </>
             ) : (
               <>
-                Thank you for your purchase{orderId && (<> — order <span className="font-bold text-gold-dark">#{orderId}</span></>)}. A confirmation email is on its way to your inbox.
+                Thank you for your purchase{displayOrderNumber && (<> — order <span className="font-bold text-gold-dark">#{displayOrderNumber}</span></>)}. A confirmation email is on its way to your inbox.
               </>
             )}
           </p>

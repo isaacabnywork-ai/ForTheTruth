@@ -10,6 +10,7 @@ import { ReviewModal } from "@/components/reviews/ReviewModal";
 
 interface OrderDetail {
   id: number;
+  number?: string;
   status: string;
   total: string;
   date_created: string;
@@ -47,8 +48,10 @@ export default function OrderDetailPage() {
     ? order.billing.email || ""
     : "";
 
+  const displayOrderNumber = (order && order !== "error" && order.number) ? order.number : params.id;
+
   return (
-    <AccountShell title={`Order #${params.id}`}>
+    <AccountShell title={`Order #${displayOrderNumber}`}>
       {order === null ? (
         <div className="skeleton h-64 rounded-2xl" />
       ) : order === "error" ? (

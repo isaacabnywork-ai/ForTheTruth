@@ -17,6 +17,7 @@ export async function GET() {
       return NextResponse.json({
         orders: liveOrders.map((o) => ({
           id: o.id,
+          number: (o as any).number || String(o.id),
           status: o.status,
           total: o.total,
           currency: o.currency,

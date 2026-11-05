@@ -328,8 +328,9 @@ export default function CheckoutPage() {
               payment_method_title: "Razorpay (Online Payment)",
             });
             clearCart();
+            const orderNumParam = data.orderNumber ? `&orderNumber=${encodeURIComponent(data.orderNumber)}` : "";
             router.push(
-              `/checkout/confirmation?order=${data.wcOrderId}&key=${data.orderKey ?? ""}`
+              `/checkout/confirmation?order=${data.wcOrderId}&key=${data.orderKey ?? ""}${orderNumParam}`
             );
           } else {
             setError("Payment verification failed. If you were charged, contact support with your payment ID.");
@@ -395,6 +396,9 @@ export default function CheckoutPage() {
         free: "1",
         admin: "1",
       });
+      if (data.orderNumber) {
+        params.set("orderNumber", String(data.orderNumber));
+      }
       if (items.some((i) => !!i.giftCardDetails)) {
         params.set("giftCard", "1");
       }
