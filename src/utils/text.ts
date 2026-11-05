@@ -91,6 +91,29 @@ export function cleanHtmlDescription(rawHtml: string): string {
 }
 
 /**
+ * Cleans up product short description excerpts:
+ * - Strips old WordPress yellow 'Contact Us' button HTML blocks (#fcb424)
+ * - Strips format-prices placeholders
+ * - Formats 'Contact us to check availability' with a consistent subtle underline, removing redundant button styling
+ */
+export function cleanProductShortDescription(rawHtml: string): string {
+  if (!rawHtml) return "";
+
+  return cleanHtmlDescription(rawHtml)
+    // Strip old WordPress yellow Contact Us buttons
+    .replace(/<p[^>]*>\s*<a[^>]*style=[\"'][^\"']*background-color:[^\"']*#fcb424[^\"']*[\"'][^>]*>[\s\S]*?<\/a>\s*<\/p>/gi, "")
+    .replace(/<a[^>]*style=[\"'][^\"']*background-color:[^\"']*#fcb424[^\"']*[\"'][^>]*>[\s\S]*?<\/a>/gi, "")
+    // Strip format-prices container tags
+    .replace(/<div class=[\"']format-prices[\"'][^>]*>[\s\S]*?<\/div>\s*<\/div>/gi, "")
+    .replace(/<div class=[\"']format-prices[\"'][^>]*>[\s\S]*?<\/div>/gi, "")
+    // Format "Contact us to check availability..." with a clean underline and WhatsApp link
+    .replace(/<em><strong>(Contact us to check the availability[^<]*)<\/strong><\/em>/gi, (_match, text) => {
+      return `<a href="https://api.whatsapp.com/send?phone=918604685533&text=Hello%2C%20I%20want%20to%20know%20more%20info%20about%20For%20The%20Truth%20products" target="_blank" rel="noopener noreferrer" class="underline decoration-gold decoration-2 underline-offset-4 font-semibold text-charcoal hover:text-gold-dark transition-colors inline-block mt-0.5">${text.trim()}</a>`;
+    })
+    .trim();
+}
+
+/**
  * Formats a category name cleanly:
  * - Decodes HTML entities
  * - Converts "GOOD BOOK GUIDES" (or any accidental all-caps category) to Title Case "Good Book Guides"

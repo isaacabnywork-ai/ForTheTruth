@@ -13,7 +13,7 @@ import { ReviewForm } from "./ReviewForm";
 import { SingleBookPaymentTrust } from "./SingleBookPaymentTrust";
 import { triggerHaptic } from "@/utils/haptics";
 import { useWishlistSync } from "@/hooks/useWishlistSync";
-import { cleanHtmlDescription } from "@/utils/text";
+import { cleanHtmlDescription, cleanProductShortDescription } from "@/utils/text";
 
 interface ProductDetailProps {
   product: Product;
@@ -353,7 +353,7 @@ export function ProductDetail({ product, reviews = [] }: ProductDetailProps) {
               <div
                 className="prose prose-sm mt-2 sm:mt-4 line-clamp-3 text-charcoal/75 leading-relaxed text-xs sm:text-sm"
                 dangerouslySetInnerHTML={{
-                  __html: product.short_description || product.description,
+                  __html: cleanProductShortDescription(product.short_description || product.description),
                 }}
               />
             )}
