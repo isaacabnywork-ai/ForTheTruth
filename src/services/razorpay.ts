@@ -17,7 +17,8 @@ export interface RazorpayOrder {
 /** Create a Razorpay order. Amount in INR (rupees) — converted to paise. */
 export async function createRazorpayOrder(
   amountInr: number,
-  receipt: string
+  receipt: string,
+  notes: Record<string, string> = {}
 ): Promise<RazorpayOrder> {
   const { keyId, keySecret } = razorpayCreds();
 
@@ -41,6 +42,10 @@ export async function createRazorpayOrder(
       amount: Math.round(amountInr * 100),
       currency: "INR",
       receipt,
+      notes: {
+        receipt,
+        ...notes,
+      },
     }),
     cache: "no-store",
   });
@@ -48,6 +53,24 @@ export async function createRazorpayOrder(
     throw new Error(`Razorpay order creation failed: ${await res.text()}`);
   }
   return (await res.json()) as RazorpayOrder;
+}
+
+/** Fetch order details from Razorpay API to inspect receipt or notes */
+export async function fetchRazorpayOrder(orderId: string): Promise<any | null> {
+  const { keyId, keySecret } = razorpayCreds();
+  if (!keyId || !keySecret || keyId.includes("mock") || keyId.includes("xxxx")) return null;
+  try {
+    const res = await fetch(`https://api.razorpay.com/v1/orders/${orderId}`, {
+      headers: {
+        Authorization: `Basic ${Buffer.from(`${keyId}:${keySecret}`).toString("base64")}`,
+      },
+      cache: "no-store",
+    });
+    if (!res.ok) return null;
+    return await res.json();
+  } catch {
+    return null;
+  }
 }
 
 /** Verify the signature returned by Razorpay checkout on the client. */

@@ -292,7 +292,12 @@ export default function CheckoutPage() {
         amount: data.amount,
         currency: data.currency,
         name: "For The Truth",
-        description: `Order #${data.wcOrderId}`,
+        description: `Order #${data.orderNumber || data.wcOrderId}`,
+        notes: {
+          receipt: `wc_${data.wcOrderId}`,
+          wcOrderId: String(data.wcOrderId),
+          orderNumber: String(data.orderNumber || data.wcOrderId),
+        },
         prefill: {
           name: `${bill.firstName} ${bill.lastName}`,
           email: bill.email,

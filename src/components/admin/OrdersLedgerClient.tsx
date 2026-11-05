@@ -139,7 +139,10 @@ export function OrdersLedgerClient({ initialOrders }: { initialOrders: WCOrder[]
                       className="cursor-pointer hover:bg-slate-50 transition-colors"
                     >
                       <td className="py-4 px-6 font-mono font-bold text-navy">
-                        #{order.id}
+                        #{order.number || order.id}
+                        {order.number && order.number !== String(order.id) && (
+                          <span className="block text-[10px] font-normal text-slate-400">ID: {order.id}</span>
+                        )}
                       </td>
                       <td className="py-4 px-6">
                         <span className={`inline-flex items-center rounded-lg px-2.5 py-1 text-[10px] font-black uppercase shadow-2xs ${
@@ -185,7 +188,10 @@ export function OrdersLedgerClient({ initialOrders }: { initialOrders: WCOrder[]
             <div className="flex items-center justify-between border-b border-slate-200 pb-4 mb-5">
               <div>
                 <h3 className="font-display text-xl font-black text-navy">
-                  Order Details #{selectedOrder.id}
+                  Order Details #{selectedOrder.number || selectedOrder.id}
+                  {selectedOrder.number && selectedOrder.number !== String(selectedOrder.id) && (
+                    <span className="ml-2 text-xs font-normal text-slate-400 font-mono">(ID: {selectedOrder.id})</span>
+                  )}
                 </h3>
                 <p className="text-xs text-slate-500">
                   Created: {new Date(selectedOrder.date_created).toLocaleString("en-IN")} | Payment: <span className="font-bold text-navy">{selectedOrder.payment_method_title || "Unknown"}</span>
@@ -238,7 +244,7 @@ export function OrdersLedgerClient({ initialOrders }: { initialOrders: WCOrder[]
                 {selectedOrder.billing?.phone && (
                   <a
                     href={`https://wa.me/${selectedOrder.billing.phone.replace(/[^0-9]/g, "").length === 10 ? "91" + selectedOrder.billing.phone.replace(/[^0-9]/g, "") : selectedOrder.billing.phone.replace(/[^0-9]/g, "")}?text=${encodeURIComponent(
-                      `Hi ${selectedOrder.billing.first_name || "there"}, grace and peace! 🌿\n\nWe hope you're thoroughly enjoying your books from order #${selectedOrder.id}! Would you take 30 seconds to share your review with us?\n\n⭐ Review your books here:\nhttps://forthetruth.in/account/orders/${selectedOrder.id}\n\nYour review helps other believers across India discover sound, gospel-rich books!\n\nBlessings in Christ,\nTeam For The Truth\n+91 8604685533`
+                      `Hi ${selectedOrder.billing.first_name || "there"}, grace and peace! 🌿\n\nWe hope you're thoroughly enjoying your books from order #${selectedOrder.number || selectedOrder.id}! Would you take 30 seconds to share your review with us?\n\n⭐ Review your books here:\nhttps://forthetruth.in/account/orders/${selectedOrder.id}\n\nYour review helps other believers across India discover sound, gospel-rich books!\n\nBlessings in Christ,\nTeam For The Truth\n+91 8604685533`
                     )}`}
                     target="_blank"
                     rel="noopener noreferrer"
@@ -252,7 +258,7 @@ export function OrdersLedgerClient({ initialOrders }: { initialOrders: WCOrder[]
                     href={`mailto:${selectedOrder.billing.email}?subject=${encodeURIComponent(
                       `How is your reading going, ${selectedOrder.billing.first_name || "friend"}? 📖`
                     )}&body=${encodeURIComponent(
-                      `Dear ${selectedOrder.billing.first_name || "Reader"},\n\nWe pray your books from order #${selectedOrder.id} arrived safely and are already strengthening your faith and knowledge of our Lord Jesus Christ.\n\nCould you take 30 seconds to share your thoughts on the books you received?\nhttps://forthetruth.in/account/orders/${selectedOrder.id}\n\nYour honest reviews help fellow readers, churches, and students find trusted, theologically sound resources.\n\nBlessings in Christ,\nTeam For The Truth\nhttps://forthetruth.in/\n+91 8604685533`
+                      `Dear ${selectedOrder.billing.first_name || "Reader"},\n\nWe pray your books from order #${selectedOrder.number || selectedOrder.id} arrived safely and are already strengthening your faith and knowledge of our Lord Jesus Christ.\n\nCould you take 30 seconds to share your thoughts on the books you received?\nhttps://forthetruth.in/account/orders/${selectedOrder.id}\n\nYour honest reviews help fellow readers, churches, and students find trusted, theologically sound resources.\n\nBlessings in Christ,\nTeam For The Truth\nhttps://forthetruth.in/\n+91 8604685533`
                     )}`}
                     className="flex items-center gap-1.5 rounded-2xl border border-slate-300 bg-white px-4 py-2.5 font-display text-xs font-bold text-navy hover:bg-slate-50 shadow-xs transition active:scale-95"
                   >

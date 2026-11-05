@@ -129,7 +129,7 @@ export function AdminDashboardClient({ stats }: { stats: AdminStatsSnapshot }) {
             <tbody className="divide-y divide-slate-100">
               {stats.recentOrders.map((order: WCOrder) => (
                 <tr key={order.id} className="hover:bg-slate-50 transition-colors">
-                  <td className="px-6 py-3 font-bold text-navy">#{order.id}</td>
+                  <td className="px-6 py-3 font-bold text-navy">#{order.number || order.id}</td>
                   <td className="px-6 py-3 text-slate-600">
                     {order.billing?.first_name} {order.billing?.last_name}
                   </td>

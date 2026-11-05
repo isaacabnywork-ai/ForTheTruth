@@ -606,6 +606,7 @@ export async function updateCustomer(
 
 export interface WCOrder {
   id: number;
+  number?: string;
   status: string;
   currency: string;
   total: string;

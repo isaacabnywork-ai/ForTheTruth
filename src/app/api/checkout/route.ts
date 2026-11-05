@@ -429,6 +429,7 @@ export async function POST(req: NextRequest) {
 
       return NextResponse.json({
         wcOrderId: order.id,
+        orderNumber: (order as any).number || String(order.id),
         orderKey: order.order_key,
         freeOrder: true,
         adminPay: !!adminPay,
@@ -441,10 +442,15 @@ export async function POST(req: NextRequest) {
     }
 
     // Otherwise, create Razorpay order for the remaining payable amount
-    const rzpOrder = await createRazorpayOrder(finalPayable, `wc_${order.id}`);
+    const displayOrderNumber = (order as any).number || String(order.id);
+    const rzpOrder = await createRazorpayOrder(finalPayable, `wc_${order.id}`, {
+      wcOrderId: String(order.id),
+      orderNumber: displayOrderNumber,
+    });
 
     return NextResponse.json({
       wcOrderId: order.id,
+      orderNumber: displayOrderNumber,
       orderKey: order.order_key,
       razorpayOrderId: rzpOrder.id,
       amount: rzpOrder.amount, // paise

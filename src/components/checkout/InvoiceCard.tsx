@@ -99,7 +99,8 @@ export function InvoiceCard({ order, isFree }: InvoiceCardProps) {
   const [copied, setCopied] = useState(false);
 
   const formattedDate = formatInvoiceDate(order.date_created);
-  const invoiceNumber = `For The Truth -${order.id}`;
+  const orderNumber = (order as any).number || String(order.id);
+  const invoiceNumber = `For The Truth -${orderNumber}`;
 
   const bill = order.billing || {};
   const ship = order.shipping && Object.keys(order.shipping).length > 0 ? order.shipping : bill;
@@ -128,7 +129,7 @@ export function InvoiceCard({ order, isFree }: InvoiceCardProps) {
   };
 
   const handleCopyDetails = () => {
-    const text = `For The Truth - Order #${order.id}\nInvoice: ${invoiceNumber}\nDate: ${formattedDate}\nTotal: ${formatInvoicePrice(order.total)}`;
+    const text = `For The Truth - Order #${orderNumber}\nInvoice: ${invoiceNumber}\nDate: ${formattedDate}\nTotal: ${formatInvoicePrice(order.total)}`;
     navigator.clipboard.writeText(text);
     setCopied(true);
     setTimeout(() => setCopied(false), 2500);
@@ -143,7 +144,7 @@ export function InvoiceCard({ order, isFree }: InvoiceCardProps) {
             Order Invoice &amp; Receipt
           </span>
           <p className="text-[11px] text-charcoal/50">
-            Official retail invoice for Order #{order.id}
+            Official retail invoice for Order #{orderNumber}
           </p>
         </div>
 
@@ -246,7 +247,7 @@ export function InvoiceCard({ order, isFree }: InvoiceCardProps) {
             </p>
             <p>
               <span className="font-bold text-black">Order No.: </span>
-              <span>{order.id}</span>
+              <span>#{orderNumber}</span>
             </p>
             <p>
               <span className="font-bold text-black">Order Date: </span>
