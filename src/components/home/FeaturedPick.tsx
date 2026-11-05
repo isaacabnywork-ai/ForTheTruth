@@ -8,6 +8,7 @@ import { formatPrice } from "@/utils/currency";
 import { getAuthor, type Product } from "@/types/product";
 import { cleanExcerpt, decodeHtmlEntities } from "@/utils/text";
 import { useState } from "react";
+import { toCdnImageUrl } from "@/utils/imageUrl";
 
 /** "This month's essential read" — one book, with reasons why. */
 interface FeaturedPickProps {
@@ -64,7 +65,7 @@ export function FeaturedPick({
             >
               {product.images[0] ? (
                 <img
-                  src={product.images[0].src}
+                  src={toCdnImageUrl(product.images[0].src)}
                   alt={product.images[0].alt || product.name}
                   decoding="async"
                   className="h-[310px] sm:h-[350px] w-auto max-w-[320px] block select-none object-contain"

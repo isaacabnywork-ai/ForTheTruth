@@ -1,8 +1,8 @@
-import Image from "next/image";
 import Link from "next/link";
 import type { WCCategory } from "@/types/product";
 import type { Product } from "@/types/product";
 import { formatCategoryName } from "@/utils/text";
+import { toCdnImageUrl } from "@/utils/imageUrl";
 
 /**
  * Quick-browse topic cards with overlapping cover thumbnails,
@@ -60,7 +60,12 @@ export function TopicGrid({
                       }}
                     >
                       {p.images[0] ? (
-                        <Image src={p.images[0].src} alt="" fill sizes="60px" className="object-contain p-0.5" />
+                        <img
+                          src={toCdnImageUrl(p.images[0].src)}
+                          alt=""
+                          decoding="async"
+                          className="h-full w-full object-contain p-0.5 select-none"
+                        />
                       ) : (
                         <span className="block h-full w-full bg-gold-gradient" />
                       )}

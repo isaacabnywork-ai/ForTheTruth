@@ -1,6 +1,5 @@
 "use client";
 
-import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
@@ -86,13 +85,13 @@ export function Header({
       <div className="border-b border-sand bg-white/95 shadow-[0_8px_30px_-12px_rgba(120,95,55,0.15)] backdrop-blur-md supports-[backdrop-filter]:bg-white/85 w-full max-w-full">
         <div className="mx-auto flex max-w-7xl items-center justify-between gap-4 px-3 sm:px-6 py-3.5 lg:px-8">
           <Link href="/" className="flex items-center shrink-0 group" aria-label={SITE_NAME}>
-            <div className="relative h-10 w-10 sm:h-12 sm:w-12 shrink-0 overflow-hidden transition-transform duration-300 group-hover:scale-105">
-              <Image
+            <div className="relative h-10 w-10 sm:h-12 sm:w-12 shrink-0 overflow-hidden transition-transform duration-300 group-hover:scale-105 flex items-center justify-center">
+              <img
                 src="/logo.png"
                 alt="For The Truth Logo"
-                fill
-                priority
-                className="object-contain"
+                width={48}
+                height={48}
+                className="h-full w-full object-contain select-none"
               />
             </div>
           </Link>

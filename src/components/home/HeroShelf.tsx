@@ -8,6 +8,7 @@ import { formatPrice } from "@/utils/currency";
 import { READER_TRUST } from "@/utils/constants";
 import { getAuthor, getFormat, type Product } from "@/types/product";
 import { cleanExcerpt, decodeHtmlEntities } from "@/utils/text";
+import { toCdnImageUrl } from "@/utils/imageUrl";
 
 /**
  * Hero panel in a reading-dashboard layout:
@@ -317,7 +318,7 @@ function HeroBookImage({ product }: { product: Product }) {
     >
       {image ? (
         <img
-          src={image.src}
+          src={toCdnImageUrl(image.src)}
           alt={decodeHtmlEntities(image.alt || product.name)}
           decoding="async"
           className="max-h-[340px] sm:max-h-[400px] md:max-h-[440px] w-auto max-w-full object-contain rounded-lg shadow-book-lg select-none"

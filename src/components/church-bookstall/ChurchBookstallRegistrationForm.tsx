@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useRef } from "react";
-import Image from "next/image";
+import { toCdnImageUrl } from "@/utils/imageUrl";
 
 interface Category {
   id: number;
@@ -549,13 +549,12 @@ export function ChurchBookstallRegistrationForm() {
                         >
                           <div className="flex items-center gap-3 min-w-0">
                             {book.image ? (
-                              <div className="relative h-12 w-9 flex-shrink-0 overflow-hidden rounded bg-cream/60">
-                                <Image
-                                  src={book.image}
+                              <div className="relative h-12 w-9 flex-shrink-0 overflow-hidden rounded bg-cream/60 flex items-center justify-center">
+                                <img
+                                  src={toCdnImageUrl(book.image)}
                                   alt={book.name}
-                                  fill
-                                  sizes="36px"
-                                  className="object-cover"
+                                  decoding="async"
+                                  className="h-full w-full object-cover select-none"
                                 />
                               </div>
                             ) : (
@@ -650,13 +649,12 @@ export function ChurchBookstallRegistrationForm() {
                     >
                       <div className="flex items-center gap-3 min-w-0 flex-1">
                         {book.image ? (
-                          <div className="relative h-12 w-9 flex-shrink-0 overflow-hidden rounded bg-cream">
-                            <Image
-                              src={book.image}
+                          <div className="relative h-12 w-9 flex-shrink-0 overflow-hidden rounded bg-cream flex items-center justify-center">
+                            <img
+                              src={toCdnImageUrl(book.image)}
                               alt={book.name}
-                              fill
-                              sizes="36px"
-                              className="object-cover"
+                              decoding="async"
+                              className="h-full w-full object-cover select-none"
                             />
                           </div>
                         ) : (
@@ -826,13 +824,12 @@ export function ChurchBookstallRegistrationForm() {
                   >
                     <div className="flex items-center gap-3 min-w-0 flex-1">
                       {book.image ? (
-                        <div className="relative h-14 w-10 flex-shrink-0 overflow-hidden rounded bg-cream">
-                          <Image
-                            src={book.image}
+                        <div className="relative h-14 w-10 flex-shrink-0 overflow-hidden rounded bg-cream flex items-center justify-center">
+                          <img
+                            src={toCdnImageUrl(book.image)}
                             alt={book.name}
-                            fill
-                            sizes="40px"
-                            className="object-cover"
+                            decoding="async"
+                            className="h-full w-full object-cover select-none"
                           />
                         </div>
                       ) : (
@@ -1002,13 +999,12 @@ export function ChurchBookstallRegistrationForm() {
                     >
                       <div className="flex items-center gap-3 min-w-0">
                         {book.image ? (
-                          <div className="relative h-14 w-10 flex-shrink-0 overflow-hidden rounded bg-cream">
-                            <Image
-                              src={book.image}
+                          <div className="relative h-14 w-10 flex-shrink-0 overflow-hidden rounded bg-cream flex items-center justify-center">
+                            <img
+                              src={toCdnImageUrl(book.image)}
                               alt={book.name}
-                              fill
-                              sizes="40px"
-                              className="object-cover"
+                              decoding="async"
+                              className="h-full w-full object-cover select-none"
                             />
                           </div>
                         ) : (

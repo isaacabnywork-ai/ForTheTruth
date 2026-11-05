@@ -7,6 +7,7 @@ import type { Product } from "@/types/product";
 import { useCartStore } from "@/store/cartStore";
 import { triggerHaptic } from "@/utils/haptics";
 import { decodeHtmlEntities } from "@/utils/text";
+import { toCdnImageUrl } from "@/utils/imageUrl";
 
 interface BookRowProps {
   title: string;
@@ -220,10 +221,11 @@ function BookRowCard({
 
   const theme = CARD_THEMES[colorIndex % CARD_THEMES.length];
 
-  const imageSrc =
+  const imageSrc = toCdnImageUrl(
     product.images?.[0]?.src ||
     (product as unknown as { image?: string }).image ||
-    "";
+    ""
+  );
   const imageAlt = product.images?.[0]?.alt || product.name;
   const inStock =
     product.stock_status !== "outofstock" &&

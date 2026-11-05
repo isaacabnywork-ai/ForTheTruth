@@ -1,5 +1,3 @@
-import Image from "next/image";
-
 export default function GlobalLoading() {
   return (
     <div className="mx-auto flex min-h-[70vh] w-full max-w-7xl flex-col items-center justify-center p-6 text-center animate-fade-in">
@@ -9,13 +7,12 @@ export default function GlobalLoading() {
         
         {/* Center FTT Logo */}
         <div className="absolute flex h-9 w-9 items-center justify-center overflow-hidden rounded-full">
-          <Image
+          <img
             src="/logo.png"
             alt="For The Truth Logo"
             width={36}
             height={36}
-            priority
-            className="object-contain"
+            className="h-full w-full object-contain select-none"
           />
         </div>
       </div>

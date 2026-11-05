@@ -1,10 +1,10 @@
 "use client";
 
-import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { useCartStore } from "@/store/cartStore";
 import { formatPrice } from "@/utils/currency";
+import { toCdnImageUrl } from "@/utils/imageUrl";
 
 import { calculateShipping } from "@/utils/shipping";
 import { FreeDeliveryBar } from "@/components/cart/FreeDeliveryBar";
@@ -74,7 +74,12 @@ export default function CartPage() {
                   className="relative flex h-28 w-20 shrink-0 items-center justify-center overflow-hidden rounded-lg bg-cream/30 p-1 shadow-book"
                 >
                   {item.image ? (
-                    <Image src={item.image} alt={item.name} fill sizes="80px" className="object-contain p-1" />
+                    <img
+                      src={toCdnImageUrl(item.image)}
+                      alt={item.name}
+                      decoding="async"
+                      className="h-full w-full object-contain p-1 select-none"
+                    />
                   ) : (
                     <div className="h-full w-full bg-gold-gradient" />
                   )}

@@ -1,11 +1,11 @@
 import type { Metadata } from "next";
-import Image from "next/image";
 import Link from "next/link";
 import { isWooConfigured } from "@/config/env";
 import { StoreMaintenancePage } from "@/components/common/StoreMaintenancePage";
 import { getCategories, getAllProducts } from "@/services/woocommerce";
 import type { WCCategory, Product } from "@/types/product";
 import { formatCategoryName } from "@/utils/text";
+import { toCdnImageUrl } from "@/utils/imageUrl";
 
 export const revalidate = 3600;
 
@@ -125,12 +125,11 @@ export default async function CategoriesPage() {
                           transform: `rotate(${(i - (covers.length - 1) / 2) * 6}deg)`,
                         }}
                       >
-                        <Image
-                          src={src}
+                        <img
+                          src={toCdnImageUrl(src)}
                           alt=""
-                          fill
-                          sizes="60px"
-                          className="object-contain p-0.5"
+                          decoding="async"
+                          className="h-full w-full object-contain p-0.5 select-none"
                         />
                       </span>
                     ))

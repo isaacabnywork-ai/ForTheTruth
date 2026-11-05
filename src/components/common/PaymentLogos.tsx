@@ -7,7 +7,7 @@ export function UpiBadge() {
       title="UPI - Unified Payments Interface"
     >
       <img
-        src="https://admin.forthetruth.in/wp-content/uploads/2026/11/UPI-Logo-vector.svg"
+        src="/wp-content/uploads/2026/11/UPI-Logo-vector.svg"
         alt="UPI"
         width={131}
         height={46}
@@ -25,7 +25,7 @@ export function VisaBadge() {
       title="Visa"
     >
       <img
-        src="https://admin.forthetruth.in/wp-content/uploads/2026/11/Visa_Inc._logo_2021%E2%80%93present.svg"
+        src="/wp-content/uploads/2026/11/Visa_Inc._logo_2021%E2%80%93present.svg"
         alt="Visa"
         width={1000}
         height={325}
@@ -43,7 +43,7 @@ export function MastercardBadge() {
       title="Mastercard"
     >
       <img
-        src="https://admin.forthetruth.in/wp-content/uploads/2026/11/Mastercard-logo.svg"
+        src="/wp-content/uploads/2026/11/Mastercard-logo.svg"
         alt="Mastercard"
         width={1000}
         height={776}
@@ -61,7 +61,7 @@ export function RupayBadge() {
       title="RuPay"
     >
       <img
-        src="https://admin.forthetruth.in/wp-content/uploads/2026/11/RuPay.svg"
+        src="/wp-content/uploads/2026/11/RuPay.svg"
         alt="RuPay"
         width={72}
         height={19}

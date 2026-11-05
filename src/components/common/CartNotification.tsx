@@ -2,10 +2,10 @@
 
 import { useEffect } from "react";
 import Link from "next/link";
-import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { useCartStore } from "@/store/cartStore";
 import { triggerHaptic } from "@/utils/haptics";
+import { toCdnImageUrl } from "@/utils/imageUrl";
 
 export function CartNotification() {
   const notification = useCartStore((s) => s.notification);
@@ -42,14 +42,13 @@ export function CartNotification() {
       >
         <div className="flex items-center gap-3">
           {/* Product Thumbnail */}
-          <div className="relative h-10 w-10 shrink-0 overflow-hidden rounded-full border-2 border-white/60 bg-white/20 shadow-xs">
+          <div className="relative h-10 w-10 shrink-0 overflow-hidden rounded-full border-2 border-white/60 bg-white/20 shadow-xs flex items-center justify-center">
             {notification.image ? (
-              <Image
-                src={notification.image}
+              <img
+                src={toCdnImageUrl(notification.image)}
                 alt={notification.name}
-                fill
-                sizes="40px"
-                className="object-cover"
+                decoding="async"
+                className="h-full w-full object-cover select-none"
               />
             ) : (
               <div className="h-full w-full bg-white/20" />

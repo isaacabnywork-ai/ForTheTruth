@@ -1,6 +1,5 @@
 "use client";
 
-import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
@@ -182,8 +181,8 @@ export function MobileNav({ categories }: { categories: WCCategory[] }) {
         aria-hidden={!drawerOpen}
       >
         <div className="flex items-center justify-between border-b border-sand px-6 py-5">
-          <Link href="/" onClick={() => setDrawerOpen(false)} className="relative h-9 w-9 shrink-0">
-            <Image src="/logo.png" alt="For The Truth" fill className="object-contain" priority />
+          <Link href="/" onClick={() => setDrawerOpen(false)} className="relative h-9 w-9 shrink-0 flex items-center justify-center">
+            <img src="/logo.png" alt="For The Truth" width={36} height={36} className="h-full w-full object-contain select-none" />
           </Link>
           <div className="flex items-center gap-2">
             <button

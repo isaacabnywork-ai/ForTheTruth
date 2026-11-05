@@ -1,5 +1,6 @@
 import type { Product } from "@/types/product";
 import { cleanHtmlDescription } from "./text";
+import { toCdnImageUrl } from "./imageUrl";
 
 /**
  * Prunes heavyweight raw WooCommerce product fields (massive HTML descriptions, raw postmeta,
@@ -32,14 +33,14 @@ export function pruneProductForClient(p: Product): Product {
       p.images && p.images.length > 0
         ? p.images.slice(0, 2).map((img) => ({
             id: img.id,
-            src: img.src,
+            src: toCdnImageUrl(img.src),
             alt: img.alt || p.name,
           }))
         : (p as unknown as { image?: string }).image
         ? [
             {
               id: 0,
-              src: (p as unknown as { image?: string }).image!,
+              src: toCdnImageUrl((p as unknown as { image?: string }).image!),
               alt: p.name,
             },
           ]

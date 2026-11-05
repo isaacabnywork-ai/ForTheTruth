@@ -1,10 +1,10 @@
 "use client";
 
-import Image from "next/image";
 import Link from "next/link";
 import type { Product } from "@/types/product";
 import { useCartStore } from "@/store/cartStore";
 import { useState } from "react";
+import { toCdnImageUrl } from "@/utils/imageUrl";
 
 interface Props {
   books: Product[];
@@ -38,13 +38,12 @@ function EbookCard({ book }: { book: Product }) {
     <article className="group flex flex-col rounded-3xl border border-sand/60 bg-white shadow-card overflow-hidden transition-all duration-300 hover:-translate-y-1 hover:shadow-lg">
       {/* Cover */}
       <div className="relative h-56 w-full bg-cream overflow-hidden">
-        <Link href={`/products/${book.slug}`}>
-          <Image
-            src={cover}
+        <Link href={`/products/${book.slug}`} className="h-full w-full flex items-center justify-center p-4">
+          <img
+            src={toCdnImageUrl(cover)}
             alt={book.name}
-            fill
-            className="object-contain p-4 transition-transform duration-500 group-hover:scale-105"
-            sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+            decoding="async"
+            className="max-h-full max-w-full object-contain transition-transform duration-500 group-hover:scale-105 select-none"
           />
         </Link>
         {/* Free badge */}

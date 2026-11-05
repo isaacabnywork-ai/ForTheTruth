@@ -5,6 +5,7 @@ import { useState } from "react";
 import { formatPrice } from "@/utils/currency";
 import type { Product } from "@/types/product";
 import { useCartStore } from "@/store/cartStore";
+import { toCdnImageUrl } from "@/utils/imageUrl";
 
 interface BookshelfProps {
   title: string;
@@ -43,10 +44,11 @@ export function Bookshelf({ title, href, products }: BookshelfProps) {
   function handleAdd(e: React.MouseEvent, p: Product) {
     e.preventDefault();
     e.stopPropagation();
-    const imageSrc =
+    const imageSrc = toCdnImageUrl(
       p.images?.[0]?.src ||
       (p as unknown as { image?: string }).image ||
-      "";
+      ""
+    );
     addToCart({
       productId: p.id,
       slug: p.slug,
@@ -131,9 +133,10 @@ function ShelfBook({
   isAdded: boolean;
   onAdd: (e: React.MouseEvent, p: Product) => void;
 }) {
-  const imageSrc =
+  const imageSrc = toCdnImageUrl(
     product.images?.[0]?.src ||
-    (product as unknown as { image?: string }).image;
+    (product as unknown as { image?: string }).image
+  );
   const imageAlt = product.images?.[0]?.alt || product.name;
   const inStock = product.stock_status !== "outofstock";
   const title = cleanTitle(product.name);

@@ -2,10 +2,10 @@
 
 import React from "react";
 import Link from "next/link";
-import Image from "next/image";
 import { formatPrice } from "@/utils/currency";
 import { REWARD_TIERS } from "@/utils/rewards";
 import { getAuthor, type Product } from "@/types/product";
+import { toCdnImageUrl } from "@/utils/imageUrl";
 
 export interface BookAdData {
   title: string;
@@ -39,7 +39,7 @@ export function HomePromoTrio({ leftBook, rightBook }: HomePromoTrioProps) {
     discountBadge: "SAVE 68%",
     image:
       leftBook?.images?.[0]?.src ||
-      "https://admin.forthetruth.in/wp-content/uploads/2022/01/NineMarksofaHealthyChurch_large.jpg",
+      "/wp-content/uploads/2022/01/NineMarksofaHealthyChurch_large.jpg",
     slug: leftBook?.slug || "nine-marks-of-a-healthy-church",
   };
 
@@ -58,7 +58,7 @@ export function HomePromoTrio({ leftBook, rightBook }: HomePromoTrioProps) {
     discountBadge: "SAVE 65%",
     image:
       rightBook?.images?.[0]?.src ||
-      "https://admin.forthetruth.in/wp-content/uploads/2024/04/The-Big-Picture-Story-Bible.jpeg",
+      "/wp-content/uploads/2024/04/The-Big-Picture-Story-Bible.jpeg",
     slug: rightBook?.slug || "the-big-picture-story-bible",
   };
 
@@ -94,15 +94,14 @@ export function HomePromoTrio({ leftBook, rightBook }: HomePromoTrioProps) {
                   href={`/products/${left.slug}`}
                   className="group/img relative block transition-transform duration-300 hover:scale-105"
                 >
-                  <div className="relative h-48 w-32 sm:h-52 sm:w-36 overflow-hidden rounded-r-md rounded-l-xs bg-slate-800 shadow-[0_15px_30px_-5px_rgba(0,0,0,0.8)] border border-white/10">
+                  <div className="relative h-48 w-32 sm:h-52 sm:w-36 overflow-hidden rounded-r-md rounded-l-xs bg-slate-800 shadow-[0_15px_30px_-5px_rgba(0,0,0,0.8)] border border-white/10 flex items-center justify-center">
                     {/* Simulated Book Spine Sheen */}
                     <div className="pointer-events-none absolute inset-y-0 left-0 w-2 bg-gradient-to-r from-white/30 to-transparent z-10" />
-                    <Image
-                      src={left.image}
+                    <img
+                      src={toCdnImageUrl(left.image)}
                       alt={left.title}
-                      fill
-                      sizes="(max-width: 640px) 130px, 150px"
-                      className="object-cover"
+                      decoding="async"
+                      className="h-full w-full object-cover select-none"
                     />
                   </div>
                 </Link>
@@ -184,13 +183,12 @@ export function HomePromoTrio({ leftBook, rightBook }: HomePromoTrioProps) {
                     key={tier.productId}
                     className="flex items-center gap-3 rounded-xl border border-sky-100 bg-white p-2.5 sm:p-3 shadow-xs hover:border-sky-300 hover:shadow-sm transition-all"
                   >
-                    <div className="relative h-14 w-11 sm:h-16 sm:w-12 shrink-0 overflow-hidden rounded bg-cream/50 shadow-xs border border-sand/40">
-                      <Image
-                        src={tier.image}
+                    <div className="relative h-14 w-11 sm:h-16 sm:w-12 shrink-0 overflow-hidden rounded bg-cream/50 shadow-xs border border-sand/40 flex items-center justify-center">
+                      <img
+                        src={toCdnImageUrl(tier.image)}
                         alt={tier.title}
-                        fill
-                        sizes="48px"
-                        className="object-contain p-0.5"
+                        decoding="async"
+                        className="h-full w-full object-contain p-0.5 select-none"
                       />
                     </div>
                     <div className="flex flex-1 flex-col min-w-0">
@@ -275,15 +273,14 @@ export function HomePromoTrio({ leftBook, rightBook }: HomePromoTrioProps) {
                   href={`/products/${right.slug}`}
                   className="group/img relative block transition-transform duration-300 hover:scale-105"
                 >
-                  <div className="relative h-48 w-36 sm:h-52 sm:w-40 overflow-hidden rounded-r-md rounded-l-xs bg-[#5c1c0e] shadow-[0_15px_30px_-5px_rgba(0,0,0,0.6)] border border-white/20">
+                  <div className="relative h-48 w-36 sm:h-52 sm:w-40 overflow-hidden rounded-r-md rounded-l-xs bg-[#5c1c0e] shadow-[0_15px_30px_-5px_rgba(0,0,0,0.6)] border border-white/20 flex items-center justify-center">
                     {/* Simulated Book Spine Sheen */}
                     <div className="pointer-events-none absolute inset-y-0 left-0 w-2.5 bg-gradient-to-r from-white/35 to-transparent z-10" />
-                    <Image
-                      src={right.image}
+                    <img
+                      src={toCdnImageUrl(right.image)}
                       alt={right.title}
-                      fill
-                      sizes="(max-width: 640px) 140px, 160px"
-                      className="object-cover"
+                      decoding="async"
+                      className="h-full w-full object-cover select-none"
                     />
                   </div>
                 </Link>

@@ -1,10 +1,10 @@
 "use client";
 
-import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { formatPrice } from "@/utils/currency";
+import { toCdnImageUrl } from "@/utils/imageUrl";
 
 interface Suggestion {
   id: number;
@@ -236,7 +236,12 @@ export function SearchBar() {
                       >
                         <span className="relative flex h-[50px] w-[35px] shrink-0 items-center justify-center overflow-hidden bg-cream/40 shadow-sm ring-1 ring-sand/60">
                           {r.image ? (
-                            <Image src={r.image} alt="" fill sizes="35px" className="object-contain p-0.5" />
+                            <img
+                              src={toCdnImageUrl(r.image)}
+                              alt=""
+                              decoding="async"
+                              className="h-full w-full object-contain p-0.5 select-none"
+                            />
                           ) : (
                             <span className="block h-full w-full bg-gold-gradient" />
                           )}
@@ -293,7 +298,12 @@ export function SearchBar() {
                 {/* Background decorative image if available */}
                 <div className="absolute inset-0 z-0 opacity-[0.03] pointer-events-none flex items-center justify-center">
                   {activeItem.image && (
-                    <Image src={activeItem.image} alt="" width={400} height={400} className="object-cover blur-sm" />
+                    <img
+                      src={toCdnImageUrl(activeItem.image)}
+                      alt=""
+                      decoding="async"
+                      className="h-full w-full object-cover blur-sm select-none"
+                    />
                   )}
                 </div>
 
@@ -301,11 +311,11 @@ export function SearchBar() {
                   <div className="flex justify-center mb-6 h-[200px]">
                     <div className="relative h-full flex items-center justify-center">
                       {activeItem.image && (
-                        /* eslint-disable-next-line @next/next/no-img-element */
                         <img
-                          src={activeItem.image}
+                          src={toCdnImageUrl(activeItem.image)}
                           alt={activeItem.name}
-                          className="h-full w-auto max-w-[200px] object-contain drop-shadow-[0_8px_18px_rgba(40,30,15,0.22)] rounded-sm"
+                          decoding="async"
+                          className="h-full w-auto max-w-[200px] object-contain drop-shadow-[0_8px_18px_rgba(40,30,15,0.22)] rounded-sm select-none"
                         />
                       )}
                     </div>

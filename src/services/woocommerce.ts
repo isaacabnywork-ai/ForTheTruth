@@ -5,6 +5,24 @@
 import { getServerEnv, isWooConfigured } from "@/config/env";
 import type { Product, ProductReview, WCCategory } from "@/types/product";
 import { formatCategoryName } from "@/utils/text";
+import { toCdnImageUrl } from "@/utils/imageUrl";
+
+function normalizeSingleProduct(p: Product): Product {
+  if (!p) return p;
+  const images = (p.images || []).map((img) => ({
+    ...img,
+    src: toCdnImageUrl(img.src),
+  }));
+  return { ...p, images };
+}
+
+function normalizeProducts<T extends Product | Product[] | null>(data: T): T {
+  if (!data) return data;
+  if (Array.isArray(data)) {
+    return data.map((p) => normalizeSingleProduct(p)) as T;
+  }
+  return normalizeSingleProduct(data as Product) as T;
+}
 
 const API_BASE = "/wp-json/wc/v3";
 const MAX_RETRIES = 2;
@@ -196,10 +214,11 @@ export async function getProducts(q: ProductQuery = {}): Promise<Product[]> {
   }
 
   try {
-    const data = await wcFetch<Product[]>("/products", {
+    const raw = await wcFetch<Product[]>("/products", {
       searchParams: params,
       revalidate: q.revalidate ?? 120,
     });
+    const data = normalizeProducts(raw);
     if (Array.isArray(data)) {
       globalQueryMemCache._productsQueryCache?.set(cacheKey, { data, time: now });
     }
@@ -237,8 +256,9 @@ export async function getProductsPaged(
       searchParams: params,
       revalidate: q.revalidate ?? 120,
     });
+    const rawProducts = (await res.json()) as Product[];
     const paged: PagedProducts = {
-      products: (await res.json()) as Product[],
+      products: normalizeProducts(rawProducts),
       total: parseInt(res.headers.get("x-wp-total") ?? "0", 10),
       totalPages: parseInt(res.headers.get("x-wp-totalpages") ?? "1", 10),
     };
@@ -352,7 +372,8 @@ export async function getAllProducts(
       rest.push(...chunkResults);
     }
 
-    const allProducts = [firstBatch, ...rest, ...trashBatch].flat();
+    const rawProducts = [firstBatch, ...rest, ...trashBatch].flat();
+    const allProducts = normalizeProducts(rawProducts);
     if (allProducts.length > 0) {
       if (!globalForCache._wcProductsCacheMap) globalForCache._wcProductsCacheMap = {};
       globalForCache._wcProductsCacheMap[cacheKey] = { data: allProducts, time: Date.now() };
@@ -372,7 +393,7 @@ export async function getProductBySlug(slug: string): Promise<Product | null> {
       searchParams: { slug: cleanSlug, status: "publish" },
       revalidate: 600,
     });
-    if (results.length > 0) return results[0];
+    if (results.length > 0) return normalizeSingleProduct(results[0]);
 
     // Fallback: If exact slug lookup returns empty (due to WordPress SEO plugins or encoding differences), search by title/keywords
     const keyword = cleanSlug.replace(/-/g, " ");
@@ -380,7 +401,8 @@ export async function getProductBySlug(slug: string): Promise<Product | null> {
       searchParams: { search: keyword, status: "publish", per_page: 5 },
       revalidate: 600,
     });
-    return results.find((p) => decodeURIComponent(p.slug).toLowerCase() === cleanSlug) ?? results[0] ?? null;
+    const found = results.find((p) => decodeURIComponent(p.slug).toLowerCase() === cleanSlug) ?? results[0] ?? null;
+    return found ? normalizeSingleProduct(found) : null;
   } catch (err) {
     recordApiError(err);
     return null;
@@ -397,7 +419,7 @@ export async function getProductBySlugWithStatus(
       searchParams: { slug: cleanSlug, status: "publish" },
       revalidate: 600,
     });
-    if (results.length > 0) return { product: results[0], isOffline: false };
+    if (results.length > 0) return { product: normalizeSingleProduct(results[0]), isOffline: false };
 
     const keyword = cleanSlug.replace(/-/g, " ");
     results = await wcFetch<Product[]>("/products", {
@@ -405,7 +427,7 @@ export async function getProductBySlugWithStatus(
       revalidate: 600,
     });
     const found = results.find((p) => decodeURIComponent(p.slug).toLowerCase() === cleanSlug) ?? results[0] ?? null;
-    return { product: found, isOffline: false };
+    return { product: found ? normalizeSingleProduct(found) : null, isOffline: false };
   } catch (err) {
     recordApiError(err);
     return { product: null, isOffline: true };
@@ -414,7 +436,8 @@ export async function getProductBySlugWithStatus(
 
 export async function getProduct(id: number): Promise<Product> {
   if (!isWooConfigured()) throw new WCApiError(503, "Catalog is undergoing maintenance");
-  return wcFetch<Product>(`/products/${id}`);
+  const raw = await wcFetch<Product>(`/products/${id}`);
+  return normalizeSingleProduct(raw);
 }
 
 // ---------- Categories ----------
@@ -813,7 +836,7 @@ export async function getFreeEbooks(): Promise<Product[]> {
         order: "desc",
       },
       revalidate: 3600,
-    }).then((products) => products.filter((p) => parseFloat(p.price ?? "1") === 0));
+    }).then((products) => normalizeProducts(products.filter((p) => parseFloat(p.price ?? "1") === 0)));
   } catch {
     return [];
   }

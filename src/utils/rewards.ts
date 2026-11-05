@@ -14,7 +14,7 @@ export const REWARD_TIERS: readonly RewardTier[] = [
     title: "What the Bible teaches about the Trinity",
     shortTitle: "What the Bible teaches about the Trinity",
     image:
-      "https://admin.forthetruth.in/wp-content/uploads/2023/06/what-the-bible-teaches-about-the-trinity.jpg",
+      "/wp-content/uploads/2023/06/what-the-bible-teaches-about-the-trinity.jpg",
     slug: "what-the-bible-teaches-about-the-trinity",
   },
   {
@@ -23,7 +23,7 @@ export const REWARD_TIERS: readonly RewardTier[] = [
     title: "What the Bible Teaches About the Person of Christ",
     shortTitle: "What the Bible Teaches About the Person of Christ",
     image:
-      "https://admin.forthetruth.in/wp-content/uploads/2023/06/what-the-bible-teaches-about-the-person-of-christ.jpg",
+      "/wp-content/uploads/2023/06/what-the-bible-teaches-about-the-person-of-christ.jpg",
     slug: "the-person-of-christ",
   },
   {
@@ -32,7 +32,7 @@ export const REWARD_TIERS: readonly RewardTier[] = [
     title: "Preaching Pure and Simple",
     shortTitle: "Preaching Pure and Simple",
     image:
-      "https://admin.forthetruth.in/wp-content/uploads/2023/06/preaching.jpg",
+      "/wp-content/uploads/2023/06/preaching.jpg",
     slug: "preaching-pure-and-simple",
   },
   {
@@ -42,7 +42,7 @@ export const REWARD_TIERS: readonly RewardTier[] = [
       "The Nicene Creed: What You Need to Know about the Most Important Creed Ever Written",
     shortTitle: "The Nicene Creed",
     image:
-      "https://admin.forthetruth.in/wp-content/uploads/2025/10/The-Nicene-Creed-.jpg",
+      "/wp-content/uploads/2025/10/The-Nicene-Creed-.jpg",
     slug: "the-nicene-creed",
   },
 ] as const;

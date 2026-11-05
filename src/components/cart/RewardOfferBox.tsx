@@ -1,8 +1,8 @@
 "use client";
 
 import React from "react";
-import Image from "next/image";
 import { formatPrice } from "@/utils/currency";
+import { toCdnImageUrl } from "@/utils/imageUrl";
 import {
   REWARD_TIERS,
   MAX_REWARD_THRESHOLD,
@@ -48,13 +48,12 @@ export function RewardOfferBox({ subtotal }: RewardOfferBoxProps) {
               key={reward.productId}
               className="flex items-center gap-3.5 rounded-lg border border-sky-100/80 bg-white p-3 shadow-xs"
             >
-              <div className="relative h-16 w-12 shrink-0 overflow-hidden rounded bg-cream/40 shadow-xs border border-sand/40">
-                <Image
-                  src={reward.image}
+              <div className="relative h-16 w-12 shrink-0 overflow-hidden rounded bg-cream/40 shadow-xs border border-sand/40 flex items-center justify-center">
+                <img
+                  src={toCdnImageUrl(reward.image)}
                   alt={reward.title}
-                  fill
-                  sizes="48px"
-                  className="object-contain p-0.5"
+                  decoding="async"
+                  className="h-full w-full object-contain p-0.5 select-none"
                 />
               </div>
               <div className="flex flex-1 flex-col">

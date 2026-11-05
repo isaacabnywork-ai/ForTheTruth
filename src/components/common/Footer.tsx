@@ -1,7 +1,6 @@
 "use client";
 
 import Link from "next/link";
-import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { SITE_NAME, COLLECTIONS } from "@/utils/constants";
 import type { SiteMenusConfig } from "@/types/menus";
@@ -99,12 +98,12 @@ export function Footer({ menusConfig }: { menusConfig?: SiteMenusConfig }) {
               className="inline-flex shrink-0 items-center transition-transform hover:scale-105"
               aria-label="For The Truth"
             >
-              <Image
+              <img
                 src="/logo.png"
                 alt="For The Truth"
                 width={22}
                 height={22}
-                className="h-5 w-5 sm:h-[22px] sm:w-[22px] rounded-full object-contain"
+                className="h-5 w-5 sm:h-[22px] sm:w-[22px] rounded-full object-contain select-none"
               />
             </Link>
             <p>{copyright}</p>

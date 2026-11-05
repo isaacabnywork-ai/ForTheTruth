@@ -8,6 +8,7 @@ import { useCartStore } from "@/store/cartStore";
 import { useWishlistStore } from "@/store/wishlistStore";
 import { triggerHaptic } from "@/utils/haptics";
 import { formatCardTitle } from "./BookRow";
+import { toCdnImageUrl } from "@/utils/imageUrl";
 
 export function ProductCard({
   product,
@@ -23,10 +24,11 @@ export function ProductCard({
   const toggleWishlist = useWishlistStore((s) => s.toggleWishlist);
   const wishlisted = useWishlistStore((s) => s.productIds.includes(product.id));
 
-  const imageSrc =
+  const imageSrc = toCdnImageUrl(
     product.images?.[0]?.src ||
     (product as unknown as { image?: string }).image ||
-    "";
+    ""
+  );
   const imageAlt = product.images?.[0]?.alt || product.name;
 
   const inStock =

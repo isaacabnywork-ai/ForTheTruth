@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRecentlyViewedStore, type RecentlyViewedItem } from "@/store/recentlyViewedStore";
 import { formatPrice } from "@/utils/currency";
+import { toCdnImageUrl } from "@/utils/imageUrl";
 
 interface RecentlyViewedMegaSectionProps {
   onNavigate: () => void;
@@ -45,7 +46,7 @@ function RecentlyViewedCard({
       <div className="relative h-14 w-10 shrink-0 overflow-hidden rounded-[2px] bg-sand/30 shadow-xs">
         {item.image ? (
           <img
-            src={item.image}
+            src={toCdnImageUrl(item.image)}
             alt={item.name}
             decoding="async"
             className="h-full w-full object-cover select-none transition-transform duration-200 group-hover:scale-105"

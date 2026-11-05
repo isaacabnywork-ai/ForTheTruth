@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useState } from "react";
 import { formatPrice } from "@/utils/currency";
 import { getAuthor, type Product } from "@/types/product";
+import { toCdnImageUrl } from "@/utils/imageUrl";
 
 /**
  * Shelf slider: books sit as narrow spines; the selected one slides out
@@ -137,14 +138,14 @@ function SpineBookItem({
       {image ? (
         isActive ? (
           <img
-            src={image.src}
+            src={toCdnImageUrl(image.src)}
             alt={image.alt || product.name}
             decoding="async"
             className="h-72 md:h-80 w-auto max-w-none block select-none rounded-lg object-contain"
           />
         ) : (
           <img
-            src={image.src}
+            src={toCdnImageUrl(image.src)}
             alt=""
             decoding="async"
             className="h-full w-full object-cover select-none"

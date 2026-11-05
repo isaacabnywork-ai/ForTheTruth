@@ -12,6 +12,7 @@ import {
 } from "@/services/woocommerce";
 import { getAuthor, getFormat, type Product, type ProductReview } from "@/types/product";
 import { cleanExcerpt } from "@/utils/text";
+import { toCdnImageUrl, toAbsoluteCdnImageUrl } from "@/utils/imageUrl";
 
 export const revalidate = 3600;
 
@@ -47,7 +48,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
         ...(image && {
           images: [
             {
-              url: image,
+              url: toAbsoluteCdnImageUrl(image),
               width: 800,
               height: 1200,
               alt: product.images[0].alt || product.name,
@@ -59,7 +60,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
         card: "summary_large_image",
         title: product.name,
         description: excerpt,
-        ...(image && { images: [image] }),
+        ...(image && { images: [toAbsoluteCdnImageUrl(image)] }),
       },
       keywords: [
         product.name,
@@ -295,7 +296,7 @@ export default async function SingleProductPage({ params }: PageProps) {
     <div className="w-full bg-cream">
       {/* High-priority preload for hero image in HTML head */}
       {product.images?.[0]?.src && (
-        <link rel="preload" as="image" href={product.images[0].src} fetchPriority="high" />
+        <link rel="preload" as="image" href={toCdnImageUrl(product.images[0].src)} fetchPriority="high" />
       )}
       <script
         type="application/ld+json"

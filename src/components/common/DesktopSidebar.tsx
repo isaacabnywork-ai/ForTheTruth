@@ -1,6 +1,5 @@
 "use client";
 
-import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
@@ -126,8 +125,8 @@ export function DesktopSidebar({
       <div className="flex items-center justify-between border-b border-sand px-4 py-4">
         {!collapsed ? (
           <Link href="/" className="shrink-0 flex items-center gap-2.5">
-            <div className="relative h-9 w-9 shrink-0">
-              <Image src="/logo.png" alt="For The Truth" fill className="object-contain" priority />
+            <div className="relative h-9 w-9 shrink-0 flex items-center justify-center">
+              <img src="/logo.png" alt="For The Truth" width={36} height={36} className="h-full w-full object-contain select-none" />
             </div>
             <span className="font-display text-base font-bold text-charcoal">
               For The Truth
@@ -135,8 +134,8 @@ export function DesktopSidebar({
           </Link>
         ) : (
           <Link href="/" className="mx-auto block" title="For The Truth">
-            <div className="relative h-8 w-8 shrink-0">
-              <Image src="/logo.png" alt="For The Truth" fill className="object-contain" priority />
+            <div className="relative h-8 w-8 shrink-0 flex items-center justify-center">
+              <img src="/logo.png" alt="For The Truth" width={32} height={32} className="h-full w-full object-contain select-none" />
             </div>
           </Link>
         )}

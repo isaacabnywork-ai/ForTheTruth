@@ -13,6 +13,7 @@ import { SingleBookPaymentTrust } from "./SingleBookPaymentTrust";
 import { triggerHaptic } from "@/utils/haptics";
 import { useWishlistSync } from "@/hooks/useWishlistSync";
 import { cleanHtmlDescription, cleanProductShortDescription } from "@/utils/text";
+import { toCdnImageUrl } from "@/utils/imageUrl";
 
 interface ProductDetailProps {
   product: Product;
@@ -46,7 +47,7 @@ export function ProductDetail({ product, reviews = [] }: ProductDetailProps) {
         name: product.name,
         slug: product.slug,
         price: product.price,
-        image: product.images?.[0]?.src || (product as unknown as { image?: string }).image,
+        image: toCdnImageUrl(product.images?.[0]?.src || (product as unknown as { image?: string }).image),
         author: getAuthor(product),
       });
     }
@@ -54,7 +55,13 @@ export function ProductDetail({ product, reviews = [] }: ProductDetailProps) {
 
   const author = getAuthor(product);
   const inStock = product.stock_status === "instock";
-  const images = product.images.length > 0 ? product.images : [{ id: 0, src: "", alt: product.name }];
+  const images = (product.images && product.images.length > 0
+    ? product.images
+    : [{ id: 0, src: (product as unknown as { image?: string }).image || "", alt: product.name }]
+  ).map((img) => ({
+    ...img,
+    src: toCdnImageUrl(img.src),
+  }));
   const currentImage = images[selectedImg] || images[0];
 
   const scrollToIndex = (idx: number) => {

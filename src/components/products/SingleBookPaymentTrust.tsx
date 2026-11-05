@@ -1,5 +1,3 @@
-import Image from "next/image";
-
 export function SingleBookPaymentTrust() {
   return (
     <div className="mt-8 space-y-3.5">
@@ -63,12 +61,12 @@ export function SingleBookPaymentTrust() {
       {/* 2. Secured by Razorpay */}
       <div className="flex items-center justify-center gap-1.5 text-xs text-charcoal/65">
         <span className="text-xs sm:text-[13px] text-charcoal/60 font-medium">Secured by</span>
-        <Image
+        <img
           src="/images/razorpay-logo.png"
           alt="Razorpay"
           width={96}
           height={20}
-          className="h-4 sm:h-[18px] w-auto object-contain inline-block"
+          className="h-4 sm:h-[18px] w-auto object-contain inline-block select-none"
         />
       </div>
     </div>

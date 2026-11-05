@@ -13,6 +13,7 @@ import { getCategories, getProducts } from "@/services/woocommerce";
 import { fetchCuratedShelfConfigFromCloud } from "@/services/curation";
 import categoryRowsFallbackData from "@/data/category_rows_fallback.json";
 import { pruneProducts } from "@/utils/pruneProduct";
+import { toCdnImageUrl } from "@/utils/imageUrl";
 import type { Product, WCCategory } from "@/types/product";
 
 export const revalidate = 300; // 5-minute Edge cache (ISR) for fast initial paint across India
@@ -51,9 +52,9 @@ export default async function HomePage() {
   (categoryRowsFallbackData as unknown as Product[]).forEach((p) => {
     const images =
       p.images && p.images.length > 0
-        ? p.images
+        ? p.images.map((img) => ({ ...img, src: toCdnImageUrl(img.src) }))
         : (p as unknown as { image?: string }).image
-        ? [{ id: 0, src: (p as unknown as { image?: string }).image!, alt: p.name }]
+        ? [{ id: 0, src: toCdnImageUrl((p as unknown as { image?: string }).image!), alt: p.name }]
         : [];
     fallbackMap.set(p.id, { ...p, images });
   });
