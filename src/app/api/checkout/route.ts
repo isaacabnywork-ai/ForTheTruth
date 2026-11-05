@@ -359,8 +359,17 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    // 3. If total payable is ₹0 or Admin Test Pay, complete immediately
-    if (finalPayable === 0 || adminPay) {
+    // 3. Determine actual payable amount directly from the authoritative WooCommerce order
+    // WooCommerce calculates exact coupon deductions, line item discounts, and tax
+    const wcTotal = order && order.total != null ? parseFloat(String(order.total)) : NaN;
+    const actualPayable = adminPay
+      ? 0
+      : Number.isFinite(wcTotal) && wcTotal >= 0
+      ? Math.max(0, wcTotal - appliedGiftCardDeduction)
+      : finalPayable;
+
+    // If total payable is ₹0 or Admin Test Pay, complete immediately
+    if (actualPayable === 0 || adminPay) {
       // Execute gift card redemption
       if (appliedGiftCardCode && appliedGiftCardDeduction > 0) {
         try {
@@ -443,7 +452,7 @@ export async function POST(req: NextRequest) {
 
     // Otherwise, create Razorpay order for the remaining payable amount
     const displayOrderNumber = (order as any).number || String(order.id);
-    const rzpOrder = await createRazorpayOrder(finalPayable, `wc_${order.id}`, {
+    const rzpOrder = await createRazorpayOrder(actualPayable, `wc_${order.id}`, {
       wcOrderId: String(order.id),
       orderNumber: displayOrderNumber,
     });
