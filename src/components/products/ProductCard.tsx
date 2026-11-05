@@ -88,7 +88,7 @@ export function ProductCard({
               src={imageSrc}
               alt={imageAlt || fullTitle}
               decoding="async"
-              className={`h-[210px] sm:h-[235px] md:h-[250px] lg:h-[260px] w-auto max-w-full rounded-[3px] shadow-xs border border-black/[0.06] object-contain block group-hover:shadow-md transition-all duration-300 ${
+              className={`max-h-[210px] sm:max-h-[235px] md:max-h-[250px] lg:max-h-[260px] max-w-full w-auto h-auto rounded-[3px] shadow-xs group-hover:shadow-md transition-all duration-300 block select-none ${
                 !inStock ? "opacity-40" : ""
               }`}
             />
@@ -101,12 +101,6 @@ export function ProductCard({
               </span>
             </div>
           )}
-
-          {/* Book spine crease */}
-          <div className="pointer-events-none absolute inset-y-0 left-0 w-[4px] bg-gradient-to-r from-black/20 via-black/5 to-transparent rounded-l-[3px]" />
-
-          {/* Subtle sheen */}
-          <div className="pointer-events-none absolute inset-0 bg-gradient-to-tr from-transparent via-white/5 to-white/10 opacity-30 rounded-[3px]" />
 
           {/* Rank Badge if provided */}
           {rank != null && rank <= 3 && (
