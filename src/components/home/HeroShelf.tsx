@@ -232,16 +232,6 @@ export function HeroShelf({
                         {formatPrice(hero.regular_price)}
                       </span>
                     )}
-                    {hero.on_sale && (
-                      <span className="rounded-full bg-red-100 text-red-700 text-[10px] font-black uppercase px-2 py-0.5">
-                        Save
-                      </span>
-                    )}
-                    {format && (
-                      <span className="rounded-full bg-amber-50 text-amber-900 border border-amber-300/70 text-[10px] font-black uppercase tracking-wider px-2.5 py-0.5">
-                        {format}
-                      </span>
-                    )}
                   </div>
 
                   {hero.rating_count > 0 && (
@@ -253,11 +243,6 @@ export function HeroShelf({
                     </div>
                   )}
 
-                  {excerpt && (
-                    <p className="hidden lg:block mt-3.5 max-w-sm text-xs sm:text-sm leading-relaxed text-charcoal/70 line-clamp-3">
-                      {excerpt}…
-                    </p>
-                  )}
 
                   {author && (
                     <p className="mt-2.5 sm:mt-3 text-xs sm:text-sm font-bold italic text-charcoal/60 line-clamp-1">
