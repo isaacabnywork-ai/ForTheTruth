@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { useState, useRef, useEffect, useCallback } from "react";
 import { formatPrice } from "@/utils/currency";
 import { getAuthor, type Product } from "@/types/product";
 import { toCdnImageUrl } from "@/utils/imageUrl";
@@ -24,14 +24,57 @@ export function SpineSlider({
   subtitle = "Tap any spine to pull the book off the shelf and see its cover, author, and price — just like browsing in store.",
 }: SpineSliderProps) {
   const [active, setActive] = useState(Math.floor(products.length / 2));
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
+  const isFirstRender = useRef(true);
 
   if (products.length === 0) return null;
-  const current = products[active];
+  const current = products[active] || products[0];
   const author = getAuthor(current);
 
   const prev = () =>
     setActive((a) => (a - 1 + products.length) % products.length);
   const next = () => setActive((a) => (a + 1) % products.length);
+
+  // Smoothly center the active book in the scroll container on mobile/tablet
+  const centerActiveBook = useCallback((smooth = true) => {
+    const container = scrollContainerRef.current;
+    if (!container) return;
+
+    const activeEl = container.querySelector<HTMLElement>('[data-active="true"]');
+    if (!activeEl) return;
+
+    const containerWidth = container.clientWidth;
+    const activeLeft = activeEl.offsetLeft;
+    const activeWidth = activeEl.offsetWidth;
+
+    // Center point alignment:
+    const targetScrollLeft = activeLeft - containerWidth / 2 + activeWidth / 2;
+
+    container.scrollTo({
+      left: Math.max(0, targetScrollLeft),
+      behavior: smooth ? "smooth" : "instant",
+    });
+  }, []);
+
+  useEffect(() => {
+    // Immediate scroll (instant on first mount to avoid visual jump)
+    centerActiveBook(!isFirstRender.current);
+
+    // Follow-up after CSS expansion / layout transition completes
+    const timer = setTimeout(() => {
+      centerActiveBook(!isFirstRender.current);
+      isFirstRender.current = false;
+    }, 100);
+
+    return () => clearTimeout(timer);
+  }, [active, centerActiveBook]);
+
+  // Recenter when window is resized / phone rotated
+  useEffect(() => {
+    const handleResize = () => centerActiveBook(false);
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, [centerActiveBook]);
 
   return (
     <section className="bg-white py-16 md:py-20">
@@ -45,40 +88,53 @@ export function SpineSlider({
         </div>
 
         <div className="relative">
-          {/* Arrows */}
-          <button
-            onClick={prev}
-            aria-label="Previous book"
-            className="absolute -left-1 top-1/2 z-20 -translate-y-1/2 rounded-full border border-sand bg-white/90 p-3 text-charcoal/60 shadow-card backdrop-blur transition-smooth hover:border-gold hover:text-gold-dark md:left-0"
-          >
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" aria-hidden="true"><path d="m15 18-6-6 6-6" /></svg>
-          </button>
-          <button
-            onClick={next}
-            aria-label="Next book"
-            className="absolute -right-1 top-1/2 z-20 -translate-y-1/2 rounded-full border border-sand bg-white/90 p-3 text-charcoal/60 shadow-card backdrop-blur transition-smooth hover:border-gold hover:text-gold-dark md:right-0"
-          >
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" aria-hidden="true"><path d="m9 18 6-6-6-6" /></svg>
-          </button>
+          {/* Shelf Area with navigation arrows vertically centered on the shelf */}
+          <div className="relative w-full">
+            {/* Arrows */}
+            <button
+              onClick={prev}
+              type="button"
+              aria-label="Previous book"
+              className="absolute left-1 sm:left-2 top-1/2 z-30 -translate-y-1/2 flex h-9 w-9 sm:h-10 sm:w-10 items-center justify-center rounded-full border border-sand bg-white/95 text-charcoal/80 shadow-md backdrop-blur transition-all active:scale-90 hover:border-gold hover:text-gold-dark cursor-pointer"
+            >
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" aria-hidden="true">
+                <path d="m15 18-6-6 6-6" />
+              </svg>
+            </button>
+            <button
+              onClick={next}
+              type="button"
+              aria-label="Next book"
+              className="absolute right-1 sm:right-2 top-1/2 z-30 -translate-y-1/2 flex h-9 w-9 sm:h-10 sm:w-10 items-center justify-center rounded-full border border-sand bg-white/95 text-charcoal/80 shadow-md backdrop-blur transition-all active:scale-90 hover:border-gold hover:text-gold-dark cursor-pointer"
+            >
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" aria-hidden="true">
+                <path d="m9 18 6-6-6-6" />
+              </svg>
+            </button>
 
-          {/* Shelf */}
-          <div className="overflow-x-auto scrollbar-hide w-full">
-            <div className="relative mx-auto flex w-max min-w-full items-end justify-start lg:justify-center gap-2 sm:gap-[10px] px-6 sm:px-10 pb-[20px] pt-10">
-              {products.map((p, i) => (
-                <SpineBookItem
-                  key={p.id}
-                  product={p}
-                  index={i}
-                  isActive={i === active}
-                  onSelect={() => setActive(i)}
+            {/* Scrollable Shelf */}
+            <div
+              ref={scrollContainerRef}
+              className="overflow-x-auto scrollbar-hide w-full"
+            >
+              <div className="relative mx-auto flex w-max min-w-full items-end justify-start lg:justify-center gap-2 sm:gap-[10px] px-[max(24px,calc(50vw-100px))] sm:px-[max(32px,calc(50vw-120px))] lg:px-12 pb-[20px] pt-10">
+                {products.map((p, i) => (
+                  <SpineBookItem
+                    key={p.id}
+                    product={p}
+                    index={i}
+                    isActive={i === active}
+                    onSelect={() => setActive(i)}
+                    onImageLoad={() => centerActiveBook(false)}
+                  />
+                ))}
+
+                {/* White ledge */}
+                <div
+                  aria-hidden="true"
+                  className="absolute inset-x-0 bottom-0 h-[16px] rounded-md bg-gradient-to-b from-white via-[#f7f3ea] to-[#ece5d5] shadow-ledge"
                 />
-              ))}
-
-              {/* White ledge */}
-              <div
-                aria-hidden="true"
-                className="absolute inset-x-0 bottom-0 h-[16px] rounded-md bg-gradient-to-b from-white via-[#f7f3ea] to-[#ece5d5] shadow-ledge"
-              />
+              </div>
             </div>
           </div>
 
@@ -115,11 +171,13 @@ function SpineBookItem({
   isActive,
   index,
   onSelect,
+  onImageLoad,
 }: {
   product: Product;
   isActive: boolean;
   index: number;
   onSelect: () => void;
+  onImageLoad?: () => void;
 }) {
   const image = product.images?.[0];
 
@@ -127,12 +185,13 @@ function SpineBookItem({
     <button
       onClick={onSelect}
       type="button"
+      data-active={isActive ? "true" : undefined}
       aria-label={isActive ? undefined : `Select ${product.name}`}
       aria-pressed={isActive}
-      className={`relative shrink-0 origin-bottom overflow-hidden text-left transition-all duration-500 ease-out ${
+      className={`relative shrink-0 origin-bottom overflow-hidden text-left transition-all duration-500 ease-out cursor-pointer ${
         isActive
           ? "z-10 h-72 md:h-80 w-auto -translate-y-8 rotate-[-2deg] rounded-lg shadow-book-lg"
-          : "h-56 w-9 rounded-[3px] shadow-book hover:-translate-y-2 md:h-64 md:w-10"
+          : "h-56 w-9 rounded-[3px] shadow-book hover:-translate-y-2 md:h-64 md:w-10 opacity-85 hover:opacity-100"
       }`}
     >
       {image ? (
@@ -141,6 +200,7 @@ function SpineBookItem({
             src={toCdnImageUrl(image.src)}
             alt={image.alt || product.name}
             decoding="async"
+            onLoad={onImageLoad}
             className="h-72 md:h-80 w-auto max-w-none block select-none rounded-lg object-contain"
           />
         ) : (
