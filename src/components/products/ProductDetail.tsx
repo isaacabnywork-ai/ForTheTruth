@@ -1,6 +1,5 @@
 "use client";
 
-import Image from "next/image";
 import Link from "next/link";
 import { useState, useRef, useEffect } from "react";
 import { useCartStore } from "@/store/cartStore";
@@ -241,14 +240,11 @@ export function ProductDetail({ product, reviews = [] }: ProductDetailProps) {
                 >
                   {img.src ? (
                     <div className="relative flex items-center justify-center w-full px-4 sm:px-4 md:px-0">
-                      <Image
+                      <img
                         src={img.src}
                         alt={img.alt || product.name}
-                        width={500}
-                        height={680}
-                        priority={idx === 0}
-                        sizes="(max-width: 640px) 85vw, (max-width: 1024px) 50vw, 520px"
-                        className="h-[45vh] sm:h-[480px] md:h-auto md:max-h-[520px] w-auto h-auto max-w-[85%] sm:max-w-full object-contain block drop-shadow-md rounded-[3px] transition-all mx-auto"
+                        decoding="async"
+                        className="h-[45vh] sm:h-[480px] md:h-auto md:max-h-[520px] w-auto max-w-[85%] sm:max-w-full object-contain block drop-shadow-md rounded-[3px] transition-all mx-auto"
                       />
                     </div>
                   ) : (
@@ -290,12 +286,11 @@ export function ProductDetail({ product, reviews = [] }: ProductDetailProps) {
                       : "border-sand/60 opacity-70 hover:opacity-100 hover:border-gold/50"
                   }`}
                 >
-                  <Image
+                  <img
                     src={img.src}
                     alt={`${product.name} thumbnail ${idx + 1}`}
-                    fill
-                    sizes="(max-width: 640px) 40px, 56px"
-                    className="object-contain p-0.5"
+                    decoding="async"
+                    className="h-full w-full object-contain p-0.5"
                   />
                 </button>
               ))}
@@ -767,12 +762,11 @@ export function ProductDetail({ product, reviews = [] }: ProductDetailProps) {
               {/* Product Thumbnail */}
               <div className="relative h-10 w-10 shrink-0 overflow-hidden rounded-full border-2 border-white/60 bg-white/20 shadow-xs">
                 {currentImage.src ? (
-                  <Image
+                  <img
                     src={currentImage.src}
                     alt={product.name}
-                    fill
-                    sizes="40px"
-                    className="object-cover"
+                    decoding="async"
+                    className="h-full w-full object-cover"
                   />
                 ) : (
                   <div className="h-full w-full bg-white/20" />

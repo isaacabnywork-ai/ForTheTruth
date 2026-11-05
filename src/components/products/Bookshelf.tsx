@@ -1,7 +1,6 @@
 "use client";
 
 import Link from "next/link";
-import Image from "next/image";
 import { useState } from "react";
 import { formatPrice } from "@/utils/currency";
 import type { Product } from "@/types/product";
@@ -145,13 +144,11 @@ function ShelfBook({
       className="group relative block h-44 sm:h-52 md:h-56 w-auto shrink-0 origin-bottom overflow-hidden rounded-r-md rounded-l-[3px] shadow-book transition-all duration-500 ease-out hover:z-10 sm:hover:-translate-y-4 sm:hover:rotate-[-1.5deg] hover:shadow-book-lg"
     >
       {imageSrc ? (
-        <Image
+        <img
           src={imageSrc}
           alt={imageAlt || title}
-          width={220}
-          height={300}
-          sizes="(max-width: 640px) 140px, 200px"
-          className="h-44 sm:h-52 md:h-56 w-auto h-auto max-w-none block select-none object-contain"
+          decoding="async"
+          className="h-44 sm:h-52 md:h-56 w-auto max-w-none block select-none object-contain"
         />
       ) : (
         <div className="flex h-44 sm:h-52 md:h-56 w-[140px] items-center justify-center bg-gold-gradient p-3 text-center">

@@ -1,7 +1,6 @@
 "use client";
 
 import React, { useState, useEffect, useRef, useCallback } from "react";
-import Image from "next/image";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
 import { RatingStars } from "@/components/products/RatingStars";
@@ -317,14 +316,11 @@ function HeroBookImage({ product }: { product: Product }) {
       aria-label={product.name}
     >
       {image ? (
-        <Image
+        <img
           src={image.src}
           alt={decodeHtmlEntities(image.alt || product.name)}
-          width={400}
-          height={550}
-          priority
-          sizes="(max-width: 640px) 280px, (max-width: 1024px) 380px, 440px"
-          className="max-h-[340px] sm:max-h-[400px] md:max-h-[440px] w-auto h-auto max-w-full object-contain rounded-lg shadow-book-lg select-none"
+          decoding="async"
+          className="max-h-[340px] sm:max-h-[400px] md:max-h-[440px] w-auto max-w-full object-contain rounded-lg shadow-book-lg select-none"
         />
       ) : (
         <div className="flex h-[340px] sm:h-[400px] w-[230px] sm:w-[270px] items-center justify-center rounded-lg bg-gold-gradient p-6 text-center shadow-book-lg">

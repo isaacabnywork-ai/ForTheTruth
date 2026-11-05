@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import Image from "next/image";
 import { useRecentlyViewedStore, type RecentlyViewedItem } from "@/store/recentlyViewedStore";
 import { formatPrice } from "@/utils/currency";
 
@@ -45,11 +44,10 @@ function RecentlyViewedCard({
       {/* Book cover image - strictly constrained to miniature thumbnail size */}
       <div className="relative h-14 w-10 shrink-0 overflow-hidden rounded-[2px] bg-sand/30 shadow-xs">
         {item.image ? (
-          <Image
+          <img
             src={item.image}
             alt={item.name}
-            width={80}
-            height={112}
+            decoding="async"
             className="h-full w-full object-cover select-none transition-transform duration-200 group-hover:scale-105"
           />
         ) : (

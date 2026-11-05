@@ -1,6 +1,5 @@
 "use client";
 
-import Image from "next/image";
 import Link from "next/link";
 import { useState } from "react";
 import { formatPrice } from "@/utils/currency";
@@ -137,21 +136,18 @@ function SpineBookItem({
     >
       {image ? (
         isActive ? (
-          <Image
+          <img
             src={image.src}
             alt={image.alt || product.name}
-            width={240}
-            height={320}
-            sizes="(max-width: 768px) 200px, 240px"
-            className="h-72 md:h-80 w-auto h-auto max-w-none block select-none rounded-lg object-contain"
+            decoding="async"
+            className="h-72 md:h-80 w-auto max-w-none block select-none rounded-lg object-contain"
           />
         ) : (
-          <Image
+          <img
             src={image.src}
             alt=""
-            fill
-            sizes="48px"
-            className="object-cover select-none"
+            decoding="async"
+            className="h-full w-full object-cover select-none"
           />
         )
       ) : (
