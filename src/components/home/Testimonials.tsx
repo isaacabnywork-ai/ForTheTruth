@@ -88,9 +88,6 @@ export function Testimonials({
                   <span className="block text-sm font-bold text-charcoal font-display">
                     {t.name}
                   </span>
-                  <span className="mt-0.5 block text-xs text-charcoal/50 font-medium">
-                    {t.role}
-                  </span>
                 </div>
                 {t.audience === "church" && (
                   <span className="rounded-full bg-navy/10 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-navy">
