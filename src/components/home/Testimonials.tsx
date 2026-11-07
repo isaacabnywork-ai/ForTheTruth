@@ -89,11 +89,6 @@ export function Testimonials({
                     {t.name}
                   </span>
                 </div>
-                {t.audience === "church" && (
-                  <span className="rounded-full bg-navy/10 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-navy">
-                    Church
-                  </span>
-                )}
               </figcaption>
             </figure>
           ))}
