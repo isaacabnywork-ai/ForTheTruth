@@ -49,10 +49,15 @@ export const REWARD_TIERS: readonly RewardTier[] = [
 
 export const MAX_REWARD_THRESHOLD = 2000;
 
+// Offer ended
+export const REWARD_OFFER_ACTIVE = false;
+
 export function getUnlockedRewards(subtotal: number): RewardTier[] {
+  if (!REWARD_OFFER_ACTIVE) return [];
   return REWARD_TIERS.filter((t) => subtotal >= t.threshold);
 }
 
 export function getNextReward(subtotal: number): RewardTier | null {
+  if (!REWARD_OFFER_ACTIVE) return null;
   return REWARD_TIERS.find((t) => subtotal < t.threshold) ?? null;
 }

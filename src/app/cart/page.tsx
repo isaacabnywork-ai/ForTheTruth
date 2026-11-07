@@ -9,6 +9,7 @@ import { toCdnImageUrl } from "@/utils/imageUrl";
 import { calculateShipping } from "@/utils/shipping";
 import { FreeDeliveryBar } from "@/components/cart/FreeDeliveryBar";
 import { RewardOfferBox } from "@/components/cart/RewardOfferBox";
+import { REWARD_OFFER_ACTIVE } from "@/utils/rewards";
 
 export default function CartPage() {
   const { items, updateQuantity, removeFromCart } = useCartStore();
@@ -61,7 +62,9 @@ export default function CartPage() {
         {/* Left Column: Delivery bar, Reward box, and Cart items */}
         <div className="space-y-6">
           {hasPhysicalBooks && <FreeDeliveryBar subtotal={eligibleBookSubtotal} />}
-          {eligibleBookSubtotal > 0 && <RewardOfferBox subtotal={eligibleBookSubtotal} />}
+          {REWARD_OFFER_ACTIVE && eligibleBookSubtotal > 0 && (
+            <RewardOfferBox subtotal={eligibleBookSubtotal} />
+          )}
 
           <div className="space-y-4 pt-1">
             {items.map((item) => (
