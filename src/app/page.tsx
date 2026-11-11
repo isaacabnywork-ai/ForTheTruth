@@ -14,6 +14,7 @@ import categoryRowsFallbackData from "@/data/category_rows_fallback.json";
 import { pruneProducts } from "@/utils/pruneProduct";
 import { toCdnImageUrl } from "@/utils/imageUrl";
 import type { Product } from "@/types/product";
+import type { CustomCategoryShelf } from "@/types/curation";
 
 export const revalidate = 300; // 5-minute Edge cache (ISR) for fast initial paint across India
 
@@ -43,6 +44,8 @@ export default async function HomePage() {
   let theologyProducts: Product[] = [];
 
   const curated = await fetchCuratedShelfConfigFromCloud();
+  const extraShelves = curated.extraCategoryShelves ?? [];
+  let extraShelfProductsList: { shelf: CustomCategoryShelf; products: Product[] }[] = [];
 
   // Setup fallback map from local data with verified covers
   const fallbackMap = new Map<number, Product>();
@@ -165,6 +168,28 @@ export default async function HomePage() {
             revalidate: 60,
           }).catch(() => []);
 
+      const extraShelfQueries = extraShelves.map((shelf) => {
+        const isDynamic =
+          shelf.mode !== "manual" &&
+          typeof shelf.categoryId === "number" &&
+          shelf.categoryId > 0;
+        if (isDynamic) {
+          return getProducts({
+            category: shelf.categoryId,
+            perPage: 30,
+            revalidate: 60,
+          }).catch(() => []);
+        }
+        if (shelf.bookIds.length > 0) {
+          return getProducts({
+            include: shelf.bookIds,
+            perPage: shelf.bookIds.length,
+            revalidate: 60,
+          }).catch(() => []);
+        }
+        return Promise.resolve([] as Product[]);
+      });
+
       const [
         fetchedHero,
         fetchedNew,
@@ -174,6 +199,7 @@ export default async function HomePage() {
         fetchedCl,
         fetchedMinistry,
         fetchedTheology,
+        fetchedExtraResults,
       ] = await Promise.all([
         heroQuery,
         newQuery,
@@ -183,6 +209,7 @@ export default async function HomePage() {
         clQuery,
         ministryQuery,
         theologyQuery,
+        Promise.all(extraShelfQueries),
       ]);
 
       // Hero
@@ -248,6 +275,23 @@ export default async function HomePage() {
       } else {
         theologyProducts = getFallbackList(theologyIds);
       }
+      extraShelfProductsList = extraShelves.map((shelf, i) => {
+        const fetched = fetchedExtraResults[i] ?? [];
+        const isDynamic =
+          shelf.mode !== "manual" &&
+          typeof shelf.categoryId === "number" &&
+          shelf.categoryId > 0;
+        if (isDynamic && fetched.length > 0) {
+          return { shelf, products: shuffleArray(fetched).slice(0, 6) };
+        }
+        if (fetched.length > 0 && shelf.bookIds.length > 0) {
+          return { shelf, products: sortByIdList(fetched, shelf.bookIds) };
+        }
+        if (shelf.bookIds.length > 0) {
+          return { shelf, products: getFallbackList(shelf.bookIds) };
+        }
+        return { shelf, products: [] as Product[] };
+      });
     } catch (err) {
       console.error("Homepage: WooCommerce fetch failed", err);
     }
@@ -291,7 +335,8 @@ export default async function HomePage() {
     newArrivals.length > 0 ||
     bestsellers.length > 0 ||
     spineProducts.length > 0 ||
-    categoryRows.some((r) => r.products.length > 0);
+    categoryRows.some((r) => r.products.length > 0) ||
+    extraShelfProductsList.some((r) => r.products.length > 0);
 
   if (!hasAnyBooks) {
     return <StoreMaintenancePage />;
@@ -343,6 +388,24 @@ export default async function HomePage() {
       ) : (
         <BookRowSkeleton title={curated.bestsellersTitle || "Children Books"} />
       )}
+
+      {/* 5b — Custom Category Shelves (7th, 8th, ...) */}
+      {extraShelfProductsList.map(({ shelf, products }) => {
+        const pruned = pruneProducts(products);
+        if (pruned.length === 0) return null;
+        const href =
+          shelf.viewAllHref ||
+          (shelf.categorySlug ? `/categories/${shelf.categorySlug}` : "/shop");
+        return (
+          <BookRow
+            key={shelf.id}
+            title={shelf.title}
+            href={href}
+            badge={shelf.title.toUpperCase()}
+            products={pruned}
+          />
+        );
+      })}
 
       {/* 6 — Explore Children Books (spine slider) with customizable titles & book selection */}
       {prunedSpineProducts.length > 0 && (

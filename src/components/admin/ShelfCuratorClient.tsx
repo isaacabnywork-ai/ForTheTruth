@@ -1,18 +1,69 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import Image from "next/image";
-import type { Product } from "@/types/product";
+import type { Product, WCCategory } from "@/types/product";
 import { getAuthor } from "@/types/product";
 import { formatPrice } from "@/utils/currency";
-import type { CuratedShelfConfig, TestimonialItem } from "@/types/curation";
+import type { CuratedShelfConfig, CustomCategoryShelf, TestimonialItem } from "@/types/curation";
+import { CustomCategoryShelfEditor } from "./CustomCategoryShelfEditor";
 
 interface ShelfCuratorClientProps {
   initialProducts: Product[];
   initialConfig: CuratedShelfConfig;
+  initialCategories?: WCCategory[];
 }
 
 type SectionTab = "hero" | "categories" | "spine" | "editor" | "reviews";
+
+type CategoryShelfSelection = CategoryShelfKey | `custom:${string}`;
+
+function getCustomShelfId(selection: string): string | null {
+  return selection.startsWith("custom:") ? selection.slice(7) : null;
+}
+
+function getBookIdsForSelection(
+  cfg: CuratedShelfConfig,
+  tab: SectionTab,
+  catSelection: CategoryShelfSelection
+): number[] {
+  if (tab === "hero") return cfg.heroIds || [];
+  if (tab === "spine") return cfg.spineIds || [];
+  if (tab === "categories") {
+    const customId = getCustomShelfId(catSelection);
+    if (customId) {
+      return (
+        (cfg.extraCategoryShelves || []).find((s) => s.id === customId)
+          ?.bookIds || []
+      );
+    }
+    return (cfg[catSelection as CategoryShelfKey] as number[]) || [];
+  }
+  return [];
+}
+
+function setBookIdsForSelection(
+  cfg: CuratedShelfConfig,
+  tab: SectionTab,
+  catSelection: CategoryShelfSelection,
+  ids: number[]
+): CuratedShelfConfig {
+  if (tab === "hero") return { ...cfg, heroIds: ids };
+  if (tab === "spine") return { ...cfg, spineIds: ids };
+  if (tab === "categories") {
+    const customId = getCustomShelfId(catSelection);
+    if (customId) {
+      return {
+        ...cfg,
+        extraCategoryShelves: (cfg.extraCategoryShelves || []).map((s) =>
+          s.id === customId ? { ...s, bookIds: ids } : s
+        ),
+      };
+    }
+    return { ...cfg, [catSelection]: ids };
+  }
+  return cfg;
+}
 
 type CategoryShelfKey =
   | "newArrivalsIds"
@@ -93,11 +144,13 @@ const CATEGORY_SHELVES: CategoryShelfDef[] = [
 export function ShelfCuratorClient({
   initialProducts,
   initialConfig,
+  initialCategories = [],
 }: ShelfCuratorClientProps) {
   const [config, setConfig] = useState<CuratedShelfConfig>(initialConfig);
   const [activeTab, setActiveTab] = useState<SectionTab>("hero");
   const [activeCategoryShelf, setActiveCategoryShelf] =
-    useState<CategoryShelfKey>("newArrivalsIds");
+    useState<CategoryShelfSelection>("newArrivalsIds");
+  const [pendingDeleteShelfId, setPendingDeleteShelfId] = useState<string | null>(null);
   const [search, setSearch] = useState("");
   const [catalogStatusFilter, setCatalogStatusFilter] = useState<
     "all" | "publish" | "draft" | "private"
@@ -112,6 +165,88 @@ export function ShelfCuratorClient({
     return map;
   });
 
+  const availableCategories = (() => {
+    const map = new Map<number, WCCategory>();
+    initialCategories.forEach((c) => map.set(c.id, c));
+    productCatalogMap.forEach((p) => {
+      p.categories?.forEach((c) => {
+        if (!map.has(c.id)) {
+          map.set(c.id, { id: c.id, name: c.name, slug: c.slug });
+        }
+      });
+    });
+    return Array.from(map.values()).sort((a, b) => a.name.localeCompare(b.name));
+  })();
+
+  const extraShelves = config.extraCategoryShelves || [];
+  const selectedCustomId = getCustomShelfId(activeCategoryShelf);
+  const selectedCustomIndex = selectedCustomId
+    ? extraShelves.findIndex((s) => s.id === selectedCustomId)
+    : -1;
+  const selectedCustomShelf =
+    selectedCustomIndex >= 0 ? extraShelves[selectedCustomIndex] : null;
+
+  const handleAddCategorySection = () => {
+    const nextNum = CATEGORY_SHELVES.length + extraShelves.length + 1;
+    const newShelf: CustomCategoryShelf = {
+      id: `shelf-${Date.now()}`,
+      title: `Category Section ${nextNum}`,
+      mode: "category",
+      bookIds: [],
+    };
+    const nextSelection: CategoryShelfSelection = `custom:${newShelf.id}`;
+    setConfig((prev) => ({
+      ...prev,
+      extraCategoryShelves: [...(prev.extraCategoryShelves || []), newShelf],
+    }));
+    setActiveCategoryShelf(nextSelection);
+    setPendingDeleteShelfId(null);
+    setRawInput("");
+  };
+
+  const handleUpdateCustomShelf = (
+    id: string,
+    updates: Partial<CustomCategoryShelf>
+  ) => {
+    setConfig((prev) => ({
+      ...prev,
+      extraCategoryShelves: (prev.extraCategoryShelves || []).map((s) =>
+        s.id === id ? { ...s, ...updates } : s
+      ),
+    }));
+  };
+
+  const handleMoveCustomShelf = (idx: number, dir: "prev" | "next") => {
+    const targetIdx = dir === "prev" ? idx - 1 : idx + 1;
+    if (targetIdx < 0 || targetIdx >= extraShelves.length) return;
+    const next = [...extraShelves];
+    const tmp = next[idx];
+    next[idx] = next[targetIdx];
+    next[targetIdx] = tmp;
+    setConfig((prev) => ({ ...prev, extraCategoryShelves: next }));
+  };
+
+  const handleRemoveCustomShelf = (id: string) => {
+    const remaining = extraShelves.filter((s) => s.id !== id);
+    const nextConfig: CuratedShelfConfig = {
+      ...config,
+      extraCategoryShelves: remaining,
+    };
+    setConfig(nextConfig);
+    setPendingDeleteShelfId(null);
+
+    if (activeCategoryShelf === `custom:${id}`) {
+      const fallbackSel: CategoryShelfSelection =
+        remaining.length > 0
+          ? `custom:${remaining[Math.max(0, selectedCustomIndex - 1)].id}`
+          : "bestsellersIds";
+      setActiveCategoryShelf(fallbackSel);
+      setRawInput(
+        getBookIdsForSelection(nextConfig, "categories", fallbackSel).join(", ")
+      );
+    }
+  };
+
   // Helper to determine which array of IDs we are currently editing
   const getCurrentArrayKey = ():
     | "heroIds"
@@ -120,14 +255,16 @@ export function ShelfCuratorClient({
     | null => {
     if (activeTab === "hero") return "heroIds";
     if (activeTab === "spine") return "spineIds";
-    if (activeTab === "categories") return activeCategoryShelf;
+    if (activeTab === "categories") return getCustomShelfId(activeCategoryShelf) ? null : (activeCategoryShelf as CategoryShelfKey);
     return null;
   };
 
   const currentArrayKey = getCurrentArrayKey();
-  const currentArray = currentArrayKey
-    ? (config[currentArrayKey] as number[]) || []
-    : [];
+  const hasEditableArray = Boolean(currentArrayKey || (activeTab === "categories" && selectedCustomShelf));
+  const currentArray = useMemo(
+    () => getBookIdsForSelection(config, activeTab, activeCategoryShelf),
+    [config, activeTab, activeCategoryShelf]
+  );
 
   // Input string state for direct comma-separated shortcode style entry
   const [rawInput, setRawInput] = useState<string>(() =>
@@ -137,28 +274,30 @@ export function ShelfCuratorClient({
   // When switching tabs, sync raw input
   const handleTabSwitch = (tab: SectionTab) => {
     setActiveTab(tab);
+    setPendingDeleteShelfId(null);
     if (tab === "hero") setRawInput(config.heroIds.join(", "));
     else if (tab === "spine") setRawInput(config.spineIds.join(", "));
     else if (tab === "categories")
       setRawInput(
-        ((config[activeCategoryShelf] as number[]) || []).join(", ")
+        getBookIdsForSelection(config, "categories", activeCategoryShelf).join(", ")
       );
     else setRawInput("");
   };
 
-  const handleCategoryShelfSwitch = (shelf: CategoryShelfKey) => {
+  const handleCategoryShelfSwitch = (shelf: CategoryShelfSelection) => {
     setActiveCategoryShelf(shelf);
-    setRawInput(((config[shelf] as number[]) || []).join(", "));
+    setPendingDeleteShelfId(null);
+    setRawInput(getBookIdsForSelection(config, "categories", shelf).join(", "));
   };
 
   const handleRawInputChange = (val: string) => {
     setRawInput(val);
-    if (!currentArrayKey) return;
+    if (!hasEditableArray) return;
     const parsedIds = val
       .split(",")
       .map((s) => Number(s.trim()))
       .filter((n) => !isNaN(n) && n > 0);
-    setConfig((prev) => ({ ...prev, [currentArrayKey]: parsedIds }));
+    setConfig((prev) => setBookIdsForSelection(prev, activeTab, activeCategoryShelf, parsedIds));
   };
 
   const handleAddBook = (id: number) => {
@@ -166,10 +305,10 @@ export function ShelfCuratorClient({
       setConfig((prev) => ({ ...prev, featuredPickId: id }));
       return;
     }
-    if (!currentArrayKey) return;
+    if (!hasEditableArray) return;
     if (!currentArray.includes(id)) {
       const nextList = [...currentArray, id];
-      setConfig((prev) => ({ ...prev, [currentArrayKey]: nextList }));
+      setConfig((prev) => setBookIdsForSelection(prev, activeTab, activeCategoryShelf, nextList));
       setRawInput(nextList.join(", "));
     }
   };
@@ -179,21 +318,21 @@ export function ShelfCuratorClient({
       setConfig((prev) => ({ ...prev, featuredPickId: null }));
       return;
     }
-    if (!currentArrayKey) return;
+    if (!hasEditableArray) return;
     const nextList = currentArray.filter((i) => i !== id);
-    setConfig((prev) => ({ ...prev, [currentArrayKey]: nextList }));
+    setConfig((prev) => setBookIdsForSelection(prev, activeTab, activeCategoryShelf, nextList));
     setRawInput(nextList.join(", "));
   };
 
   const handleMove = (idx: number, dir: "up" | "down") => {
-    if (!currentArrayKey) return;
+    if (!hasEditableArray) return;
     const list = [...currentArray];
     const targetIdx = dir === "up" ? idx - 1 : idx + 1;
     if (targetIdx < 0 || targetIdx >= list.length) return;
     const temp = list[idx];
     list[idx] = list[targetIdx];
     list[targetIdx] = temp;
-    setConfig((prev) => ({ ...prev, [currentArrayKey]: list }));
+    setConfig((prev) => setBookIdsForSelection(prev, activeTab, activeCategoryShelf, list));
     setRawInput(list.join(", "));
   };
 
@@ -334,8 +473,8 @@ export function ShelfCuratorClient({
     },
     {
       key: "categories",
-      label: "📚 2. Six Category Shelves",
-      badge: "6 Shelves",
+      label: "📚 2. Category Shelves",
+      badge: `${CATEGORY_SHELVES.length + extraShelves.length} Shelves`,
       desc: "Customize book IDs, titles & dynamic category auto-rotation for homepage rows.",
     },
     {
@@ -743,6 +882,24 @@ export function ShelfCuratorClient({
                 </div>
               )}
 
+              {activeTab === "categories" && selectedCustomShelf && (
+                <CustomCategoryShelfEditor
+                  shelf={selectedCustomShelf}
+                  displayNumber={CATEGORY_SHELVES.length + selectedCustomIndex + 1}
+                  customIndex={selectedCustomIndex}
+                  totalCustomCount={extraShelves.length}
+                  availableCategories={availableCategories}
+                  pendingDelete={pendingDeleteShelfId === selectedCustomShelf.id}
+                  onRequestDelete={() => setPendingDeleteShelfId(selectedCustomShelf.id)}
+                  onCancelDelete={() => setPendingDeleteShelfId(null)}
+                  onConfirmDelete={() => handleRemoveCustomShelf(selectedCustomShelf.id)}
+                  onMove={(dir) => handleMoveCustomShelf(selectedCustomIndex, dir)}
+                  onUpdate={(updates) =>
+                    handleUpdateCustomShelf(selectedCustomShelf.id, updates)
+                  }
+                />
+              )}
+
               {activeTab === "spine" && (
                 <div className="space-y-4">
                   <div>
@@ -844,7 +1001,7 @@ export function ShelfCuratorClient({
                   </h2>
                 </div>
 
-                {/* Sub-shelf selector for the 6 Category Shelves */}
+                {/* Sub-shelf selector for Category Shelves */}
                 {activeTab === "categories" && (
                   <div className="flex flex-wrap gap-1.5 bg-slate-100 p-1.5 rounded-2xl">
                     {CATEGORY_SHELVES.map((shelf) => {
@@ -885,6 +1042,56 @@ export function ShelfCuratorClient({
                         </button>
                       );
                     })}
+                    {extraShelves.map((custom, idx) => {
+                      const selKey: CategoryShelfSelection = `custom:${custom.id}`;
+                      const isSel = activeCategoryShelf === selKey;
+                      const isCatMode = custom.mode !== "manual";
+                      const count = (custom.bookIds || []).length;
+                      const displayNum = CATEGORY_SHELVES.length + idx + 1;
+
+                      return (
+                        <button
+                          key={selKey}
+                          type="button"
+                          onClick={() => handleCategoryShelfSwitch(selKey)}
+                          className={`px-3 py-1.5 rounded-xl text-xs font-extrabold transition-all cursor-pointer flex items-center gap-1.5 ${
+                            isSel
+                              ? "bg-navy text-white shadow-sm"
+                              : "text-slate-600 hover:bg-slate-200"
+                          }`}
+                        >
+                          <span>
+                            {displayNum}. {custom.title || "Untitled Section"}
+                          </span>
+                          <span
+                            className={`rounded-full px-2 py-0.5 text-[10px] font-bold ${
+                              isSel
+                                ? isCatMode
+                                  ? "bg-emerald-400 text-navy"
+                                  : "bg-gold-light text-navy"
+                                : isCatMode
+                                ? custom.categoryId
+                                  ? "bg-emerald-100 text-emerald-800"
+                                  : "bg-amber-100 text-amber-800"
+                                : "bg-white text-slate-600"
+                            }`}
+                          >
+                            {isCatMode
+                              ? custom.categoryId
+                                ? "🎲 Dynamic"
+                                : "🎲 Pick Cat"
+                              : `${count} IDs`}
+                          </span>
+                        </button>
+                      );
+                    })}
+                    <button
+                      type="button"
+                      onClick={handleAddCategorySection}
+                      className="px-3 py-1.5 rounded-xl text-xs font-extrabold transition-all cursor-pointer flex items-center gap-1 border border-dashed border-gold-dark/60 bg-gold/15 text-navy hover:bg-gold/30"
+                    >
+                      <span>+ Add Category Section</span>
+                    </button>
                   </div>
                 )}
               </div>

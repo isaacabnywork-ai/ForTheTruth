@@ -1,9 +1,9 @@
 import fs from "fs";
 import path from "path";
-import type { TestimonialItem, CuratedShelfConfig } from "@/types/curation";
+import type { TestimonialItem, CuratedShelfConfig, CustomCategoryShelf } from "@/types/curation";
 import { DEFAULT_REVIEWS } from "@/types/curation";
 
-export type { TestimonialItem, CuratedShelfConfig };
+export type { TestimonialItem, CuratedShelfConfig, CustomCategoryShelf };
 export { DEFAULT_REVIEWS };
 
 const CONFIG_PRODUCT_ID = 57010;
@@ -44,8 +44,75 @@ const DEFAULT_CONFIG: CuratedShelfConfig = {
   theologyTitle: "Theology",
   theologyMode: "category",
 
+  extraCategoryShelves: [],
+
   reviews: DEFAULT_REVIEWS,
 };
+
+export function sanitizeExtraCategoryShelves(
+  raw: unknown,
+  fallback: CustomCategoryShelf[] = []
+): CustomCategoryShelf[] {
+  if (!Array.isArray(raw)) return fallback;
+
+  const seenIds = new Set<string>();
+  const result: CustomCategoryShelf[] = [];
+
+  for (let idx = 0; idx < raw.length; idx++) {
+    const item = raw[idx];
+    if (!item || typeof item !== "object") continue;
+    const obj = item as Record<string, unknown>;
+
+    const rawId = typeof obj.id === "string" ? obj.id.trim() : "";
+    let id = rawId || `custom-shelf-${idx + 1}`;
+    while (seenIds.has(id)) {
+      id = `${id}-${idx + 1}`;
+    }
+    seenIds.add(id);
+
+    const title =
+      typeof obj.title === "string" && obj.title.trim()
+        ? obj.title.trim()
+        : `Category Section ${idx + 7}`;
+
+    const mode = obj.mode === "manual" ? "manual" : "category";
+    const bookIds = Array.isArray(obj.bookIds)
+      ? obj.bookIds.map(Number).filter((n) => Number.isFinite(n) && n > 0)
+      : [];
+
+    const parsedCatId = Number(obj.categoryId);
+    const categoryId =
+      Number.isFinite(parsedCatId) && parsedCatId > 0 ? parsedCatId : undefined;
+
+    const categorySlug =
+      typeof obj.categorySlug === "string" && obj.categorySlug.trim()
+        ? obj.categorySlug.trim()
+        : undefined;
+
+    const categoryName =
+      typeof obj.categoryName === "string" && obj.categoryName.trim()
+        ? obj.categoryName.trim()
+        : undefined;
+
+    const viewAllHref =
+      typeof obj.viewAllHref === "string" && obj.viewAllHref.trim()
+        ? obj.viewAllHref.trim()
+        : undefined;
+
+    result.push({
+      id,
+      title,
+      mode,
+      bookIds,
+      categoryId,
+      categorySlug,
+      categoryName,
+      viewAllHref,
+    });
+  }
+
+  return result;
+}
 
 const globalForCurated = globalThis as unknown as {
   _curatedCache?: CuratedShelfConfig;
@@ -119,6 +186,11 @@ function parseConfig(data: any): CuratedShelfConfig {
     theologyTitle: data.theologyTitle ?? DEFAULT_CONFIG.theologyTitle,
     theologyMode:
       data.theologyMode === "manual" ? "manual" : "category",
+
+    extraCategoryShelves: sanitizeExtraCategoryShelves(
+      data.extraCategoryShelves,
+      []
+    ),
 
     reviews:
       Array.isArray(data.reviews) && data.reviews.length > 0
@@ -222,6 +294,7 @@ export async function fetchCuratedShelfConfigFromCloud(): Promise<CuratedShelfCo
 export async function saveCuratedShelfConfig(config: CuratedShelfConfig): Promise<void> {
   // 1. Immediately store in memory cache
   globalForCurated._curatedCache = config;
+  globalForCurated._lastWcFetchTime = Date.now();
 
   // 2. Save to /tmp (always writable in AWS Lambda / Amplify)
   try {

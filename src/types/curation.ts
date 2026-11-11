@@ -9,6 +9,17 @@ export interface TestimonialItem {
 
 export type ShelfDisplayMode = "manual" | "category";
 
+export interface CustomCategoryShelf {
+  id: string;
+  title: string;
+  mode: ShelfDisplayMode;
+  bookIds: number[];
+  categoryId?: number;
+  categorySlug?: string;
+  categoryName?: string;
+  viewAllHref?: string;
+}
+
 export interface CuratedShelfConfig {
   // 1. Top Hero Section
   heroIds: number[];
@@ -50,6 +61,9 @@ export interface CuratedShelfConfig {
   theologyIds: number[];
   theologyTitle?: string;
   theologyMode?: ShelfDisplayMode;
+
+  // Dynamic extra category shelves (7th, 8th, 9th, ...)
+  extraCategoryShelves?: CustomCategoryShelf[];
 
   // 5. Testimonials / Reviews
   reviews: TestimonialItem[];

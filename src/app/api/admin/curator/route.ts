@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
+import { revalidatePath } from "next/cache";
 import {
-  getCuratedShelfConfig,
+  sanitizeExtraCategoryShelves,
   fetchCuratedShelfConfigFromCloud,
   saveCuratedShelfConfig,
   type CuratedShelfConfig,
@@ -20,7 +21,7 @@ export async function POST(req: Request) {
   }
   try {
     const body = (await req.json()) as Partial<CuratedShelfConfig>;
-    const current = getCuratedShelfConfig();
+    const current = await fetchCuratedShelfConfigFromCloud();
 
     const cleanNumArray = (arr: unknown, fallback: number[]) =>
       Array.isArray(arr)
@@ -100,10 +101,20 @@ export async function POST(req: Request) {
           ? body.theologyMode
           : current.theologyMode ?? "category",
 
+      extraCategoryShelves:
+        body.extraCategoryShelves !== undefined
+          ? sanitizeExtraCategoryShelves(body.extraCategoryShelves, [])
+          : current.extraCategoryShelves ?? [],
+
       reviews: Array.isArray(body.reviews) ? body.reviews : current.reviews,
     };
 
     await saveCuratedShelfConfig(nextConfig);
+
+    try {
+      revalidatePath("/");
+      revalidatePath("/admin/curator");
+    } catch {}
 
     return NextResponse.json({ success: true, config: nextConfig });
   } catch (err: unknown) {
