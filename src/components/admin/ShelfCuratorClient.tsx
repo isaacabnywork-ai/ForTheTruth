@@ -5,7 +5,12 @@ import Image from "next/image";
 import type { Product, WCCategory } from "@/types/product";
 import { getAuthor } from "@/types/product";
 import { formatPrice } from "@/utils/currency";
-import type { CuratedShelfConfig, CustomCategoryShelf, TestimonialItem } from "@/types/curation";
+import {
+  normalizeCategoryShelfOrder,
+  type CuratedShelfConfig,
+  type CustomCategoryShelf,
+  type TestimonialItem,
+} from "@/types/curation";
 import { CustomCategoryShelfEditor } from "./CustomCategoryShelfEditor";
 
 interface ShelfCuratorClientProps {
@@ -149,8 +154,16 @@ export function ShelfCuratorClient({
   const [config, setConfig] = useState<CuratedShelfConfig>(initialConfig);
   const [activeTab, setActiveTab] = useState<SectionTab>("hero");
   const [activeCategoryShelf, setActiveCategoryShelf] =
-    useState<CategoryShelfSelection>("newArrivalsIds");
+    useState<CategoryShelfSelection>(
+      () =>
+        normalizeCategoryShelfOrder(
+          initialConfig.categoryShelfOrder,
+          initialConfig.extraCategoryShelves || []
+        )[0] as CategoryShelfSelection
+    );
   const [pendingDeleteShelfId, setPendingDeleteShelfId] = useState<string | null>(null);
+  const [showOrderEditor, setShowOrderEditor] = useState(false);
+  const [draggedShelfKey, setDraggedShelfKey] = useState<string | null>(null);
   const [search, setSearch] = useState("");
   const [catalogStatusFilter, setCatalogStatusFilter] = useState<
     "all" | "publish" | "draft" | "private"
@@ -178,13 +191,61 @@ export function ShelfCuratorClient({
     return Array.from(map.values()).sort((a, b) => a.name.localeCompare(b.name));
   })();
 
-  const extraShelves = config.extraCategoryShelves || [];
+  const extraShelves = useMemo(
+    () => config.extraCategoryShelves || [],
+    [config.extraCategoryShelves]
+  );
+  const orderedCategoryKeys = useMemo(
+    () => normalizeCategoryShelfOrder(config.categoryShelfOrder, extraShelves),
+    [config.categoryShelfOrder, extraShelves]
+  );
+
   const selectedCustomId = getCustomShelfId(activeCategoryShelf);
   const selectedCustomIndex = selectedCustomId
     ? extraShelves.findIndex((s) => s.id === selectedCustomId)
     : -1;
   const selectedCustomShelf =
     selectedCustomIndex >= 0 ? extraShelves[selectedCustomIndex] : null;
+
+  const getCategoryShelfSummary = (shelfKey: string) => {
+    const customId = getCustomShelfId(shelfKey);
+    if (customId) {
+      const custom = extraShelves.find((s) => s.id === customId);
+      if (!custom) return null;
+      const isCatMode = custom.mode !== "manual";
+      const count = (custom.bookIds || []).length;
+      return {
+        key: shelfKey as CategoryShelfSelection,
+        title: custom.title || "Untitled Section",
+        isCustom: true,
+        isCatMode,
+        needsCategoryPick: isCatMode && !custom.categoryId,
+        badgeText: isCatMode
+          ? custom.categoryId
+            ? "🎲 Dynamic"
+            : "🎲 Pick Cat"
+          : `${count} IDs`,
+      };
+    }
+
+    const builtin = CATEGORY_SHELVES.find((s) => s.key === shelfKey);
+    if (!builtin) return null;
+    const isCatMode = Boolean(
+      builtin.allowCategoryMode &&
+        builtin.modeField &&
+        config[builtin.modeField] !== "manual"
+    );
+    const count = ((config[builtin.key] as number[]) || []).length;
+    const customTitle = (config[builtin.titleField] as string)?.trim();
+    return {
+      key: builtin.key as CategoryShelfSelection,
+      title: customTitle || builtin.label.replace(/^\d+\.\s*/, ""),
+      isCustom: false,
+      isCatMode,
+      needsCategoryPick: false,
+      badgeText: isCatMode ? "🎲 Dynamic" : `${count} IDs`,
+    };
+  };
 
   const handleAddCategorySection = () => {
     const nextNum = CATEGORY_SHELVES.length + extraShelves.length + 1;
@@ -195,10 +256,17 @@ export function ShelfCuratorClient({
       bookIds: [],
     };
     const nextSelection: CategoryShelfSelection = `custom:${newShelf.id}`;
-    setConfig((prev) => ({
-      ...prev,
-      extraCategoryShelves: [...(prev.extraCategoryShelves || []), newShelf],
-    }));
+    setConfig((prev) => {
+      const nextExtra = [...(prev.extraCategoryShelves || []), newShelf];
+      return {
+        ...prev,
+        extraCategoryShelves: nextExtra,
+        categoryShelfOrder: normalizeCategoryShelfOrder(
+          [...(prev.categoryShelfOrder || orderedCategoryKeys), nextSelection],
+          nextExtra
+        ),
+      };
+    });
     setActiveCategoryShelf(nextSelection);
     setPendingDeleteShelfId(null);
     setRawInput("");
@@ -216,30 +284,57 @@ export function ShelfCuratorClient({
     }));
   };
 
-  const handleMoveCustomShelf = (idx: number, dir: "prev" | "next") => {
-    const targetIdx = dir === "prev" ? idx - 1 : idx + 1;
-    if (targetIdx < 0 || targetIdx >= extraShelves.length) return;
-    const next = [...extraShelves];
-    const tmp = next[idx];
-    next[idx] = next[targetIdx];
-    next[targetIdx] = tmp;
-    setConfig((prev) => ({ ...prev, extraCategoryShelves: next }));
+  const handleMoveCategoryOrder = (
+    shelfKey: string,
+    target: "up" | "down" | "first" | number
+  ) => {
+    setConfig((prev) => {
+      const currentOrder = normalizeCategoryShelfOrder(
+        prev.categoryShelfOrder,
+        prev.extraCategoryShelves || []
+      );
+      const fromIdx = currentOrder.indexOf(shelfKey);
+      if (fromIdx < 0) return prev;
+
+      const toIdx =
+        target === "first"
+          ? 0
+          : target === "up"
+          ? fromIdx - 1
+          : target === "down"
+          ? fromIdx + 1
+          : target;
+
+      if (toIdx < 0 || toIdx >= currentOrder.length || toIdx === fromIdx) {
+        return prev;
+      }
+
+      const nextOrder = [...currentOrder];
+      const [moved] = nextOrder.splice(fromIdx, 1);
+      nextOrder.splice(toIdx, 0, moved);
+      return { ...prev, categoryShelfOrder: nextOrder };
+    });
   };
 
   const handleRemoveCustomShelf = (id: string) => {
+    const removedKey = `custom:${id}`;
     const remaining = extraShelves.filter((s) => s.id !== id);
+    const nextOrder = normalizeCategoryShelfOrder(
+      (config.categoryShelfOrder || orderedCategoryKeys).filter(
+        (k) => k !== removedKey
+      ),
+      remaining
+    );
     const nextConfig: CuratedShelfConfig = {
       ...config,
       extraCategoryShelves: remaining,
+      categoryShelfOrder: nextOrder,
     };
     setConfig(nextConfig);
     setPendingDeleteShelfId(null);
 
-    if (activeCategoryShelf === `custom:${id}`) {
-      const fallbackSel: CategoryShelfSelection =
-        remaining.length > 0
-          ? `custom:${remaining[Math.max(0, selectedCustomIndex - 1)].id}`
-          : "bestsellersIds";
+    if (activeCategoryShelf === removedKey) {
+      const fallbackSel = (nextOrder[0] || "bestsellersIds") as CategoryShelfSelection;
       setActiveCategoryShelf(fallbackSel);
       setRawInput(
         getBookIdsForSelection(nextConfig, "categories", fallbackSel).join(", ")
@@ -458,6 +553,7 @@ export function ShelfCuratorClient({
   const currentShelfMeta = CATEGORY_SHELVES.find(
     (s) => s.key === activeCategoryShelf
   );
+  const activeShelfPosition = orderedCategoryKeys.indexOf(activeCategoryShelf);
 
   const tabs: {
     key: SectionTab;
@@ -782,11 +878,70 @@ export function ShelfCuratorClient({
                 </div>
               )}
 
+              {activeTab === "categories" && activeShelfPosition >= 0 && (
+                <div className="mb-5 flex flex-wrap items-center justify-between gap-2 rounded-2xl border border-slate-200 bg-slate-50 px-3.5 py-2.5">
+                  <div className="flex items-center gap-2">
+                    <span
+                      className={`rounded-lg px-2.5 py-1 font-mono text-[11px] font-black ${
+                        activeShelfPosition === 0
+                          ? "bg-emerald-600 text-white"
+                          : "bg-navy text-gold-light"
+                      }`}
+                    >
+                      Homepage Position #{activeShelfPosition + 1} of{" "}
+                      {orderedCategoryKeys.length}
+                    </span>
+                    {activeShelfPosition === 0 && (
+                      <span className="text-[11px] font-bold text-emerald-700">
+                        Shown 1st on Homepage
+                      </span>
+                    )}
+                  </div>
+                  <div className="flex items-center gap-1.5">
+                    {activeShelfPosition > 0 && (
+                      <button
+                        type="button"
+                        onClick={() =>
+                          handleMoveCategoryOrder(activeCategoryShelf, "first")
+                        }
+                        title="Show this category 1st on Homepage"
+                        className="rounded-lg border border-gold-dark/40 bg-gold/25 px-2.5 py-1 text-[11px] font-extrabold text-navy hover:bg-gold/40 transition-colors cursor-pointer"
+                      >
+                        ⬆ Show 1st
+                      </button>
+                    )}
+                    <button
+                      type="button"
+                      onClick={() =>
+                        handleMoveCategoryOrder(activeCategoryShelf, "up")
+                      }
+                      disabled={activeShelfPosition === 0}
+                      title="Move category earlier on Homepage"
+                      className="flex h-7 w-7 items-center justify-center rounded-lg border border-slate-200 bg-white text-xs font-bold text-slate-600 hover:bg-slate-100 disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer"
+                    >
+                      ◀
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() =>
+                        handleMoveCategoryOrder(activeCategoryShelf, "down")
+                      }
+                      disabled={activeShelfPosition >= orderedCategoryKeys.length - 1}
+                      title="Move category later on Homepage"
+                      className="flex h-7 w-7 items-center justify-center rounded-lg border border-slate-200 bg-white text-xs font-bold text-slate-600 hover:bg-slate-100 disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer"
+                    >
+                      ▶
+                    </button>
+                  </div>
+                </div>
+              )}
+
               {activeTab === "categories" && currentShelfMeta && (
                 <div className="space-y-5">
                   <div>
                     <label className="text-xs font-bold text-slate-600 block mb-1">
-                      Shelf Title for &ldquo;{currentShelfMeta.label}&rdquo;:
+                      Shelf Title for &ldquo;
+                      {currentShelfMeta.label.replace(/^\d+\.\s*/, "")}&rdquo;:
                     </label>
                     <input
                       type="text"
@@ -875,7 +1030,7 @@ export function ShelfCuratorClient({
                     <div className="rounded-2xl border border-slate-200 bg-slate-50/80 p-3.5 flex items-center gap-2.5 text-xs text-slate-700 font-medium">
                       <span className="text-base">📌</span>
                       <div>
-                        <strong>Curated by Book IDs Only:</strong> This shelf ({currentShelfMeta.label}) displays strictly by the exact book IDs specified below. (Category auto-rotation is not applicable).
+                        <strong>Curated by Book IDs Only:</strong> This shelf ({currentShelfMeta.label.replace(/^\d+\.\s*/, "")}) displays strictly by the exact book IDs specified below. (Category auto-rotation is not applicable).
                       </div>
                     </div>
                   )}
@@ -885,15 +1040,16 @@ export function ShelfCuratorClient({
               {activeTab === "categories" && selectedCustomShelf && (
                 <CustomCategoryShelfEditor
                   shelf={selectedCustomShelf}
-                  displayNumber={CATEGORY_SHELVES.length + selectedCustomIndex + 1}
-                  customIndex={selectedCustomIndex}
-                  totalCustomCount={extraShelves.length}
+                  displayNumber={
+                    activeShelfPosition >= 0
+                      ? activeShelfPosition + 1
+                      : CATEGORY_SHELVES.length + selectedCustomIndex + 1
+                  }
                   availableCategories={availableCategories}
                   pendingDelete={pendingDeleteShelfId === selectedCustomShelf.id}
                   onRequestDelete={() => setPendingDeleteShelfId(selectedCustomShelf.id)}
                   onCancelDelete={() => setPendingDeleteShelfId(null)}
                   onConfirmDelete={() => handleRemoveCustomShelf(selectedCustomShelf.id)}
-                  onMove={(dir) => handleMoveCustomShelf(selectedCustomIndex, dir)}
                   onUpdate={(updates) =>
                     handleUpdateCustomShelf(selectedCustomShelf.id, updates)
                   }
@@ -1001,97 +1157,192 @@ export function ShelfCuratorClient({
                   </h2>
                 </div>
 
-                {/* Sub-shelf selector for Category Shelves */}
+                {/* Sub-shelf selector & homepage display order for Category Shelves */}
                 {activeTab === "categories" && (
-                  <div className="flex flex-wrap gap-1.5 bg-slate-100 p-1.5 rounded-2xl">
-                    {CATEGORY_SHELVES.map((shelf) => {
-                      const isSel = activeCategoryShelf === shelf.key;
-                      const isCatMode =
-                        shelf.allowCategoryMode &&
-                        shelf.modeField &&
-                        config[shelf.modeField] !== "manual";
-                      const count = (
-                        (config[shelf.key] as number[]) || []
-                      ).length;
+                  <div className="space-y-3">
+                    <div className="flex flex-wrap gap-1.5 bg-slate-100 p-1.5 rounded-2xl">
+                      {orderedCategoryKeys.map((shelfKey, orderIdx) => {
+                        const summary = getCategoryShelfSummary(shelfKey);
+                        if (!summary) return null;
+                        const isSel = activeCategoryShelf === summary.key;
 
-                      return (
-                        <button
-                          key={shelf.key}
-                          type="button"
-                          onClick={() => handleCategoryShelfSwitch(shelf.key)}
-                          className={`px-3 py-1.5 rounded-xl text-xs font-extrabold transition-all cursor-pointer flex items-center gap-1.5 ${
-                            isSel
-                              ? "bg-navy text-white shadow-sm"
-                              : "text-slate-600 hover:bg-slate-200"
-                          }`}
-                        >
-                          <span>{shelf.label}</span>
-                          <span
-                            className={`rounded-full px-2 py-0.5 text-[10px] font-bold ${
+                        return (
+                          <button
+                            key={summary.key}
+                            type="button"
+                            onClick={() => handleCategoryShelfSwitch(summary.key)}
+                            className={`px-3 py-1.5 rounded-xl text-xs font-extrabold transition-all cursor-pointer flex items-center gap-1.5 ${
                               isSel
-                                ? isCatMode
-                                  ? "bg-emerald-400 text-navy"
-                                  : "bg-gold-light text-navy"
-                                : isCatMode
-                                ? "bg-emerald-100 text-emerald-800"
-                                : "bg-white text-slate-600"
+                                ? "bg-navy text-white shadow-sm"
+                                : "text-slate-600 hover:bg-slate-200"
                             }`}
                           >
-                            {isCatMode ? "🎲 Dynamic" : `${count} IDs`}
-                          </span>
-                        </button>
-                      );
-                    })}
-                    {extraShelves.map((custom, idx) => {
-                      const selKey: CategoryShelfSelection = `custom:${custom.id}`;
-                      const isSel = activeCategoryShelf === selKey;
-                      const isCatMode = custom.mode !== "manual";
-                      const count = (custom.bookIds || []).length;
-                      const displayNum = CATEGORY_SHELVES.length + idx + 1;
-
-                      return (
-                        <button
-                          key={selKey}
-                          type="button"
-                          onClick={() => handleCategoryShelfSwitch(selKey)}
-                          className={`px-3 py-1.5 rounded-xl text-xs font-extrabold transition-all cursor-pointer flex items-center gap-1.5 ${
-                            isSel
-                              ? "bg-navy text-white shadow-sm"
-                              : "text-slate-600 hover:bg-slate-200"
-                          }`}
-                        >
-                          <span>
-                            {displayNum}. {custom.title || "Untitled Section"}
-                          </span>
-                          <span
-                            className={`rounded-full px-2 py-0.5 text-[10px] font-bold ${
-                              isSel
-                                ? isCatMode
-                                  ? "bg-emerald-400 text-navy"
-                                  : "bg-gold-light text-navy"
-                                : isCatMode
-                                ? custom.categoryId
+                            <span>
+                              {orderIdx + 1}. {summary.title}
+                            </span>
+                            <span
+                              className={`rounded-full px-2 py-0.5 text-[10px] font-bold ${
+                                isSel
+                                  ? summary.isCatMode
+                                    ? "bg-emerald-400 text-navy"
+                                    : "bg-gold-light text-navy"
+                                  : summary.needsCategoryPick
+                                  ? "bg-amber-100 text-amber-800"
+                                  : summary.isCatMode
                                   ? "bg-emerald-100 text-emerald-800"
-                                  : "bg-amber-100 text-amber-800"
-                                : "bg-white text-slate-600"
-                            }`}
-                          >
-                            {isCatMode
-                              ? custom.categoryId
-                                ? "🎲 Dynamic"
-                                : "🎲 Pick Cat"
-                              : `${count} IDs`}
-                          </span>
-                        </button>
-                      );
-                    })}
-                    <button
-                      type="button"
-                      onClick={handleAddCategorySection}
-                      className="px-3 py-1.5 rounded-xl text-xs font-extrabold transition-all cursor-pointer flex items-center gap-1 border border-dashed border-gold-dark/60 bg-gold/15 text-navy hover:bg-gold/30"
-                    >
-                      <span>+ Add Category Section</span>
-                    </button>
+                                  : "bg-white text-slate-600"
+                              }`}
+                            >
+                              {summary.badgeText}
+                            </span>
+                          </button>
+                        );
+                      })}
+                      <button
+                        type="button"
+                        onClick={handleAddCategorySection}
+                        className="px-3 py-1.5 rounded-xl text-xs font-extrabold transition-all cursor-pointer flex items-center gap-1 border border-dashed border-gold-dark/60 bg-gold/15 text-navy hover:bg-gold/30"
+                      >
+                        <span>+ Add Category Section</span>
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setShowOrderEditor((v) => !v)}
+                        className={`px-3 py-1.5 rounded-xl text-xs font-extrabold transition-all cursor-pointer flex items-center gap-1 border ${
+                          showOrderEditor
+                            ? "border-navy bg-navy text-gold-light shadow-sm"
+                            : "border-slate-300 bg-white text-navy hover:bg-slate-200"
+                        }`}
+                      >
+                        <span>
+                          {showOrderEditor ? "✓ Done Arranging" : "⇅ Arrange Categories"}
+                        </span>
+                      </button>
+                    </div>
+
+                    {showOrderEditor && (
+                      <div className="rounded-2xl border border-gold/40 bg-gold/5 p-3.5 space-y-2.5">
+                        <div className="flex flex-wrap items-center justify-between gap-2">
+                          <div>
+                            <h3 className="text-xs font-black uppercase tracking-wider text-navy">
+                              Homepage Category Order
+                            </h3>
+                            <p className="text-[11px] text-slate-600">
+                              Categories appear top-to-bottom right below the Hero banner. Click <strong>Make #1</strong> or drag rows to reorder, then click <strong>Save All Overrides</strong>.
+                            </p>
+                          </div>
+                        </div>
+
+                        <div className="space-y-1.5">
+                          {orderedCategoryKeys.map((shelfKey, idx) => {
+                            const summary = getCategoryShelfSummary(shelfKey);
+                            if (!summary) return null;
+                            const isFirst = idx === 0;
+                            const isLast = idx === orderedCategoryKeys.length - 1;
+                            const isSel = activeCategoryShelf === summary.key;
+
+                            return (
+                              <div
+                                key={shelfKey}
+                                draggable
+                                onDragStart={() => setDraggedShelfKey(shelfKey)}
+                                onDragOver={(e) => e.preventDefault()}
+                                onDrop={() => {
+                                  if (draggedShelfKey && draggedShelfKey !== shelfKey) {
+                                    handleMoveCategoryOrder(draggedShelfKey, idx);
+                                  }
+                                  setDraggedShelfKey(null);
+                                }}
+                                onDragEnd={() => setDraggedShelfKey(null)}
+                                className={`flex flex-wrap items-center justify-between gap-2 rounded-xl border bg-white px-3 py-2 transition-all cursor-grab active:cursor-grabbing ${
+                                  draggedShelfKey === shelfKey
+                                    ? "border-gold opacity-60"
+                                    : isSel
+                                    ? "border-navy/40 shadow-2xs"
+                                    : "border-slate-200 hover:border-slate-300"
+                                }`}
+                              >
+                                <div className="flex items-center gap-2.5 min-w-0">
+                                  <span className="text-slate-400 text-xs select-none" aria-hidden="true">
+                                    ⋮⋮
+                                  </span>
+                                  <span
+                                    className={`rounded-lg px-2 py-0.5 font-mono text-[11px] font-black shrink-0 ${
+                                      isFirst
+                                        ? "bg-emerald-600 text-white"
+                                        : "bg-navy text-white"
+                                    }`}
+                                  >
+                                    #{idx + 1}
+                                  </span>
+                                  <button
+                                    type="button"
+                                    onClick={() => handleCategoryShelfSwitch(summary.key)}
+                                    className="text-left font-display text-xs font-extrabold text-navy hover:text-gold-dark truncate cursor-pointer"
+                                  >
+                                    {summary.title}
+                                  </button>
+                                  {summary.isCustom && (
+                                    <span className="rounded-md bg-gold/20 px-1.5 py-0.5 text-[10px] font-bold text-navy shrink-0">
+                                      Custom
+                                    </span>
+                                  )}
+                                  <span
+                                    className={`rounded-full px-2 py-0.5 text-[10px] font-bold shrink-0 ${
+                                      summary.needsCategoryPick
+                                        ? "bg-amber-100 text-amber-800"
+                                        : summary.isCatMode
+                                        ? "bg-emerald-100 text-emerald-800"
+                                        : "bg-slate-100 text-slate-600"
+                                    }`}
+                                  >
+                                    {summary.badgeText}
+                                  </span>
+                                  {isFirst && (
+                                    <span className="rounded-full bg-emerald-50 border border-emerald-200 px-2 py-0.5 text-[10px] font-bold text-emerald-700 shrink-0">
+                                      1st on Homepage
+                                    </span>
+                                  )}
+                                </div>
+
+                                <div className="flex items-center gap-1 shrink-0">
+                                  {!isFirst && (
+                                    <button
+                                      type="button"
+                                      onClick={() =>
+                                        handleMoveCategoryOrder(shelfKey, "first")
+                                      }
+                                      className="rounded-lg border border-gold-dark/40 bg-gold/20 px-2 py-1 text-[10px] font-extrabold text-navy hover:bg-gold/40 cursor-pointer"
+                                      title="Move to #1 (First on Homepage)"
+                                    >
+                                      ⬆ Make #1
+                                    </button>
+                                  )}
+                                  <button
+                                    type="button"
+                                    onClick={() => handleMoveCategoryOrder(shelfKey, "up")}
+                                    disabled={isFirst}
+                                    title="Move Up"
+                                    className="flex h-7 w-7 items-center justify-center rounded-lg border border-slate-200 bg-white text-xs font-bold text-slate-600 hover:bg-slate-100 disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer"
+                                  >
+                                    ▲
+                                  </button>
+                                  <button
+                                    type="button"
+                                    onClick={() => handleMoveCategoryOrder(shelfKey, "down")}
+                                    disabled={isLast}
+                                    title="Move Down"
+                                    className="flex h-7 w-7 items-center justify-center rounded-lg border border-slate-200 bg-white text-xs font-bold text-slate-600 hover:bg-slate-100 disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer"
+                                  >
+                                    ▼
+                                  </button>
+                                </div>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    )}
                   </div>
                 )}
               </div>

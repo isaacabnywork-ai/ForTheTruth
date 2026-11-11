@@ -7,7 +7,7 @@ export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
 export default async function AdminCuratorPage() {
-  const config = await fetchCuratedShelfConfigFromCloud();
+  const config = await fetchCuratedShelfConfigFromCloud({ bypassCache: true });
 
   const configuredIds = Array.from(
     new Set(

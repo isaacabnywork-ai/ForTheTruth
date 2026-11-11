@@ -20,6 +20,51 @@ export interface CustomCategoryShelf {
   viewAllHref?: string;
 }
 
+export const BUILTIN_CATEGORY_SHELF_IDS = [
+  "newArrivalsIds",
+  "bibleSpeaksTodayIds",
+  "christianLivingIds",
+  "ministryIds",
+  "theologyIds",
+  "bestsellersIds",
+] as const;
+
+export function normalizeCategoryShelfOrder(
+  order: unknown,
+  extraShelves: CustomCategoryShelf[] = []
+): string[] {
+  const validBuiltins = new Set<string>(BUILTIN_CATEGORY_SHELF_IDS);
+  const customKeys = extraShelves.map((s) => `custom:${s.id}`);
+  const validCustom = new Set<string>(customKeys);
+  const result: string[] = [];
+  const seen = new Set<string>();
+
+  if (Array.isArray(order)) {
+    for (const raw of order) {
+      if (typeof raw !== "string") continue;
+      if ((validBuiltins.has(raw) || validCustom.has(raw)) && !seen.has(raw)) {
+        seen.add(raw);
+        result.push(raw);
+      }
+    }
+  }
+
+  for (const key of BUILTIN_CATEGORY_SHELF_IDS) {
+    if (!seen.has(key)) {
+      seen.add(key);
+      result.push(key);
+    }
+  }
+  for (const key of customKeys) {
+    if (!seen.has(key)) {
+      seen.add(key);
+      result.push(key);
+    }
+  }
+
+  return result;
+}
+
 export interface CuratedShelfConfig {
   // 1. Top Hero Section
   heroIds: number[];
@@ -64,6 +109,7 @@ export interface CuratedShelfConfig {
 
   // Dynamic extra category shelves (7th, 8th, 9th, ...)
   extraCategoryShelves?: CustomCategoryShelf[];
+  categoryShelfOrder?: string[];
 
   // 5. Testimonials / Reviews
   reviews: TestimonialItem[];

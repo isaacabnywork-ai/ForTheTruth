@@ -1,7 +1,8 @@
 import { NextResponse } from "next/server";
-import { revalidatePath } from "next/cache";
+import { revalidatePath, revalidateTag } from "next/cache";
 import {
   sanitizeExtraCategoryShelves,
+  normalizeCategoryShelfOrder,
   fetchCuratedShelfConfigFromCloud,
   saveCuratedShelfConfig,
   type CuratedShelfConfig,
@@ -11,7 +12,7 @@ import { requireAdmin } from "@/lib/adminGuard";
 export const revalidate = 0;
 
 export async function GET() {
-  const config = await fetchCuratedShelfConfigFromCloud();
+  const config = await fetchCuratedShelfConfigFromCloud({ bypassCache: true });
   return NextResponse.json({ success: true, config });
 }
 
@@ -21,12 +22,17 @@ export async function POST(req: Request) {
   }
   try {
     const body = (await req.json()) as Partial<CuratedShelfConfig>;
-    const current = await fetchCuratedShelfConfigFromCloud();
+    const current = await fetchCuratedShelfConfigFromCloud({ bypassCache: true });
 
     const cleanNumArray = (arr: unknown, fallback: number[]) =>
       Array.isArray(arr)
         ? arr.map(Number).filter((n) => !isNaN(n) && n > 0)
         : fallback;
+
+    const nextExtraShelves =
+      body.extraCategoryShelves !== undefined
+        ? sanitizeExtraCategoryShelves(body.extraCategoryShelves, [])
+        : current.extraCategoryShelves ?? [];
 
     const nextConfig: CuratedShelfConfig = {
       heroIds: cleanNumArray(body.heroIds, current.heroIds),
@@ -101,10 +107,11 @@ export async function POST(req: Request) {
           ? body.theologyMode
           : current.theologyMode ?? "category",
 
-      extraCategoryShelves:
-        body.extraCategoryShelves !== undefined
-          ? sanitizeExtraCategoryShelves(body.extraCategoryShelves, [])
-          : current.extraCategoryShelves ?? [],
+      extraCategoryShelves: nextExtraShelves,
+      categoryShelfOrder: normalizeCategoryShelfOrder(
+        body.categoryShelfOrder ?? current.categoryShelfOrder,
+        nextExtraShelves
+      ),
 
       reviews: Array.isArray(body.reviews) ? body.reviews : current.reviews,
     };
@@ -112,6 +119,7 @@ export async function POST(req: Request) {
     await saveCuratedShelfConfig(nextConfig);
 
     try {
+      revalidateTag("curated-shelves");
       revalidatePath("/");
       revalidatePath("/admin/curator");
     } catch {}

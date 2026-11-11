@@ -1,10 +1,17 @@
 import fs from "fs";
 import path from "path";
 import type { TestimonialItem, CuratedShelfConfig, CustomCategoryShelf } from "@/types/curation";
-import { DEFAULT_REVIEWS } from "@/types/curation";
+import { DEFAULT_REVIEWS, BUILTIN_CATEGORY_SHELF_IDS, normalizeCategoryShelfOrder } from "@/types/curation";
+
+
+
+
+
+
+
 
 export type { TestimonialItem, CuratedShelfConfig, CustomCategoryShelf };
-export { DEFAULT_REVIEWS };
+export { DEFAULT_REVIEWS, BUILTIN_CATEGORY_SHELF_IDS, normalizeCategoryShelfOrder };
 
 const CONFIG_PRODUCT_ID = 57010;
 
@@ -45,6 +52,7 @@ const DEFAULT_CONFIG: CuratedShelfConfig = {
   theologyMode: "category",
 
   extraCategoryShelves: [],
+  categoryShelfOrder: [...BUILTIN_CATEGORY_SHELF_IDS],
 
   reviews: DEFAULT_REVIEWS,
 };
@@ -117,10 +125,15 @@ export function sanitizeExtraCategoryShelves(
 const globalForCurated = globalThis as unknown as {
   _curatedCache?: CuratedShelfConfig;
   _lastWcFetchTime?: number;
+  _curatedMetaId?: number;
 };
 
 function parseConfig(data: any): CuratedShelfConfig {
   if (!data || typeof data !== "object") return DEFAULT_CONFIG;
+  const extraCategoryShelves = sanitizeExtraCategoryShelves(
+    data.extraCategoryShelves,
+    []
+  );
   return {
     heroIds: Array.isArray(data.heroIds)
       ? data.heroIds.map(Number)
@@ -187,9 +200,10 @@ function parseConfig(data: any): CuratedShelfConfig {
     theologyMode:
       data.theologyMode === "manual" ? "manual" : "category",
 
-    extraCategoryShelves: sanitizeExtraCategoryShelves(
-      data.extraCategoryShelves,
-      []
+    extraCategoryShelves,
+    categoryShelfOrder: normalizeCategoryShelfOrder(
+      data.categoryShelfOrder,
+      extraCategoryShelves
     ),
 
     reviews:
@@ -234,26 +248,18 @@ export function getCuratedShelfConfig(): CuratedShelfConfig {
   return DEFAULT_CONFIG;
 }
 
-export async function fetchCuratedShelfConfigFromCloud(): Promise<CuratedShelfConfig> {
+export async function fetchCuratedShelfConfigFromCloud(options?: {
+  bypassCache?: boolean;
+}): Promise<CuratedShelfConfig> {
   // During CI/build phase, immediately return local fallback to prevent build hangs on external APIs
   if (
     process.env.NEXT_PHASE === "phase-production-build" ||
-    process.env.npm_lifecycle_event === "build" ||
-    process.env.CI === "true" ||
-    process.env.AWS_AMPLIFY === "true"
+    process.env.npm_lifecycle_event === "build"
   ) {
     return getCuratedShelfConfig();
   }
 
-  const now = Date.now();
-  // Return in-memory cache immediately if fetched within the last 3 minutes
-  if (
-    globalForCurated._curatedCache &&
-    globalForCurated._lastWcFetchTime &&
-    now - globalForCurated._lastWcFetchTime < 180000
-  ) {
-    return globalForCurated._curatedCache;
-  }
+  // Fetch live configuration from WooCommerce (tagged for instant revalidation on save).
 
   const wpUrl = process.env.NEXT_PUBLIC_WORDPRESS_URL || "https://admin.forthetruth.in";
   const key = process.env.WOOCOMMERCE_API_KEY || "ck_c6693ca02bf0d33b2828f8d311d879be4bf835d5";
@@ -265,11 +271,19 @@ export async function fetchCuratedShelfConfigFromCloud(): Promise<CuratedShelfCo
     const res = await fetch(url, {
       headers: { Authorization: `Basic ${auth}` },
       signal: AbortSignal.timeout(4000),
-      next: { revalidate: 300 },
+      ...(options?.bypassCache
+        ? { cache: "no-store" as const }
+        : { next: { revalidate: 60, tags: ["curated-shelves"] } }),
     });
     if (res.ok) {
       const product = await res.json();
-      const meta = product.meta_data?.find((m: any) => m.key === "_curated_shelves");
+      const matchingMetas = Array.isArray(product.meta_data)
+        ? product.meta_data.filter((m: any) => m.key === "_curated_shelves" && m.value)
+        : [];
+      const meta = matchingMetas[matchingMetas.length - 1];
+      if (meta && typeof meta.id === "number") {
+        globalForCurated._curatedMetaId = meta.id;
+      }
       if (meta && meta.value) {
         const parsed = parseConfig(typeof meta.value === "string" ? JSON.parse(meta.value) : meta.value);
         globalForCurated._curatedCache = parsed;
@@ -308,6 +322,7 @@ export async function saveCuratedShelfConfig(config: CuratedShelfConfig): Promis
   }
 
   // 3. Try to save to bundled source path if writable (e.g. local environment)
+  let savedToBundled = false;
   try {
     const bundledPath = path.join(process.cwd(), "src", "config", "curated_shelves.json");
     const dir = path.dirname(bundledPath);
@@ -315,6 +330,7 @@ export async function saveCuratedShelfConfig(config: CuratedShelfConfig): Promis
       fs.mkdirSync(dir, { recursive: true });
     }
     fs.writeFileSync(bundledPath, JSON.stringify(config, null, 2), "utf-8");
+    savedToBundled = true;
   } catch {
     // Read-only filesystem on Lambda / AWS Amplify - expected, ignore
   }
@@ -336,6 +352,7 @@ export async function saveCuratedShelfConfig(config: CuratedShelfConfig): Promis
       body: JSON.stringify({
         meta_data: [
           {
+            ...(globalForCurated._curatedMetaId ? { id: globalForCurated._curatedMetaId } : {}),
             key: "_curated_shelves",
             value: JSON.stringify(config),
           },
@@ -343,9 +360,24 @@ export async function saveCuratedShelfConfig(config: CuratedShelfConfig): Promis
       }),
     });
     if (!res.ok) {
-      console.warn("WooCommerce config sync returned status", res.status);
+      const errText = await res.text().catch(() => "");
+      console.warn("WooCommerce config sync returned status", res.status, errText);
+      throw new Error(`WooCommerce config sync failed (${res.status})`);
+    }
+    const updatedProduct = await res.json().catch(() => null);
+    if (updatedProduct && Array.isArray(updatedProduct.meta_data)) {
+      const matchingMetas = updatedProduct.meta_data.filter(
+        (m: { key?: string; id?: number }) => m.key === "_curated_shelves"
+      );
+      const latestMeta = matchingMetas[matchingMetas.length - 1];
+      if (latestMeta && typeof latestMeta.id === "number") {
+        globalForCurated._curatedMetaId = latestMeta.id;
+      }
     }
   } catch (err) {
     console.warn("Could not sync curated shelves to cloud database", err);
+    if (!savedToBundled) {
+      throw err;
+    }
   }
 }

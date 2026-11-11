@@ -1,9 +1,5 @@
 import { BookRow, BookRowSkeleton } from "@/components/products/BookRow";
 import { HeroShelf } from "@/components/home/HeroShelf";
-import {
-  CategoryBookRows,
-  type CategoryRowItem,
-} from "@/components/home/CategoryBookRows";
 import { Testimonials } from "@/components/home/Testimonials";
 import { SpineSlider } from "@/components/home/SpineSlider";
 import { StoreMaintenancePage } from "@/components/common/StoreMaintenancePage";
@@ -14,7 +10,7 @@ import categoryRowsFallbackData from "@/data/category_rows_fallback.json";
 import { pruneProducts } from "@/utils/pruneProduct";
 import { toCdnImageUrl } from "@/utils/imageUrl";
 import type { Product } from "@/types/product";
-import type { CustomCategoryShelf } from "@/types/curation";
+import { normalizeCategoryShelfOrder, type CustomCategoryShelf } from "@/types/curation";
 
 export const revalidate = 300; // 5-minute Edge cache (ISR) for fast initial paint across India
 
@@ -297,45 +293,16 @@ export default async function HomePage() {
     }
   }
 
-  // Final fallback check for the 4 rows
-  const categoryRows: CategoryRowItem[] = [
-    {
-      title: curated.bibleSpeaksTodayTitle || "The Bible Speaks Today",
-      slug: "bible-speaks-today",
-      viewMoreHref: "/categories/bible-commentary",
-      badge: "BIBLE SPEAKS TODAY",
-      products: pruneProducts(bibleSpeaksTodayProducts),
-    },
-    {
-      title: curated.christianLivingTitle || "Christian Living",
-      slug: "christian-living",
-      viewMoreHref: "/categories/christian-living",
-      badge: "CHRISTIAN LIVING",
-      products: pruneProducts(christianLivingProducts),
-    },
-    {
-      title: curated.ministryTitle || "Ministry",
-      slug: "ministry",
-      viewMoreHref: "/categories/ministry",
-      badge: "MINISTRY",
-      products: pruneProducts(ministryProducts),
-    },
-    {
-      title: curated.theologyTitle || "Theology",
-      slug: "theology",
-      viewMoreHref: "/categories/theology",
-      badge: "THEOLOGY",
-      products: pruneProducts(theologyProducts),
-    },
-  ];
-
   const storeReady = newArrivals.length > 0 || bestsellers.length > 0;
   const hasAnyBooks =
     featured.length > 0 ||
     newArrivals.length > 0 ||
     bestsellers.length > 0 ||
     spineProducts.length > 0 ||
-    categoryRows.some((r) => r.products.length > 0) ||
+    bibleSpeaksTodayProducts.length > 0 ||
+    christianLivingProducts.length > 0 ||
+    ministryProducts.length > 0 ||
+    theologyProducts.length > 0 ||
     extraShelfProductsList.some((r) => r.products.length > 0);
 
   if (!hasAnyBooks) {
@@ -348,6 +315,70 @@ export default async function HomePage() {
   const prunedBestsellers = pruneProducts(bestsellers);
   const prunedSpineProducts = pruneProducts(spineProducts);
 
+  const orderedShelfKeys = normalizeCategoryShelfOrder(
+    curated.categoryShelfOrder,
+    extraShelves
+  );
+  const shelfEntries: Record<
+    string,
+    {
+      title: string;
+      href: string;
+      badge: string;
+      products: Product[];
+      skeletonWhenNotReady?: boolean;
+    }
+  > = {
+    newArrivalsIds: {
+      title: curated.newArrivalsTitle || "New Arrivals",
+      href: "/shop?orderby=date",
+      badge: "NEW ARRIVAL",
+      products: prunedNewArrivals,
+      skeletonWhenNotReady: true,
+    },
+    bibleSpeaksTodayIds: {
+      title: curated.bibleSpeaksTodayTitle || "The Bible Speaks Today",
+      href: "/categories/bible-commentary",
+      badge: "BIBLE SPEAKS TODAY",
+      products: pruneProducts(bibleSpeaksTodayProducts),
+    },
+    christianLivingIds: {
+      title: curated.christianLivingTitle || "Christian Living",
+      href: "/categories/christian-living",
+      badge: "CHRISTIAN LIVING",
+      products: pruneProducts(christianLivingProducts),
+    },
+    ministryIds: {
+      title: curated.ministryTitle || "Ministry",
+      href: "/categories/ministry",
+      badge: "MINISTRY",
+      products: pruneProducts(ministryProducts),
+    },
+    theologyIds: {
+      title: curated.theologyTitle || "Theology",
+      href: "/categories/theology",
+      badge: "THEOLOGY",
+      products: pruneProducts(theologyProducts),
+    },
+    bestsellersIds: {
+      title: curated.bestsellersTitle || "Children Books",
+      href: "/categories/children",
+      badge: "CHILDREN BOOKS",
+      products: prunedBestsellers,
+      skeletonWhenNotReady: true,
+    },
+  };
+  for (const { shelf, products } of extraShelfProductsList) {
+    shelfEntries[`custom:${shelf.id}`] = {
+      title: shelf.title,
+      href:
+        shelf.viewAllHref ||
+        (shelf.categorySlug ? `/categories/${shelf.categorySlug}` : "/shop"),
+      badge: shelf.title.toUpperCase(),
+      products: pruneProducts(products),
+    };
+  }
+
   return (
     <>
       {/* 1 — Hero above the fold with customizable content */}
@@ -358,54 +389,25 @@ export default async function HomePage() {
         subtitle={curated.heroSubtitle}
       />
 
-      {/* 2 — New Arrivals (Strictly book IDs only) */}
-      {storeReady ? (
-        prunedNewArrivals.length > 0 && (
-          <BookRow
-            title={curated.newArrivalsTitle || "New Arrivals"}
-            href="/shop?orderby=date"
-            badge="NEW ARRIVAL"
-            products={prunedNewArrivals}
-          />
-        )
-      ) : (
-        <BookRowSkeleton title={curated.newArrivalsTitle || "New Arrivals"} />
-      )}
-
-      {/* 4 — 4 Categorical Rows: The Bible Speaks Today (by ID), Christian Living (dynamic), Ministry (dynamic), Theology (dynamic) */}
-      <CategoryBookRows rows={categoryRows} />
-
-      {/* 5 — Children Books Shelf (dynamic rotation or manual by ID) */}
-      {storeReady ? (
-        prunedBestsellers.length > 0 && (
-          <BookRow
-            title={curated.bestsellersTitle || "Children Books"}
-            href="/categories/children"
-            badge="CHILDREN BOOKS"
-            products={prunedBestsellers}
-          />
-        )
-      ) : (
-        <BookRowSkeleton title={curated.bestsellersTitle || "Children Books"} />
-      )}
-
-      {/* 5b — Custom Category Shelves (7th, 8th, ...) */}
-      {extraShelfProductsList.map(({ shelf, products }) => {
-        const pruned = pruneProducts(products);
-        if (pruned.length === 0) return null;
-        const href =
-          shelf.viewAllHref ||
-          (shelf.categorySlug ? `/categories/${shelf.categorySlug}` : "/shop");
+      {/* 2..N — Homepage Category Shelves in configured order */}
+      {orderedShelfKeys.map((shelfKey) => {
+        const entry = shelfEntries[shelfKey];
+        if (!entry) return null;
+        if (entry.skeletonWhenNotReady && !storeReady) {
+          return <BookRowSkeleton key={shelfKey} title={entry.title} />;
+        }
+        if (entry.products.length === 0) return null;
         return (
           <BookRow
-            key={shelf.id}
-            title={shelf.title}
-            href={href}
-            badge={shelf.title.toUpperCase()}
-            products={pruned}
+            key={shelfKey}
+            title={entry.title}
+            href={entry.href}
+            badge={entry.badge}
+            products={entry.products}
           />
         );
       })}
+
 
       {/* 6 — Explore Children Books (spine slider) with customizable titles & book selection */}
       {prunedSpineProducts.length > 0 && (

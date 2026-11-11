@@ -6,28 +6,22 @@ import type { CustomCategoryShelf } from "@/types/curation";
 interface CustomCategoryShelfEditorProps {
   shelf: CustomCategoryShelf;
   displayNumber: number;
-  customIndex: number;
-  totalCustomCount: number;
   availableCategories: WCCategory[];
   pendingDelete: boolean;
   onRequestDelete: () => void;
   onCancelDelete: () => void;
   onConfirmDelete: () => void;
-  onMove: (dir: "prev" | "next") => void;
   onUpdate: (updates: Partial<CustomCategoryShelf>) => void;
 }
 
 export function CustomCategoryShelfEditor({
   shelf,
   displayNumber,
-  customIndex,
-  totalCustomCount,
   availableCategories,
   pendingDelete,
   onRequestDelete,
   onCancelDelete,
   onConfirmDelete,
-  onMove,
   onUpdate,
 }: CustomCategoryShelfEditorProps) {
   const isDynamicMode = shelf.mode !== "manual";
@@ -83,25 +77,6 @@ export function CustomCategoryShelfEditor({
         </div>
 
         <div className="flex items-center gap-1.5">
-          <button
-            type="button"
-            onClick={() => onMove("prev")}
-            disabled={customIndex === 0}
-            title="Move section earlier"
-            className="flex h-7 w-7 items-center justify-center rounded-lg border border-slate-200 bg-white text-xs font-bold text-slate-600 hover:bg-slate-100 disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer"
-          >
-            ◀
-          </button>
-          <button
-            type="button"
-            onClick={() => onMove("next")}
-            disabled={customIndex >= totalCustomCount - 1}
-            title="Move section later"
-            className="flex h-7 w-7 items-center justify-center rounded-lg border border-slate-200 bg-white text-xs font-bold text-slate-600 hover:bg-slate-100 disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer"
-          >
-            ▶
-          </button>
-
           {pendingDelete ? (
             <div className="flex items-center gap-1 ml-1">
               <button
