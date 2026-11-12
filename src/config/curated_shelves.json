@@ -2,7 +2,8 @@
   "heroIds": [
     47592,
     46237,
-    48904
+    48904,
+    56886
   ],
   "heroBadge": "",
   "heroTitle": "Buy Christian Books Online in India for Spiritual Growth",
@@ -84,46 +85,67 @@
   ],
   "theologyTitle": "Theology",
   "theologyMode": "category",
+  "extraCategoryShelves": [
+    {
+      "id": "shelf-1794376432954",
+      "title": "Christmas Sale!",
+      "mode": "category",
+      "bookIds": [
+        29124,
+        36828,
+        38738,
+        28116,
+        35515,
+        35647
+      ],
+      "categoryId": 1838,
+      "categorySlug": "christmas-sale",
+      "categoryName": "Christmas Sale!",
+      "viewAllHref": "/categories/christmas-sale",
+      "sortBy": "price_asc"
+    }
+  ],
+  "categoryShelfOrder": [
+    "custom:shelf-1794376432954",
+    "newArrivalsIds",
+    "bibleSpeaksTodayIds",
+    "christianLivingIds",
+    "ministryIds",
+    "theologyIds",
+    "bestsellersIds"
+  ],
   "reviews": [
     {
-      "id": "rev-1",
-      "quote": "The devotionals I ordered changed how I approach my quiet time. Genuinely thoughtful curation — not the usual shelf filler.",
-      "name": "Priya M.",
-      "role": "Reader · Chennai",
+      "id": "rev-1793612957859",
+      "quote": "Graceful work of God. India needs theological books to know God deeper and experiential and grow in His grace for His glory.",
+      "name": "Shubham Dudeja",
+      "role": "Reader · City",
       "rating": 5,
       "audience": "reader"
     },
     {
-      "id": "rev-2",
-      "quote": "We ordered copies for our small groups. Honest, transparent pricing made it affordable for every family, and delivery was quick.",
-      "name": "Pastor James",
-      "role": "Grace Church · Bangalore",
-      "rating": 5,
-      "audience": "church"
-    },
-    {
-      "id": "rev-3",
-      "quote": "Sound theology, fair prices, no gimmicks. This is the bookstore I recommend to everyone in our community.",
-      "name": "Rev. Maria",
-      "role": "Youth Ministry · Chennai",
-      "rating": 5,
-      "audience": "church"
-    },
-    {
-      "id": "rev-4",
-      "quote": "Finding faithful reformed books in India used to be so difficult. For The Truth has made these treasures accessible and affordable.",
-      "name": "Dr. Samuel K.",
-      "role": "Theologian · New Delhi",
+      "id": "rev-1793613007810",
+      "quote": "An extremely reliable store to buy Biblically sound books at good prices. Thanking God for this ministry and I pray that He continue to bless them.",
+      "name": "Steve Waltin",
+      "role": "Reader · City",
       "rating": 5,
       "audience": "reader"
     },
     {
-      "id": "rev-5",
-      "quote": "Prompt dispatch and great book condition. The children's books have been a huge blessing to our Sunday school kids.",
-      "name": "Rachel Thomas",
-      "role": "Sunday School Director · Mumbai",
+      "id": "rev-1793613045187",
+      "quote": "All the books that I received are very good quality, including the paper, printing and cover. And all of that at a very low price. Thank you “For The Truth”.",
+      "name": "sabeela alexander",
+      "role": "Reader · City",
       "rating": 5,
-      "audience": "church"
+      "audience": "reader"
+    },
+    {
+      "id": "rev-1793613239908",
+      "quote": " I have purchased books from FTT so many times, they deliver books on time and in good quality",
+      "name": "Bosong Debbarma",
+      "role": "Reader · City",
+      "rating": 5,
+      "audience": "reader"
     }
   ]
 }

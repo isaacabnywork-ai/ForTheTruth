@@ -352,8 +352,15 @@ export default async function HomePage() {
         if (fetched.length > 0 && shelf.bookIds.length > 0) {
           return { shelf, products: sortByIdList(fetched, shelf.bookIds) };
         }
-        if (shelf.bookIds.length > 0) {
-          return { shelf, products: getFallbackList(shelf.bookIds) };
+        if (shelf.bookIds && shelf.bookIds.length > 0) {
+          const fallback = getFallbackList(shelf.bookIds);
+          if (fallback.length > 0) return { shelf, products: fallback.slice(0, 6) };
+        }
+        if (/christmas/i.test(`${shelf.title} ${shelf.categorySlug || ""}`)) {
+          return {
+            shelf,
+            products: getFallbackList([29124, 36828, 38738, 28116, 35515, 35647]),
+          };
         }
         return { shelf, products: [] as Product[] };
       });

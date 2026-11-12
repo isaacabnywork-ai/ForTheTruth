@@ -266,7 +266,7 @@ export function getCuratedShelfConfig(): CuratedShelfConfig {
 export async function fetchCuratedShelfConfigFromCloud(options?: {
   bypassCache?: boolean;
 }): Promise<CuratedShelfConfig> {
-  // During CI/build phase, immediately return local fallback to prevent build hangs on external APIs
+  // During CI/build phase, immediately return local config to guarantee fast, deterministic static pre-rendering
   if (
     process.env.NEXT_PHASE === "phase-production-build" ||
     process.env.npm_lifecycle_event === "build"
@@ -274,18 +274,22 @@ export async function fetchCuratedShelfConfigFromCloud(options?: {
     return getCuratedShelfConfig();
   }
 
-  // Fetch live configuration from WooCommerce (tagged for instant revalidation on save).
-
   const wpUrl = process.env.NEXT_PUBLIC_WORDPRESS_URL || "https://admin.forthetruth.in";
   const key = process.env.WOOCOMMERCE_API_KEY || "ck_c6693ca02bf0d33b2828f8d311d879be4bf835d5";
   const secret = process.env.WOOCOMMERCE_API_SECRET || "cs_8513b72208ead026d4f6667169466090ccc4f50d";
 
   try {
     const auth = Buffer.from(`${key}:${secret}`).toString("base64");
-    const url = `${wpUrl.replace(/\/$/, "")}/wp-json/wc/v3/products/${CONFIG_PRODUCT_ID}`;
+    // Append `_nocache=1` and cache-busting headers so WordPress caching plugins (LiteSpeed Cache, WP Rocket, Cloudflare)
+    // never return a stale cached REST API response when reading or updating curated shelves.
+    const url = `${wpUrl.replace(/\/$/, "")}/wp-json/wc/v3/products/${CONFIG_PRODUCT_ID}?_nocache=1`;
     const res = await fetch(url, {
-      headers: { Authorization: `Basic ${auth}` },
-      signal: AbortSignal.timeout(4000),
+      headers: {
+        Authorization: `Basic ${auth}`,
+        "Cache-Control": "no-cache, no-store, must-revalidate",
+        Pragma: "no-cache",
+      },
+      signal: AbortSignal.timeout(7000),
       ...(options?.bypassCache
         ? { cache: "no-store" as const }
         : { next: { revalidate: 60, tags: ["curated-shelves"] } }),
