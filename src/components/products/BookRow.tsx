@@ -189,7 +189,9 @@ export function BookRowSkeleton({ title }: { title: string }) {
               key={idx}
               className="flex flex-col w-[148px] sm:w-[165px] md:w-[175px] lg:w-auto shrink-0 lg:shrink"
             >
-              <div className="w-full aspect-[2/3] rounded-[3px] skeleton" />
+              <div className="h-[210px] sm:h-[235px] md:h-[250px] lg:h-[260px] w-full flex items-end justify-center">
+                <div className="skeleton h-[90%] w-[90%] rounded-[3px]" />
+              </div>
               <div className="mt-2.5 flex items-center justify-between w-full pt-0.5">
                 <div className="flex flex-col gap-1.5">
                   <div className="skeleton h-4 w-20 rounded" />
@@ -273,38 +275,40 @@ function BookRowCard({
 
   return (
     <article className="group flex flex-col w-[148px] sm:w-[165px] md:w-[175px] lg:w-auto shrink-0 lg:shrink select-none">
-      {/* Book Cover Container with Uniform Aspect Ratio & Alignment */}
+      {/* Book Cover Container with Natural Aspect Ratio & Bottom Baseline Alignment */}
       <Link
         href={`/products/${product.slug}`}
-        className="relative block w-full aspect-[2/3] overflow-hidden rounded-[3px] shadow-xs group-hover:shadow-md transition-all duration-300 group-hover:-translate-y-1.5"
+        className="relative flex items-end justify-center h-[210px] sm:h-[235px] md:h-[250px] lg:h-[260px] w-full"
         title={fullTitle}
       >
-        {imageSrc ? (
-          <img
-            src={imageSrc}
-            alt={imageAlt || fullTitle}
-            decoding="async"
-            className={`w-full h-full object-cover rounded-[3px] block select-none ${
+        <div className="relative inline-block max-h-full max-w-full transition-all duration-300 group-hover:-translate-y-1.5 overflow-hidden rounded-[3px]">
+          {imageSrc ? (
+            <img
+              src={imageSrc}
+              alt={imageAlt || fullTitle}
+              decoding="async"
+              className={`max-h-[210px] sm:max-h-[235px] md:max-h-[250px] lg:max-h-[260px] max-w-full w-auto h-auto rounded-[3px] shadow-xs group-hover:shadow-md transition-all duration-300 block select-none ${
+                !inStock ? "opacity-40" : ""
+              }`}
+            />
+          ) : (
+            <div className={`flex aspect-[2/3] h-[210px] sm:h-[235px] md:h-[250px] lg:h-[260px] items-center justify-center bg-gold-gradient p-3 text-center rounded-[3px] ${
               !inStock ? "opacity-40" : ""
-            }`}
-          />
-        ) : (
-          <div className={`flex w-full h-full items-center justify-center bg-gold-gradient p-3 text-center rounded-[3px] ${
-            !inStock ? "opacity-40" : ""
-          }`}>
-            <span className="font-serif text-xs italic leading-snug text-white [text-shadow:0_1px_2px_rgba(120,85,40,0.4)]">
-              {displayTitle}
-            </span>
-          </div>
-        )}
+            }`}>
+              <span className="font-serif text-xs italic leading-snug text-white [text-shadow:0_1px_2px_rgba(120,85,40,0.4)]">
+                {displayTitle}
+              </span>
+            </div>
+          )}
 
-        {!inStock && (
-          <div className="absolute inset-0 flex items-center justify-center p-2 pointer-events-none z-10">
-            <span className="bg-[#212121]/90 text-white text-[9.5px] sm:text-[10px] font-bold uppercase tracking-wider px-3 py-1 rounded-full shadow-md backdrop-blur-xs whitespace-nowrap">
-              SOLD OUT
-            </span>
-          </div>
-        )}
+          {!inStock && (
+            <div className="absolute inset-0 flex items-center justify-center p-2 pointer-events-none z-10">
+              <span className="bg-[#212121]/90 text-white text-[9.5px] sm:text-[10px] font-bold uppercase tracking-wider px-3 py-1 rounded-full shadow-md backdrop-blur-xs whitespace-nowrap">
+                SOLD OUT
+              </span>
+            </div>
+          )}
+        </div>
       </Link>
 
       {/* Bottom Row: Price, Discount Badge & Squircle Cart / Notify Button */}
