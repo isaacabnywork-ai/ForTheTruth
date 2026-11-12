@@ -214,6 +214,11 @@ export function ShelfCuratorClient({
       if (!custom) return null;
       const isCatMode = custom.mode !== "manual";
       const count = (custom.bookIds || []).length;
+      const effectiveSort =
+        custom.sortBy ??
+        (/christmas/i.test(`${custom.title} ${custom.categoryName || ""} ${custom.categorySlug || ""}`)
+          ? "price_asc"
+          : "shuffle");
       return {
         key: shelfKey as CategoryShelfSelection,
         title: custom.title || "Untitled Section",
@@ -222,7 +227,13 @@ export function ShelfCuratorClient({
         needsCategoryPick: isCatMode && !custom.categoryId,
         badgeText: isCatMode
           ? custom.categoryId
-            ? "🎲 Dynamic"
+            ? effectiveSort === "price_asc"
+              ? "💰 Low to High"
+              : effectiveSort === "price_desc"
+              ? "💎 High to Low"
+              : effectiveSort === "date_desc"
+              ? "🆕 Newest"
+              : "🎲 Dynamic"
             : "🎲 Pick Cat"
           : `${count} IDs`,
       };
@@ -429,6 +440,19 @@ export function ShelfCuratorClient({
     list[targetIdx] = temp;
     setConfig((prev) => setBookIdsForSelection(prev, activeTab, activeCategoryShelf, list));
     setRawInput(list.join(", "));
+  };
+
+  const handleSortCurrentArrayByPrice = (order: "asc" | "desc") => {
+    if (!hasEditableArray) return;
+    const sorted = [...currentArray].sort((aId, bId) => {
+      const pA = productCatalogMap.get(aId);
+      const pB = productCatalogMap.get(bId);
+      const priceA = parseFloat(pA?.price || pA?.sale_price || pA?.regular_price || "0") || 0;
+      const priceB = parseFloat(pB?.price || pB?.sale_price || pB?.regular_price || "0") || 0;
+      return order === "asc" ? priceA - priceB : priceB - priceA;
+    });
+    setConfig((prev) => setBookIdsForSelection(prev, activeTab, activeCategoryShelf, sorted));
+    setRawInput(sorted.join(", "));
   };
 
   // Fetch missing book details automatically if an entered ID is not in productCatalogMap
@@ -1364,6 +1388,31 @@ export function ShelfCuratorClient({
                     <p className="text-[11px] text-slate-400 mt-1.5 font-medium">
                       Type book IDs directly, or search &amp; click &ldquo;+ Select&rdquo; on any book from the catalog on the right!
                     </p>
+                    {currentArray.length > 1 && (
+                      <div className="flex flex-wrap items-center justify-between gap-2 mt-2.5 pt-2 border-t border-slate-200">
+                        <span className="text-[11px] font-bold text-slate-600">
+                          Sort {currentArray.length} Selected Books by Price:
+                        </span>
+                        <div className="flex items-center gap-1.5">
+                          <button
+                            type="button"
+                            onClick={() => handleSortCurrentArrayByPrice("asc")}
+                            className="rounded-lg border border-slate-200 bg-white px-2.5 py-1 text-[11px] font-bold text-navy hover:bg-slate-100 hover:border-slate-300 transition-all cursor-pointer flex items-center gap-1"
+                            title="Sort IDs by Price: Low to High"
+                          >
+                            <span>💰 Low → High</span>
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => handleSortCurrentArrayByPrice("desc")}
+                            className="rounded-lg border border-slate-200 bg-white px-2.5 py-1 text-[11px] font-bold text-navy hover:bg-slate-100 hover:border-slate-300 transition-all cursor-pointer flex items-center gap-1"
+                            title="Sort IDs by Price: High to Low"
+                          >
+                            <span>💎 High → Low</span>
+                          </button>
+                        </div>
+                      </div>
+                    )}
                   </div>
 
                   <div className="space-y-3 max-h-[460px] overflow-y-auto pr-1">

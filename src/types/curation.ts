@@ -9,6 +9,12 @@ export interface TestimonialItem {
 
 export type ShelfDisplayMode = "manual" | "category";
 
+export type CategoryShelfSort =
+  | "price_asc"
+  | "shuffle"
+  | "price_desc"
+  | "date_desc";
+
 export interface CustomCategoryShelf {
   id: string;
   title: string;
@@ -18,6 +24,7 @@ export interface CustomCategoryShelf {
   categorySlug?: string;
   categoryName?: string;
   viewAllHref?: string;
+  sortBy?: CategoryShelfSort;
 }
 
 export const BUILTIN_CATEGORY_SHELF_IDS = [

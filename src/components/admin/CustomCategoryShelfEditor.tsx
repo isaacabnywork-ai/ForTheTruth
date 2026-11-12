@@ -1,7 +1,7 @@
 "use client";
 
 import type { WCCategory } from "@/types/product";
-import type { CustomCategoryShelf } from "@/types/curation";
+import type { CustomCategoryShelf, CategoryShelfSort } from "@/types/curation";
 
 interface CustomCategoryShelfEditorProps {
   shelf: CustomCategoryShelf;
@@ -31,6 +31,12 @@ export function CustomCategoryShelfEditor({
       : undefined;
   const activeCatName =
     shelf.categoryName || selectedCategory?.name || (shelf.categoryId ? `Category #${shelf.categoryId}` : "");
+
+  const effectiveSort: CategoryShelfSort =
+    shelf.sortBy ??
+    (/christmas/i.test(`${shelf.title} ${shelf.categoryName || ""} ${shelf.categorySlug || ""}`)
+      ? "price_asc"
+      : "shuffle");
 
   const handleCategorySelect = (rawId: string) => {
     const catId = Number(rawId);
@@ -193,11 +199,102 @@ export function CustomCategoryShelfEditor({
               </div>
             </div>
 
+            {/* Book Display Sort Order for Dynamic Mode */}
+            <div>
+              <label className="text-[11px] font-bold text-slate-600 block mb-1.5">
+                Book Display Sort Order:
+              </label>
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                <button
+                  type="button"
+                  onClick={() => onUpdate({ sortBy: "price_asc" })}
+                  className={`flex flex-col items-center justify-center p-2.5 rounded-xl border text-xs font-bold transition-all cursor-pointer ${
+                    effectiveSort === "price_asc"
+                      ? "border-emerald-600 bg-emerald-50 text-emerald-950 ring-2 ring-emerald-500/20 shadow-xs"
+                      : "border-slate-200 bg-white text-slate-600 hover:border-slate-300 hover:bg-slate-50"
+                  }`}
+                >
+                  <span className="text-base mb-0.5">💰</span>
+                  <span className="font-extrabold text-navy">Price: Low to High</span>
+                  <span className="text-[10px] font-normal text-emerald-800 mt-0.5">Lowest price first</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => onUpdate({ sortBy: "shuffle" })}
+                  className={`flex flex-col items-center justify-center p-2.5 rounded-xl border text-xs font-bold transition-all cursor-pointer ${
+                    effectiveSort === "shuffle"
+                      ? "border-emerald-600 bg-emerald-50 text-emerald-950 ring-2 ring-emerald-500/20 shadow-xs"
+                      : "border-slate-200 bg-white text-slate-600 hover:border-slate-300 hover:bg-slate-50"
+                  }`}
+                >
+                  <span className="text-base mb-0.5">🎲</span>
+                  <span className="font-extrabold text-navy">Random Shuffle</span>
+                  <span className="text-[10px] font-normal text-slate-500 mt-0.5">Auto-rotates on refresh</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => onUpdate({ sortBy: "price_desc" })}
+                  className={`flex flex-col items-center justify-center p-2.5 rounded-xl border text-xs font-bold transition-all cursor-pointer ${
+                    effectiveSort === "price_desc"
+                      ? "border-emerald-600 bg-emerald-50 text-emerald-950 ring-2 ring-emerald-500/20 shadow-xs"
+                      : "border-slate-200 bg-white text-slate-600 hover:border-slate-300 hover:bg-slate-50"
+                  }`}
+                >
+                  <span className="text-base mb-0.5">💎</span>
+                  <span className="font-extrabold text-navy">Price: High to Low</span>
+                  <span className="text-[10px] font-normal text-slate-500 mt-0.5">Highest price first</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => onUpdate({ sortBy: "date_desc" })}
+                  className={`flex flex-col items-center justify-center p-2.5 rounded-xl border text-xs font-bold transition-all cursor-pointer ${
+                    effectiveSort === "date_desc"
+                      ? "border-emerald-600 bg-emerald-50 text-emerald-950 ring-2 ring-emerald-500/20 shadow-xs"
+                      : "border-slate-200 bg-white text-slate-600 hover:border-slate-300 hover:bg-slate-50"
+                  }`}
+                >
+                  <span className="text-base mb-0.5">🆕</span>
+                  <span className="font-extrabold text-navy">Newest Added</span>
+                  <span className="text-[10px] font-normal text-slate-500 mt-0.5">Latest arrivals first</span>
+                </button>
+              </div>
+            </div>
+
             {shelf.categoryId ? (
               <div className="flex items-start gap-2.5 rounded-xl bg-emerald-50 border border-emerald-200 p-3 text-xs text-emerald-900 font-medium leading-relaxed">
-                <span className="text-base shrink-0">🎲</span>
+                <span className="text-base shrink-0">
+                  {effectiveSort === "price_asc"
+                    ? "💰"
+                    : effectiveSort === "price_desc"
+                    ? "💎"
+                    : effectiveSort === "date_desc"
+                    ? "🆕"
+                    : "🎲"}
+                </span>
                 <div>
-                  <strong>Dynamic Category Auto-Rotation Active:</strong> Every visitor page refresh displays 6 freshly shuffled books from <strong>{activeCatName}</strong> (ID: {shelf.categoryId}).
+                  {effectiveSort === "price_asc" && (
+                    <>
+                      <strong>Price: Low to High Active:</strong> Books from <strong>{activeCatName}</strong> (ID: {shelf.categoryId}) are sorted with <strong>lower price books shown first (low to high)</strong>.
+                    </>
+                  )}
+                  {effectiveSort === "shuffle" && (
+                    <>
+                      <strong>Dynamic Category Auto-Rotation Active:</strong> Every visitor page refresh displays 6 freshly shuffled books from <strong>{activeCatName}</strong> (ID: {shelf.categoryId}).
+                    </>
+                  )}
+                  {effectiveSort === "price_desc" && (
+                    <>
+                      <strong>Price: High to Low Active:</strong> Books from <strong>{activeCatName}</strong> (ID: {shelf.categoryId}) are displayed starting from highest priced down.
+                    </>
+                  )}
+                  {effectiveSort === "date_desc" && (
+                    <>
+                      <strong>Newest Added Active:</strong> The latest books added to <strong>{activeCatName}</strong> (ID: {shelf.categoryId}) are displayed first.
+                    </>
+                  )}
                   <span className="text-emerald-700 block mt-1">
                     Your {shelf.bookIds.length} book IDs below are preserved and used as fallback if WooCommerce is offline.
                   </span>

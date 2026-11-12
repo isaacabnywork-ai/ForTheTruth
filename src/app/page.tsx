@@ -10,7 +10,16 @@ import categoryRowsFallbackData from "@/data/category_rows_fallback.json";
 import { pruneProducts } from "@/utils/pruneProduct";
 import { toCdnImageUrl } from "@/utils/imageUrl";
 import type { Product } from "@/types/product";
-import { normalizeCategoryShelfOrder, type CustomCategoryShelf } from "@/types/curation";
+import {
+  normalizeCategoryShelfOrder,
+  type CustomCategoryShelf,
+  type CategoryShelfSort,
+} from "@/types/curation";
+
+function getProductPriceNumber(p: Product): number {
+  const val = parseFloat(p.price || p.sale_price || p.regular_price || "0");
+  return Number.isFinite(val) ? val : 0;
+}
 
 export const revalidate = 300; // 5-minute Edge cache (ISR) for fast initial paint across India
 
@@ -170,6 +179,42 @@ export default async function HomePage() {
           typeof shelf.categoryId === "number" &&
           shelf.categoryId > 0;
         if (isDynamic) {
+          const effectiveSort: CategoryShelfSort =
+            shelf.sortBy ??
+            (/christmas/i.test(
+              `${shelf.title} ${shelf.categoryName || ""} ${shelf.categorySlug || ""}`
+            )
+              ? "price_asc"
+              : "shuffle");
+
+          if (effectiveSort === "price_asc") {
+            return getProducts({
+              category: shelf.categoryId,
+              orderby: "price",
+              order: "asc",
+              perPage: 50,
+              revalidate: 60,
+            }).catch(() => []);
+          }
+          if (effectiveSort === "price_desc") {
+            return getProducts({
+              category: shelf.categoryId,
+              orderby: "price",
+              order: "desc",
+              perPage: 50,
+              revalidate: 60,
+            }).catch(() => []);
+          }
+          if (effectiveSort === "date_desc") {
+            return getProducts({
+              category: shelf.categoryId,
+              orderby: "date",
+              order: "desc",
+              perPage: 30,
+              revalidate: 60,
+            }).catch(() => []);
+          }
+
           return getProducts({
             category: shelf.categoryId,
             perPage: 30,
@@ -278,6 +323,30 @@ export default async function HomePage() {
           typeof shelf.categoryId === "number" &&
           shelf.categoryId > 0;
         if (isDynamic && fetched.length > 0) {
+          const effectiveSort: CategoryShelfSort =
+            shelf.sortBy ??
+            (/christmas/i.test(
+              `${shelf.title} ${shelf.categoryName || ""} ${shelf.categorySlug || ""}`
+            )
+              ? "price_asc"
+              : "shuffle");
+
+          if (effectiveSort === "price_asc") {
+            const sorted = [...fetched].sort(
+              (a, b) => getProductPriceNumber(a) - getProductPriceNumber(b)
+            );
+            return { shelf, products: sorted.slice(0, 6) };
+          }
+          if (effectiveSort === "price_desc") {
+            const sorted = [...fetched].sort(
+              (a, b) => getProductPriceNumber(b) - getProductPriceNumber(a)
+            );
+            return { shelf, products: sorted.slice(0, 6) };
+          }
+          if (effectiveSort === "date_desc") {
+            return { shelf, products: fetched.slice(0, 6) };
+          }
+
           return { shelf, products: shuffleArray(fetched).slice(0, 6) };
         }
         if (fetched.length > 0 && shelf.bookIds.length > 0) {

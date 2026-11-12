@@ -1,6 +1,11 @@
 import fs from "fs";
 import path from "path";
-import type { TestimonialItem, CuratedShelfConfig, CustomCategoryShelf } from "@/types/curation";
+import type {
+  TestimonialItem,
+  CuratedShelfConfig,
+  CustomCategoryShelf,
+  CategoryShelfSort,
+} from "@/types/curation";
 import { DEFAULT_REVIEWS, BUILTIN_CATEGORY_SHELF_IDS, normalizeCategoryShelfOrder } from "@/types/curation";
 
 
@@ -107,6 +112,15 @@ export function sanitizeExtraCategoryShelves(
         ? obj.viewAllHref.trim()
         : undefined;
 
+    const rawSort = typeof obj.sortBy === "string" ? obj.sortBy.trim() : "";
+    const sortBy: CategoryShelfSort | undefined =
+      rawSort === "price_asc" ||
+      rawSort === "price_desc" ||
+      rawSort === "date_desc" ||
+      rawSort === "shuffle"
+        ? (rawSort as CategoryShelfSort)
+        : undefined;
+
     result.push({
       id,
       title,
@@ -116,6 +130,7 @@ export function sanitizeExtraCategoryShelves(
       categorySlug,
       categoryName,
       viewAllHref,
+      sortBy,
     });
   }
 
