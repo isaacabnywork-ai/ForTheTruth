@@ -218,6 +218,15 @@ export function MobileNav({ categories }: { categories: WCCategory[] }) {
           <div className="mt-8">
             <p className="text-xs font-bold text-charcoal/60 mb-3">Categories</p>
             <div className="space-y-1">
+              <Link href="/categories/christmas-sale" className="flex items-center justify-between py-2 text-sm text-charcoal/70 transition-smooth hover:pl-1 hover:text-gold-dark">
+                <span className="flex items-center gap-1.5">
+                  <span>Christmas Sale!</span>
+                  <span className="rounded-[4px] border border-red-200 bg-red-50 px-1.5 py-0.5 text-[10px] font-bold text-red-600 leading-none">
+                    New
+                  </span>
+                </span>
+                <span className="text-xs text-charcoal/30">→</span>
+              </Link>
               <Link href="/categories/bible-study" className="flex items-center justify-between py-2 text-sm text-charcoal/70 transition-smooth hover:pl-1 hover:text-gold-dark">
                 <span>Bible Study</span>
                 <span className="text-xs text-charcoal/30">→</span>

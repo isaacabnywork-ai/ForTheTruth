@@ -59,7 +59,15 @@ function Icon({
 }
 
 /* ── Curated Catalog Categories for Sidebar ─────────────────── */
-const SIDEBAR_CATEGORIES = [
+interface SidebarCategoryItem {
+  label: string;
+  slug: string;
+  href: string;
+  badge?: string;
+}
+
+const SIDEBAR_CATEGORIES: SidebarCategoryItem[] = [
+  { label: "Christmas Sale!", slug: "christmas-sale", href: "/categories/christmas-sale", badge: "New" },
   { label: "Bible Study", slug: "bible-study", href: "/categories/bible-study" },
   { label: "Children", slug: "children", href: "/categories/children" },
   { label: "Christian Living", slug: "christian-living", href: "/categories/christian-living" },
@@ -273,7 +281,14 @@ export function DesktopSidebar({
                               : "text-charcoal/65 hover:bg-cream hover:text-charcoal"
                           }`}
                         >
-                          <span className="truncate">{cat.label}</span>
+                          <span className="flex items-center gap-1.5 min-w-0">
+                            <span className="truncate">{cat.label}</span>
+                            {cat.badge && (
+                              <span className="shrink-0 rounded-[4px] border border-red-200 bg-red-50 px-1.5 py-0.5 text-[10px] font-bold text-red-600 leading-none">
+                                {cat.badge}
+                              </span>
+                            )}
+                          </span>
                           {count != null && (
                             <span className="ml-2 text-[11px] font-medium text-charcoal/30">
                               {count}
