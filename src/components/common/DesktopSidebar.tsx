@@ -284,7 +284,7 @@ export function DesktopSidebar({
                           <span className="flex items-center gap-1.5 min-w-0">
                             <span className="truncate">{cat.label}</span>
                             {cat.badge && (
-                              <span className="shrink-0 rounded-[4px] border border-red-200 bg-red-50 px-1.5 py-0.5 text-[10px] font-bold text-red-600 leading-none">
+                              <span className="shrink-0 rounded-[4px] bg-gold px-1.5 py-0.5 text-[10px] font-bold text-white leading-none shadow-xs">
                                 {cat.badge}
                               </span>
                             )}
