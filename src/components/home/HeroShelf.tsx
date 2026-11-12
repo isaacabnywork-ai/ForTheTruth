@@ -234,14 +234,20 @@ export function HeroShelf({
                     )}
                   </div>
 
-                  {hero.rating_count > 0 && (
-                    <div className="mt-2 flex items-center justify-center lg:justify-start gap-2">
-                      <RatingStars rating={parseFloat(hero.average_rating)} />
-                      <span className="text-xs text-charcoal/55 font-semibold">
-                        {parseFloat(hero.average_rating).toFixed(1)} ({hero.rating_count})
-                      </span>
-                    </div>
-                  )}
+                  {(() => {
+                    const hasRealRating = hero.rating_count > 0 && parseFloat(hero.average_rating) > 0;
+                    const ratingVal = hasRealRating ? parseFloat(hero.average_rating) : 5.0;
+                    const ratingCount = hasRealRating ? hero.rating_count : 1;
+
+                    return (
+                      <div className="mt-2 flex items-center justify-center lg:justify-start gap-2">
+                        <RatingStars rating={ratingVal} />
+                        <span className="text-xs text-charcoal/55 font-semibold">
+                          {ratingVal.toFixed(1)} ({ratingCount})
+                        </span>
+                      </div>
+                    );
+                  })()}
 
 
                   {author && (
