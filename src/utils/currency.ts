@@ -22,3 +22,11 @@ export function formatPrice2Decimals(value: number | string): string {
   if (Number.isNaN(num) || num == null) return "—";
   return formatter2Decimals.format(num);
 }
+
+export function splitPrice(value: number | string): { symbol: string; amount: string } {
+  const formatted = formatPrice(value);
+  if (formatted === "—") return { symbol: "₹", amount: "—" };
+  const symbol = formatted.match(/^\D+/)?.[0] || "₹";
+  const amount = formatted.replace(/^\D+/, "");
+  return { symbol, amount };
+}

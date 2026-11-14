@@ -5,7 +5,7 @@ import { useState, useRef, useEffect } from "react";
 import { useCartStore } from "@/store/cartStore";
 import { useWishlistStore } from "@/store/wishlistStore";
 import { useRecentlyViewedStore } from "@/store/recentlyViewedStore";
-import { formatPrice } from "@/utils/currency";
+import { formatPrice, splitPrice } from "@/utils/currency";
 import { getAuthor, type Product, type ProductReview } from "@/types/product";
 import { RatingStars } from "./RatingStars";
 import { ReviewForm } from "./ReviewForm";
@@ -343,12 +343,14 @@ export function ProductDetail({ product, reviews = [] }: ProductDetailProps) {
 
             {/* Price */}
             <div className="mt-2.5 sm:mt-5 flex items-baseline gap-3 sm:gap-4">
-              <span className="font-display text-2xl sm:text-3xl font-bold text-charcoal">
-                {formatPrice(product.price)}
+              <span className="font-display text-2xl sm:text-3xl text-charcoal">
+                <span className="font-normal font-sans text-xl sm:text-2xl mr-0.5">₹</span>
+                <span className="font-bold">{splitPrice(product.price).amount}</span>
               </span>
               {product.on_sale && product.regular_price && (
                 <span className="text-base sm:text-lg text-gray-400 line-through">
-                  {formatPrice(product.regular_price)}
+                  <span className="font-normal font-sans mr-0.5">₹</span>
+                  <span>{splitPrice(product.regular_price).amount}</span>
                 </span>
               )}
             </div>
@@ -743,8 +745,9 @@ export function ProductDetail({ product, reviews = [] }: ProductDetailProps) {
             <span className="text-[11px] font-semibold uppercase tracking-wider text-charcoal/60 truncate max-w-[160px] sm:max-w-[220px]">
               {product.name}
             </span>
-            <span className="font-display text-xl font-black text-charcoal">
-              {formatPrice(product.price)}
+            <span className="font-display text-xl text-charcoal">
+              <span className="font-normal font-sans text-lg mr-0.5">₹</span>
+              <span className="font-black">{splitPrice(product.price).amount}</span>
             </span>
           </div>
           <button
