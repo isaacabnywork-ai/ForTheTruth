@@ -6,6 +6,7 @@ import { useCartStore } from "@/store/cartStore";
 import { useWishlistStore } from "@/store/wishlistStore";
 import { useRecentlyViewedStore } from "@/store/recentlyViewedStore";
 import { formatPrice, splitPrice } from "@/utils/currency";
+import { getProductPreorderInfo } from "@/utils/preorder";
 import { getAuthor, type Product, type ProductReview } from "@/types/product";
 import { RatingStars } from "./RatingStars";
 import { ReviewForm } from "./ReviewForm";
@@ -54,6 +55,8 @@ export function ProductDetail({ product, reviews = [] }: ProductDetailProps) {
   }, [product, addRecentlyViewed]);
 
   const author = getAuthor(product);
+  const preorderInfo = getProductPreorderInfo(product);
+  const isPreorder = preorderInfo.isPreorder;
   const inStock = product.stock_status === "instock";
   const images = (product.images && product.images.length > 0
     ? product.images
@@ -330,7 +333,12 @@ export function ProductDetail({ product, reviews = [] }: ProductDetailProps) {
               <span className="text-[11px] sm:text-xs text-charcoal/50">
                 ({product.rating_count} {product.rating_count === 1 ? "review" : "reviews"})
               </span>
-              {inStock ? (
+              {isPreorder ? (
+                <span className="inline-flex items-center gap-1.5 rounded-full bg-amber-100 border border-amber-300/80 px-2.5 py-0.5 text-[11px] sm:text-xs font-bold text-amber-900 shadow-xs">
+                  <span className="h-1.5 w-1.5 rounded-full bg-amber-600 animate-pulse" />
+                  Pre-Order
+                </span>
+              ) : inStock ? (
                 <span className="rounded-full bg-emerald-100 px-2.5 py-0.5 text-[11px] sm:text-xs font-bold text-emerald-800">
                   In Stock
                 </span>
@@ -399,6 +407,21 @@ export function ProductDetail({ product, reviews = [] }: ProductDetailProps) {
                 </button>
               </div>
 
+              {/* Pre-Order Notice Banner */}
+              {isPreorder && (
+                <div className="mt-4 rounded-xl border border-amber-300/80 bg-amber-50/80 p-3 sm:p-3.5 text-xs text-amber-950 flex items-start gap-2.5 shadow-xs">
+                  <span className="text-base leading-none shrink-0 mt-0.5">📦</span>
+                  <div className="flex-1 leading-snug">
+                    <p className="font-bold text-amber-900">
+                      {preorderInfo.shippingNotice || "Shipping starts after 1 December."}
+                    </p>
+                    <p className="mt-0.5 text-[11px] text-amber-800/80">
+                      Reserve your copy now. Your order will be dispatched as soon as release stock arrives.
+                    </p>
+                  </div>
+                </div>
+              )}
+
               {/* Add to Cart Button */}
               <button
                 onClick={inStock ? handleAddToCart : undefined}
@@ -409,7 +432,7 @@ export function ProductDetail({ product, reviews = [] }: ProductDetailProps) {
                     : "rounded-full bg-charcoal/15 text-charcoal/40 cursor-not-allowed"
                 }`}
               >
-                {inStock ? "Add to Cart" : "Out of Stock"}
+                {inStock ? (isPreorder ? "Pre-Order Now" : "Add to Cart") : "Out of Stock"}
               </button>
 
               {/* Wishlist Button */}
@@ -759,7 +782,7 @@ export function ProductDetail({ product, reviews = [] }: ProductDetailProps) {
                 : "rounded-full bg-charcoal/15 text-charcoal/40 cursor-not-allowed"
             }`}
           >
-            {inStock ? "Add to Cart" : "Out of Stock"}
+            {inStock ? (isPreorder ? "Pre-Order" : "Add to Cart") : "Out of Stock"}
           </button>
         </div>
       ) : (

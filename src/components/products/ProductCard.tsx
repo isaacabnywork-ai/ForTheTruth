@@ -9,6 +9,7 @@ import { useWishlistStore } from "@/store/wishlistStore";
 import { triggerHaptic } from "@/utils/haptics";
 import { formatCardTitle } from "./BookRow";
 import { toCdnImageUrl } from "@/utils/imageUrl";
+import { getProductPreorderInfo } from "@/utils/preorder";
 
 export function ProductCard({
   product,
@@ -23,6 +24,8 @@ export function ProductCard({
   const addToCart = useCartStore((s) => s.addToCart);
   const toggleWishlist = useWishlistStore((s) => s.toggleWishlist);
   const wishlisted = useWishlistStore((s) => s.productIds.includes(product.id));
+  const preorderInfo = getProductPreorderInfo(product);
+  const isPreorder = preorderInfo.isPreorder;
 
   const imageSrc = toCdnImageUrl(
     product.images?.[0]?.src ||
@@ -109,6 +112,16 @@ export function ProductCard({
             <div className="absolute top-2 left-2 z-10 pointer-events-none">
               <span className="bg-navy text-white text-[9.5px] font-bold uppercase tracking-wider px-2 py-0.5 rounded shadow-xs">
                 {rank === 1 ? "🥇 #1" : rank === 2 ? "🥈 #2" : "🥉 #3"}
+              </span>
+            </div>
+          )}
+
+          {/* Pre-Order Badge */}
+          {isPreorder && inStock && (
+            <div className="absolute top-2 left-2 z-10 pointer-events-none">
+              <span className="bg-amber-600/95 text-white text-[9.5px] font-bold uppercase tracking-wider px-2 py-0.5 rounded shadow-xs backdrop-blur-xs flex items-center gap-1">
+                <span className="h-1.5 w-1.5 rounded-full bg-white animate-pulse" />
+                PRE-ORDER
               </span>
             </div>
           )}
