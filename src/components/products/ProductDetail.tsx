@@ -387,9 +387,9 @@ export function ProductDetail({ product, reviews = [] }: ProductDetailProps) {
 
           {/* Action Row - Hidden on mobile & tablet preview per user instruction (keeps only the sticky add to cart bar) */}
           <div className="mt-6 border-t border-sand/80 pt-6 hidden lg:block">
-            <div className="flex flex-wrap items-center gap-4">
+            <div className="flex items-center gap-4">
               {/* Quantity selector */}
-              <div className="flex items-center rounded-full border border-sand bg-cream/50 px-4 py-2">
+              <div className="flex items-center rounded-xl border border-sand bg-cream/50 px-4 py-3">
                 <button
                   onClick={() => setQty((q) => Math.max(1, q - 1))}
                   className="px-2 text-base font-bold text-charcoal/70 hover:text-gold-dark"
@@ -407,29 +407,14 @@ export function ProductDetail({ product, reviews = [] }: ProductDetailProps) {
                 </button>
               </div>
 
-              {/* Pre-Order Notice Banner */}
-              {isPreorder && (
-                <div className="mt-4 rounded-xl border border-amber-300/80 bg-amber-50/80 p-3 sm:p-3.5 text-xs text-amber-950 flex items-start gap-2.5 shadow-xs">
-                  <span className="text-base leading-none shrink-0 mt-0.5">📦</span>
-                  <div className="flex-1 leading-snug">
-                    <p className="font-bold text-amber-900">
-                      {preorderInfo.shippingNotice || "Shipping starts after 1 December."}
-                    </p>
-                    <p className="mt-0.5 text-[11px] text-amber-800/80">
-                      Reserve your copy now. Your order will be dispatched as soon as release stock arrives.
-                    </p>
-                  </div>
-                </div>
-              )}
-
-              {/* Add to Cart Button */}
+              {/* Add to Cart / Pre-Order Button - Rectangular with rounded-xl */}
               <button
                 onClick={inStock ? handleAddToCart : undefined}
                 disabled={!inStock}
-                className={`flex-1 !py-3.5 font-extrabold tracking-wide transition-all ${
+                className={`flex-1 !py-3.5 !rounded-xl font-extrabold tracking-wide transition-all ${
                   inStock
                     ? "btn-gold shadow-gold hover:scale-[1.01] active:scale-95"
-                    : "rounded-full bg-charcoal/15 text-charcoal/40 cursor-not-allowed"
+                    : "rounded-xl bg-charcoal/15 text-charcoal/40 cursor-not-allowed"
                 }`}
               >
                 {inStock ? (isPreorder ? "Pre-Order Now" : "Add to Cart") : "Out of Stock"}
@@ -441,7 +426,7 @@ export function ProductDetail({ product, reviews = [] }: ProductDetailProps) {
                   triggerHaptic("tap");
                   toggleWishlist(product.id);
                 }}
-                className={`rounded-full border p-3.5 transition-all duration-200 active:scale-95 ${
+                className={`rounded-xl border p-3.5 transition-all duration-200 active:scale-95 ${
                   wishlisted
                     ? "border-gold bg-gold text-white shadow-gold"
                     : "border-sand bg-white text-charcoal/70 hover:border-gold hover:text-gold-dark"
@@ -460,6 +445,21 @@ export function ProductDetail({ product, reviews = [] }: ProductDetailProps) {
                 </svg>
               </button>
             </div>
+
+            {/* Pre-Order Notice Banner - Placed cleanly below the action buttons */}
+            {isPreorder && (
+              <div className="mt-4 rounded-xl border border-amber-300/80 bg-amber-50/80 p-3 sm:p-3.5 text-xs text-amber-950 flex items-start gap-2.5 shadow-xs">
+                <span className="text-base leading-none shrink-0 mt-0.5">📦</span>
+                <div className="flex-1 leading-snug">
+                  <p className="font-bold text-amber-900">
+                    {preorderInfo.shippingNotice || "Shipping starts after 1 December."}
+                  </p>
+                  <p className="mt-0.5 text-[11px] text-amber-800/80">
+                    Reserve your copy now. Your order will be dispatched as soon as release stock arrives.
+                  </p>
+                </div>
+              </div>
+            )}
 
             {/* Guaranteed Safe Checkout & Secured by Razorpay */}
             <SingleBookPaymentTrust />
