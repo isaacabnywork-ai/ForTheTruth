@@ -9,6 +9,18 @@ import { toCdnImageUrl } from "@/utils/imageUrl";
 
 export const revalidate = 3600;
 
+/**
+ * =============================================================================
+ * CHRISTMAS CATEGORY HIGHLIGHT TOGGLE:
+ * - Set SHOW_CHRISTMAS_CATEGORY_HIGHLIGHT = true during the holiday sale
+ *   to make the Christmas Sale! category box 4x size (2x2 square) with a rich
+ *   festive holiday gradient and elevated styling.
+ * - Set SHOW_CHRISTMAS_CATEGORY_HIGHLIGHT = false to restore the default
+ *   uniform grid (also preserved in src/app/categories/DefaultCategoriesPage.tsx).
+ * =============================================================================
+ */
+const SHOW_CHRISTMAS_CATEGORY_HIGHLIGHT = true;
+
 export const metadata: Metadata = {
   title: "All Categories — Christian Books by Topic",
   description:
@@ -42,7 +54,12 @@ export default async function CategoriesPage() {
       getCategories().catch(() => []),
       getAllProducts().catch(() => []),
     ]);
-    categories = results[0];
+    categories = results[0].filter(
+      (c) =>
+        c.slug !== "gift-wrap" &&
+        !/gift\s*wrap/i.test(c.name) &&
+        !/gift\s*wrap/i.test(c.slug)
+    );
     allProducts = results[1];
   }
 
@@ -105,6 +122,74 @@ export default async function CategoriesPage() {
                 : cat.image?.src
                 ? [cat.image.src]
                 : [];
+
+            const isChristmas =
+              SHOW_CHRISTMAS_CATEGORY_HIGHLIGHT &&
+              (cat.id === 1838 ||
+                cat.slug === "christmas-sale" ||
+                /christmas/i.test(cat.name));
+
+            if (isChristmas) {
+              return (
+                <Link
+                  key={cat.id}
+                  href={`/categories/${cat.slug}`}
+                  className="group relative col-span-2 row-span-2 flex flex-col justify-between overflow-hidden rounded-3xl border border-rose-100/90 bg-gradient-to-br from-white via-white to-rose-50/40 p-6 sm:p-8 md:p-10 shadow-card transition-all duration-500 hover:-translate-y-1.5 hover:border-rose-200 hover:shadow-card-hover min-h-[340px] sm:min-h-[420px]"
+                >
+                  {/* Very subtle ambient warm glow in corner */}
+                  <div className="pointer-events-none absolute -top-24 -right-24 w-72 h-72 rounded-full bg-rose-100/25 blur-3xl" />
+
+                  {/* Top: Book Count */}
+                  <div className="relative z-10 flex items-center justify-end">
+                    {cat.count != null && (
+                      <span className="rounded-full bg-charcoal/5 px-3 py-1 text-xs font-semibold tracking-wide text-charcoal/60">
+                        {cat.count} {cat.count === 1 ? "Book" : "Books"}
+                      </span>
+                    )}
+                  </div>
+
+                  {/* Center: Overlapping Book Covers */}
+                  <div className="relative z-10 my-4 flex h-36 sm:h-44 md:h-52 items-end justify-center">
+                    {covers.length > 0 ? (
+                      covers.slice(0, 4).map((src, i, arr) => (
+                        <span
+                          key={i}
+                          className="relative block h-28 w-20 sm:h-36 sm:w-24 md:h-44 md:w-28 overflow-hidden rounded-md shadow-book transition-transform duration-500 group-hover:-translate-y-1.5"
+                          style={{
+                            marginLeft: i === 0 ? 0 : -22,
+                            zIndex: arr.length - i,
+                            transform: `rotate(${(i - (arr.length - 1) / 2) * 7}deg)`,
+                          }}
+                        >
+                          <img
+                            src={toCdnImageUrl(src)}
+                            alt=""
+                            decoding="async"
+                            className="h-full w-full object-contain p-0.5 select-none"
+                          />
+                        </span>
+                      ))
+                    ) : (
+                      <span className="block h-36 w-24 rounded bg-gold-gradient shadow-book" />
+                    )}
+                  </div>
+
+                  {/* Bottom: Title & Action */}
+                  <div className="relative z-10 text-center">
+                    <h2 className="font-display text-2xl sm:text-3xl md:text-4xl font-bold text-charcoal transition-colors group-hover:text-gold-dark">
+                      {formatCategoryName(cat.name)}
+                    </h2>
+                    <p className="mt-2 text-xs sm:text-sm text-charcoal/60 font-medium max-w-sm mx-auto">
+                      Explore our hand-picked collection of sound Christian books, advent readings & devotionals.
+                    </p>
+                    <div className="mt-3.5 inline-flex items-center gap-1.5 text-xs font-bold uppercase tracking-widest text-gold-dark transition-smooth group-hover:gap-2.5">
+                      <span>Explore Christmas Sale</span>
+                      <span aria-hidden="true">→</span>
+                    </div>
+                  </div>
+                </Link>
+              );
+            }
 
             return (
               <Link

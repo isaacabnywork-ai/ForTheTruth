@@ -1,0 +1,42 @@
+{
+  "note": "Preserved default evergreen hero section configuration. Restore these values when the Christmas Sale campaign concludes.",
+  "heroIds": [
+    47592,
+    46237,
+    48904,
+    56886
+  ],
+  "heroBadge": "",
+  "heroTitle": "Buy Christian Books Online in India for Spiritual Growth",
+  "heroSubtitle": "",
+  "heroBooks": [
+    {
+      "id": 47592,
+      "name": "Freedom from Sin's Dominion",
+      "author": "John Owen",
+      "price": "249",
+      "regular_price": "499"
+    },
+    {
+      "id": 46237,
+      "name": "Holiness",
+      "author": "J.C. Ryle",
+      "price": "399",
+      "regular_price": "699"
+    },
+    {
+      "id": 48904,
+      "name": "The Big Picture Story Bible [Hardback]",
+      "author": "David Helm",
+      "price": "999",
+      "regular_price": "1499"
+    },
+    {
+      "id": 56886,
+      "name": "Morning and Evening",
+      "author": "Charles Spurgeon",
+      "price": "599",
+      "regular_price": "899"
+    }
+  ]
+}

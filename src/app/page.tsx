@@ -1,5 +1,6 @@
 import { BookRow, BookRowSkeleton } from "@/components/products/BookRow";
 import { HeroShelf } from "@/components/home/HeroShelf";
+import { ChristmasHeroBanner } from "@/components/home/ChristmasHeroBanner";
 import { Testimonials } from "@/components/home/Testimonials";
 import { SpineSlider } from "@/components/home/SpineSlider";
 import { StoreMaintenancePage } from "@/components/common/StoreMaintenancePage";
@@ -15,6 +16,21 @@ import {
   type CustomCategoryShelf,
   type CategoryShelfSort,
 } from "@/types/curation";
+
+/**
+ * =============================================================================
+ * HERO BANNER MODE TOGGLE:
+ * - Set SHOW_CHRISTMAS_HERO = true to display the festive Christmas Sale Banner
+ *   featuring books on sale: #36828, #35515, #38738, #36738.
+ * - Set SHOW_CHRISTMAS_HERO = false to instantly restore the evergreen default
+ *   HeroShelf ("Buy Christian Books Online in India for Spiritual Growth").
+ *
+ * Full preservation details & backups are documented in HERO_BANNER_PRESERVATION.md
+ * and src/components/home/DefaultHeroShelf.tsx.
+ * =============================================================================
+ */
+const SHOW_CHRISTMAS_HERO = true;
+const CHRISTMAS_SALE_BOOK_IDS: number[] = [36828, 35515, 38738, 36738];
 
 function getProductPriceNumber(p: Product): number {
   const val = parseFloat(p.price || p.sale_price || p.regular_price || "0");
@@ -39,6 +55,7 @@ function shuffleArray<T>(array: T[]): T[] {
 
 export default async function HomePage() {
   let featured: Product[] = [];
+  let christmasProducts: Product[] = [];
   let newArrivals: Product[] = [];
   let bestsellers: Product[] = [];
   let spineProducts: Product[] = [];
@@ -69,7 +86,16 @@ export default async function HomePage() {
 
   if (isWooConfigured()) {
     try {
-      // 1. Hero Query
+      // 0. Christmas Hero Query (IDs: #36828, #35515, #38738, #36738)
+      const christmasHeroQuery = SHOW_CHRISTMAS_HERO
+        ? getProducts({
+            include: [...CHRISTMAS_SALE_BOOK_IDS],
+            perPage: CHRISTMAS_SALE_BOOK_IDS.length,
+            revalidate: 60,
+          }).catch(() => [])
+        : Promise.resolve([] as Product[]);
+
+      // 1. Standard Evergreen Hero Query (Preserved for easy restoration)
       const heroQuery =
         curated.heroIds.length > 0
           ? getProducts({
@@ -232,6 +258,7 @@ export default async function HomePage() {
       });
 
       const [
+        fetchedChristmas,
         fetchedHero,
         fetchedNew,
         fetchedChildren,
@@ -242,6 +269,7 @@ export default async function HomePage() {
         fetchedTheology,
         fetchedExtraResults,
       ] = await Promise.all([
+        christmasHeroQuery,
         heroQuery,
         newQuery,
         childrenQuery,
@@ -253,11 +281,22 @@ export default async function HomePage() {
         Promise.all(extraShelfQueries),
       ]);
 
-      // Hero
+      // Christmas Hero Books (#36828, #35515, #38738, #36738)
+      if (SHOW_CHRISTMAS_HERO) {
+        christmasProducts = sortByIdList(fetchedChristmas, [...CHRISTMAS_SALE_BOOK_IDS]);
+        if (christmasProducts.length === 0) {
+          christmasProducts = getFallbackList([...CHRISTMAS_SALE_BOOK_IDS]);
+        }
+      }
+
+      // Standard Evergreen Hero (Preserved for seamless restoration)
       if (curated.heroIds.length > 0) {
         featured = sortByIdList(fetchedHero, curated.heroIds);
       } else {
         featured = fetchedHero;
+      }
+      if (featured.length === 0 && curated.heroIds.length > 0) {
+        featured = getFallbackList(curated.heroIds);
       }
 
       // New Arrivals (Strictly Book IDs in exact order)
@@ -372,6 +411,7 @@ export default async function HomePage() {
   const storeReady = newArrivals.length > 0 || bestsellers.length > 0;
   const hasAnyBooks =
     featured.length > 0 ||
+    christmasProducts.length > 0 ||
     newArrivals.length > 0 ||
     bestsellers.length > 0 ||
     spineProducts.length > 0 ||
@@ -386,6 +426,7 @@ export default async function HomePage() {
   }
 
   // Prune main shelf products to eliminate bloated JSON hydration payload
+  const prunedChristmasProducts = pruneProducts(christmasProducts);
   const prunedFeatured = pruneProducts(featured);
   const prunedNewArrivals = pruneProducts(newArrivals);
   const prunedBestsellers = pruneProducts(bestsellers);
@@ -457,13 +498,22 @@ export default async function HomePage() {
 
   return (
     <>
-      {/* 1 — Hero above the fold with customizable content */}
-      <HeroShelf
-        products={prunedFeatured}
-        badge={curated.heroBadge}
-        title={curated.heroTitle}
-        subtitle={curated.heroSubtitle}
-      />
+      {/* 1 — Hero Section: Christmas Sale Banner active; default HeroShelf preserved below */}
+      {SHOW_CHRISTMAS_HERO ? (
+        <ChristmasHeroBanner
+          products={prunedChristmasProducts}
+          title="Christmas Sale, Joy & Truth for the Season"
+          subtitle="Celebrate Christ's incarnation with hand-picked advent devotionals, family guides, and delightful children's storybooks."
+        />
+      ) : (
+        /* Preserved Evergreen Hero Shelf (See HERO_BANNER_PRESERVATION.md to toggle back) */
+        <HeroShelf
+          products={prunedFeatured}
+          badge={curated.heroBadge}
+          title={curated.heroTitle}
+          subtitle={curated.heroSubtitle}
+        />
+      )}
 
       {/* 2..N — Homepage Category Shelves in configured order */}
       {orderedShelfKeys.map((shelfKey) => {

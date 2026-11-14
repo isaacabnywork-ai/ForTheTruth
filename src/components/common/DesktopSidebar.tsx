@@ -125,12 +125,18 @@ export function DesktopSidebar({
   return (
     <aside
       className={`sticky top-0 z-40 self-start hidden h-screen shrink-0 flex-col border-r border-sand bg-white transition-all duration-300 ease-out lg:flex ${
-        collapsed ? "w-[68px]" : "w-[260px]"
+        collapsed ? "w-[76px]" : "w-[260px]"
       }`}
       aria-label="Desktop sidebar"
     >
       {/* ── Brand + collapse toggle ─────────────────────────── */}
-      <div className="flex items-center justify-between border-b border-sand px-4 py-4">
+      <div
+        className={`flex border-b border-sand ${
+          collapsed
+            ? "flex-col items-center justify-center gap-2 px-2 py-3"
+            : "items-center justify-between px-4 py-4"
+        }`}
+      >
         {!collapsed ? (
           <Link href="/" className="shrink-0 flex items-center gap-2.5">
             <div className="relative h-9 w-9 shrink-0 flex items-center justify-center">
@@ -141,7 +147,7 @@ export function DesktopSidebar({
             </span>
           </Link>
         ) : (
-          <Link href="/" className="mx-auto block" title="For The Truth">
+          <Link href="/" className="block" title="For The Truth">
             <div className="relative h-8 w-8 shrink-0 flex items-center justify-center">
               <img src="/logo.png" alt="For The Truth" width={32} height={32} className="h-full w-full object-contain select-none" />
             </div>
@@ -150,11 +156,9 @@ export function DesktopSidebar({
         <button
           onClick={() => setCollapsed((p) => !p)}
           aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
-          className={`rounded-lg p-2 text-charcoal/40 transition-smooth hover:bg-cream hover:text-gold-dark ${
-            collapsed ? "mt-2 mx-auto" : ""
-          }`}
+          className="rounded-lg p-1.5 text-charcoal/50 transition-smooth hover:bg-cream hover:text-gold-dark"
         >
-          <Icon d={collapsed ? ICONS.expand : ICONS.collapse} size={16} />
+          <Icon d={collapsed ? ICONS.expand : ICONS.collapse} size={15} />
         </button>
       </div>
 

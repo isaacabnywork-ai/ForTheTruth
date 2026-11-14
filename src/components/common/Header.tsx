@@ -82,9 +82,10 @@ export function Header({
 
   return (
     <header className={`sticky top-0 z-[100] w-full ${isSingleBookPage ? "hidden lg:block" : ""}`}>
-      <div className="border-b border-sand bg-white/95 shadow-[0_8px_30px_-12px_rgba(120,95,55,0.15)] backdrop-blur-md supports-[backdrop-filter]:bg-white/85 w-full max-w-full">
-        <div className="mx-auto flex max-w-7xl items-center justify-between gap-4 px-3 sm:px-6 py-3.5 lg:px-8">
-          <Link href="/" className="flex items-center shrink-0 group" aria-label={SITE_NAME}>
+      <div className="border-b border-sand bg-white/95 shadow-[0_8px_30px_-12px_rgba(120,95,55,0.15)] backdrop-blur-md supports-[backdrop-filter]:bg-white/85 w-full max-w-full px-4 sm:px-8 md:px-12 lg:px-16 xl:px-20">
+        <div className="flex w-full items-center justify-between gap-4 py-3.5">
+          {/* Logo - only visible on mobile & tablet, hidden on desktop (lg+) where the sidebar shows the logo */}
+          <Link href="/" className="flex items-center shrink-0 group lg:hidden" aria-label={SITE_NAME}>
             <div className="relative h-10 w-10 sm:h-12 sm:w-12 shrink-0 overflow-hidden transition-transform duration-300 group-hover:scale-105 flex items-center justify-center">
               <img
                 src="/logo.png"
@@ -96,7 +97,7 @@ export function Header({
             </div>
           </Link>
 
-          <nav className="hidden flex-1 items-center gap-7 lg:flex lg:ml-10 xl:ml-16">
+          <nav className="hidden flex-1 items-center gap-7 lg:flex">
             {navLinks.map((link) => {
               const menu = "menu" in link ? link.menu : null;
               if (!menu) {
