@@ -1,5 +1,4 @@
 import type { Metadata, Viewport } from "next";
-import { Cormorant_Garamond, Montserrat } from "next/font/google";
 import { Header } from "@/components/common/Header";
 import { Footer } from "@/components/common/Footer";
 import { MobileNav } from "@/components/common/MobileNav";
@@ -13,21 +12,6 @@ import { fetchSiteMenusConfigFromCloud } from "@/services/menus";
 import type { WCCategory } from "@/types/product";
 import { SITE_NAME, SITE_DESCRIPTION } from "@/utils/constants";
 import "@/styles/globals.css";
-
-const montserrat = Montserrat({
-  subsets: ["latin"],
-  variable: "--font-montserrat",
-  display: "swap",
-});
-
-/** Cormorant Garamond — timeless editorial serif for headings. */
-const cormorant = Cormorant_Garamond({
-  subsets: ["latin"],
-  style: ["normal", "italic"],
-  weight: ["400", "600", "700"],
-  variable: "--font-cormorant",
-  display: "swap",
-});
 
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://forthetruth.in";
 
@@ -193,7 +177,7 @@ export default async function RootLayout({
     <html
       lang="en"
       suppressHydrationWarning
-      className={`${montserrat.variable} ${cormorant.variable} overflow-x-clip`}
+      className="overflow-x-clip"
     >
       <body className="flex min-h-screen w-full max-w-full overflow-x-clip bg-cream antialiased font-sans" suppressHydrationWarning>
         <script
