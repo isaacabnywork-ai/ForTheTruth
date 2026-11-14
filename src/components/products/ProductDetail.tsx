@@ -36,6 +36,14 @@ export function ProductDetail({ product, reviews = [] }: ProductDetailProps) {
   const cartCount = useCartStore((s) => s.getCount());
   const [addedToCart, setAddedToCart] = useState(false);
   const showCartIsland = addedToCart && cartCount > 0;
+
+  useEffect(() => {
+    if (!addedToCart) return;
+    const timer = setTimeout(() => {
+      setAddedToCart(false);
+    }, 2500);
+    return () => clearTimeout(timer);
+  }, [addedToCart]);
   const toggleWishlist = useWishlistStore((s) => s.toggleWishlist);
   const wishlisted = useWishlistStore((s) => s.productIds.includes(product.id));
   const addRecentlyViewed = useRecentlyViewedStore((s) => s.addRecentlyViewed);
@@ -412,12 +420,29 @@ export function ProductDetail({ product, reviews = [] }: ProductDetailProps) {
                 onClick={inStock ? handleAddToCart : undefined}
                 disabled={!inStock}
                 className={`flex-1 !py-3.5 !rounded-xl font-extrabold tracking-wide transition-all ${
-                  inStock
-                    ? "btn-gold shadow-gold hover:scale-[1.01] active:scale-95"
-                    : "rounded-xl bg-charcoal/15 text-charcoal/40 cursor-not-allowed"
+                  !inStock
+                    ? "rounded-xl bg-charcoal/15 text-charcoal/40 cursor-not-allowed"
+                    : addedToCart
+                    ? "bg-emerald-600 text-white shadow-md scale-[1.01]"
+                    : "btn-gold shadow-gold hover:scale-[1.01] active:scale-95"
                 }`}
               >
-                {inStock ? (isPreorder ? "Pre-Order Now" : "Add to Cart") : "Out of Stock"}
+                {inStock ? (
+                  addedToCart ? (
+                    <span className="inline-flex items-center gap-1.5 animate-in zoom-in-90 duration-200">
+                      <svg className="h-4 w-4 stroke-[3]" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                        <polyline points="20 6 9 17 4 12" />
+                      </svg>
+                      {isPreorder ? "Pre-Ordered!" : "Added to Cart!"}
+                    </span>
+                  ) : isPreorder ? (
+                    "Pre-Order Now"
+                  ) : (
+                    "Add to Cart"
+                  )
+                ) : (
+                  "Out of Stock"
+                )}
               </button>
 
               {/* Wishlist Button */}
