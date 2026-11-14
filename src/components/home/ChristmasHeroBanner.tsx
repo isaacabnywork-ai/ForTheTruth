@@ -4,7 +4,7 @@ import React, { useState, useEffect, useRef, useCallback, useMemo } from "react"
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
 import { RatingStars } from "@/components/products/RatingStars";
-import { formatPrice } from "@/utils/currency";
+import { formatPrice, splitPrice } from "@/utils/currency";
 import { getAuthor, getFormat, type Product } from "@/types/product";
 import { cleanExcerpt, decodeHtmlEntities } from "@/utils/text";
 import { toCdnImageUrl } from "@/utils/imageUrl";
@@ -415,12 +415,14 @@ export function ChristmasHeroBanner({
 
                   {/* Pricing with Regular Price */}
                   <div className="mt-3 flex flex-wrap items-center justify-center lg:justify-start gap-2.5">
-                    <span className="font-display text-2xl sm:text-3xl font-black text-[#A67C1F]">
-                      {formatPrice(activeBook.price)}
+                    <span className="font-display text-2xl sm:text-3xl text-[#A67C1F]">
+                      <span className="font-normal font-sans text-xl sm:text-2xl mr-0.5">₹</span>
+                      <span className="font-bold">{splitPrice(activeBook.price).amount}</span>
                     </span>
                     {hasDiscount && (
                       <span className="text-sm sm:text-base text-charcoal/40 line-through">
-                        {formatPrice(activeBook.regular_price)}
+                        <span className="font-normal font-sans mr-0.5">₹</span>
+                        <span>{splitPrice(activeBook.regular_price).amount}</span>
                       </span>
                     )}
                   </div>
@@ -482,8 +484,9 @@ export function ChristmasHeroBanner({
                                 </div>
                               )}
                             </div>
-                            <span className="mt-1 font-display text-sm font-black text-[#A67C1F] line-clamp-1">
-                              {formatPrice(pPrice)}
+                            <span className="mt-1 font-display text-sm text-[#A67C1F] line-clamp-1">
+                              <span className="font-normal font-sans text-xs mr-0.5">₹</span>
+                              <span className="font-bold">{splitPrice(pPrice).amount}</span>
                             </span>
                           </button>
                         );
